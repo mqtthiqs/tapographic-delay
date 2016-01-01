@@ -31,6 +31,8 @@
 #include "drivers/leds.h"
 #include "drivers/switches.h"
 #include "drivers/gate_input.h"
+#include "drivers/gate_output.h"
+#include "drivers/adc.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -41,6 +43,8 @@ System sys;
 Leds leds;
 Switches switches;
 GateInput gate_input;
+GateOutput gate_output;
+Adc adc;
 
 extern "C" {
   void NMI_Handler() { }
@@ -60,6 +64,8 @@ void Init() {
   leds.Init();
   switches.Init();
   gate_input.Init();
+  gate_output.Init();
+  adc.Init();
 
   sys.StartTimers();
 }
@@ -71,7 +77,7 @@ int main(void) {
     for (int i=0; i<kNumLeds; i++) {
       leds.set(i, gate_input.ping());
     }
-    gate_input.Read();
+    gate_output.Write(gate_input.ping());
     // __WFI();
   }
 }
@@ -83,5 +89,6 @@ extern "C" {
     switches.Debounce();
     leds.Write();
     gate_input.Read();
+    adc.Convert();
   }
 }
