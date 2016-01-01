@@ -74,10 +74,14 @@ int main(void) {
   Init();
 
   while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_output.Write(gate_input.ping());
+
+    leds.set(LED_PING, gate_input.value(GATE_INPUT_PING));
+    leds.set(LED_REPEAT1, gate_input.value(GATE_INPUT_REPEAT1));
+    leds.set(LED_REPEAT2, gate_input.value(GATE_INPUT_REPEAT2));
+    leds.set(LED_CH1, gate_input.value(GATE_INPUT_REVERSE1));
+    leds.set(LED_CH2, gate_input.value(GATE_INPUT_REVERSE2));
+
+    gate_output.Write(gate_input.value(GATE_INPUT_PING));
     // __WFI();
   }
 }

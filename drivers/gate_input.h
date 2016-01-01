@@ -35,6 +35,15 @@
 
 namespace multitap {
 
+enum GateNames {
+	GATE_INPUT_PING,
+	GATE_INPUT_REVERSE1,					/* always ON on P2 */
+	GATE_INPUT_REVERSE2,					/* always ON on P2 */
+	GATE_INPUT_REPEAT1,
+	GATE_INPUT_REPEAT2,
+	GATE_INPUT_LAST
+};
+
 class GateInput {
  public:
   GateInput() { }
@@ -42,18 +51,18 @@ class GateInput {
   
   void Init();
 	void Read();
-	inline bool ping() const { return ping_; }
+	inline bool value(int8_t channel) const { return values_[channel]; }
 
-	inline bool ping_rising_edge() const {
-		return ping_ && !previous_ping_;
+	inline bool rising_edge(int8_t channel) const {
+		return values_[channel] && !previous_values_[channel];
   }
-  inline bool freeze_falling_edge() const {
-		return !ping_ && previous_ping_;
+	inline bool falling_edge(int8_t channel) const {
+		return !values_[channel] && previous_values_[channel];
   }
 
  private:
-	bool previous_ping_;
-	bool ping_;
+	bool previous_values_[GATE_INPUT_LAST];
+	bool values_[GATE_INPUT_LAST];
 
   DISALLOW_COPY_AND_ASSIGN(GateInput);
 };
