@@ -1,6 +1,6 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2014 Olivier Gillet.
 //
-// Author: Matthias Puech (matthias.puech@gmail.com)
+// Author: Olivier Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +24,30 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// Driver for the gate inputs.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
 #include "drivers/gate_input.h"
 
-#include <stm32f4xx_conf.h>
+namespace multitap {
 
-using namespace multitap;
-using namespace stmlib;
+void GateInput::Init() {
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+  
+  GPIO_InitTypeDef gpio_init;
+	gpio_init.GPIO_Pin = GPIO_Pin_2;
+  gpio_init.GPIO_Mode = GPIO_Mode_IN;
+	gpio_init.GPIO_OType = GPIO_OType_PP;
+	gpio_init.GPIO_Speed = GPIO_Speed_25MHz;
+  gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(GPIOE, &gpio_init);
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
-
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
+	ping_ = false;
+	previous_ping_ = false;
 }
 
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
-
-  sys.StartTimers();
+void GateInput::Read() {
+	previous_ping_ = ping_;
+	ping_ = GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_2);
 }
 
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
-  }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
-  }
-}
+}  // namespace multitap

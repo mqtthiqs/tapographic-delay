@@ -1,4 +1,4 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2016 Matthias Puech.
 //
 // Author: Matthias Puech (matthias.puech@gmail.com)
 //
@@ -24,64 +24,42 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// Driver for the front panel switches.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
 #include "drivers/switches.h"
-#include "drivers/gate_input.h"
 
-#include <stm32f4xx_conf.h>
+#include <algorithm>
 
-using namespace multitap;
-using namespace stmlib;
+namespace multitap {
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
+using namespace std;
 
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
+void Switches::Init() {
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+
+	GPIO_InitTypeDef gpio;
+	gpio.GPIO_Mode = GPIO_Mode_IN;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_Speed = GPIO_Speed_25MHz;
+  gpio.GPIO_PuPd = GPIO_PuPd_UP;
+
+	for (uint8_t i=0; i<kNumSwitches; i++) {
+		gpio.GPIO_Pin = pins[i].pin;
+		GPIO_Init(pins[i].gpio, &gpio);
+	}
+
+  fill(&switch_state_[0], &switch_state_[kNumSwitches], 0xff);
 }
 
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
-
-  sys.StartTimers();
+void Switches::Debounce() {
+	for (uint8_t i=0; i<kNumSwitches; i++) {
+    switch_state_[i] = (switch_state_[i] << 1) | \
+				GPIO_ReadInputDataBit(pins[i].gpio, pins[i].pin);
+	}
 }
 
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
-  }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
-  }
-}
+}  // namespace multitap

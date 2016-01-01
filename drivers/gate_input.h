@@ -1,6 +1,6 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2014 Olivier Gillet.
 //
-// Author: Matthias Puech (matthias.puech@gmail.com)
+// Author: Olivier Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +24,40 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// Driver for the gate inputs.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
-#include "drivers/gate_input.h"
+#ifndef MULTITAP_DRIVERS_GATE_INPUT_H_
+#define MULTITAP_DRIVERS_GATE_INPUT_H_
+
+#include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 
-using namespace multitap;
-using namespace stmlib;
+namespace multitap {
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
+class GateInput {
+ public:
+  GateInput() { }
+  ~GateInput() { }
+  
+  void Init();
+	void Read();
+	inline bool ping() const { return ping_; }
 
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
-}
-
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
-
-  sys.StartTimers();
-}
-
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
+	inline bool ping_rising_edge() const {
+		return ping_ && !previous_ping_;
   }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
+  inline bool freeze_falling_edge() const {
+		return !ping_ && previous_ping_;
   }
-}
+
+ private:
+	bool previous_ping_;
+	bool ping_;
+
+  DISALLOW_COPY_AND_ASSIGN(GateInput);
+};
+
+}  // namespace multitap
+
+#endif  // MULTITAP_DRIVERS_GATE_INPUT_H_

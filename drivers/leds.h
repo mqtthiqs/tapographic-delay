@@ -24,64 +24,44 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// Driver for the status LEDs.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
-#include "drivers/gate_input.h"
+#ifndef MULTITAP_DRIVERS_LEDS_H_
+#define MULTITAP_DRIVERS_LEDS_H_
 
-#include <stm32f4xx_conf.h>
+#include "stmlib/stmlib.h"
 
-using namespace multitap;
-using namespace stmlib;
+namespace multitap {
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
+const uint8_t kNumLeds = 5;
 
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
-}
+enum LedNames {
+	LED_PING,
+	LED_REPEAT1,
+	LED_REPEAT2,
+	LED_CH1,
+	LED_CH2,
+};
 
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
-
-  sys.StartTimers();
-}
-
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
+class Leds {
+ public:
+  Leds() { }
+  ~Leds() { }
+  
+  void Init();
+  
+  void set(uint8_t channel, bool value) {
+		values_[channel] = value;
   }
-}
 
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
-  }
-}
+  void Write();
+  
+ private:
+  bool values_[kNumLeds];
+  
+  DISALLOW_COPY_AND_ASSIGN(Leds);
+};
+
+}  // namespace multitap
+
+#endif  // MULTITAP_DRIVERS_LEDS_H_

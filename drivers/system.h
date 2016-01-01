@@ -1,6 +1,8 @@
 // Copyright 2015 Matthias Puech.
+// Copyright 2013 Olivier Gillet.
 //
-// Author: Matthias Puech (matthias.puech@gmail.com)
+// Original Author: Olivier Gillet (ol.gillet@gmail.com)
+// Modified by: Matthias Puech (matthias.puech@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +26,27 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// System-level initialization.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
-#include "drivers/gate_input.h"
+#ifndef MULTITAP_DRIVERS_SYSTEM_H_
+#define MULTITAP_DRIVERS_SYSTEM_H_
 
-#include <stm32f4xx_conf.h>
+#include "stmlib/stmlib.h"
 
-using namespace multitap;
-using namespace stmlib;
+namespace multitap {
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
+class System {
+ public:
+  System() { }
+  ~System() { }
+  
+	void Init(bool application);
+  void StartTimers();
+ 
+ private:
+  DISALLOW_COPY_AND_ASSIGN(System);
+};
 
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
-}
+}  // namespace multitap
 
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
-
-  sys.StartTimers();
-}
-
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
-  }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
-  }
-}
+#endif  // MULTITAP_DRIVERS_SYSTEM_H_

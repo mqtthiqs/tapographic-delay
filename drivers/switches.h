@@ -1,6 +1,6 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2014 Olivier Gillet.
 //
-// Author: Matthias Puech (matthias.puech@gmail.com)
+// Author: Olivier Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +24,74 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay, main file
+// Driver for the front panel switches.
 
-#include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
-#include "drivers/gate_input.h"
+#ifndef MULTITAP_DRIVERS_SWITCHES_H_
+#define MULTITAP_DRIVERS_SWITCHES_H_
+
+#include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 
-using namespace multitap;
-using namespace stmlib;
+namespace multitap {
 
-System sys;
-Leds leds;
-Switches switches;
-GateInput gate_input;
+const uint8_t kNumSwitches = 9;
 
-extern "C" {
-  void NMI_Handler() { }
-  void HardFault_Handler() { while (1); }
-  void MemManage_Handler() { while (1); }
-  void BusFault_Handler() { while (1); }
-  void UsageFault_Handler() { while (1); }
-  void SVC_Handler() { }
-  void DebugMon_Handler() { }
-  void PendSV_Handler() { }
-  void assert_failed(uint8_t* file, uint32_t line) { while (1); }
-}
+enum SwitchNames {
+	SWITCH_PING,
+	SWITCH_REPEAT1,
+	SWITCH_REPEAT2,
+	SWITCH_REV1,
+	SWITCH_REV2,
+	SWITCH_TIME1_1,
+	SWITCH_TIME1_2,
+	SWITCH_TIME2_1,
+	SWITCH_TIME2_2
+};
 
-void Init() {
-  sys.Init(false);
-  system_clock.Init();
-  leds.Init();
-  switches.Init();
-  gate_input.Init();
+struct PinAssign {
+	GPIO_TypeDef* gpio;
+	uint16_t pin;
+};
 
-  sys.StartTimers();
-}
+const PinAssign pins[kNumSwitches] = {
+	{GPIOE, GPIO_Pin_5},
+	{GPIOD, GPIO_Pin_5},
+	{GPIOA, GPIO_Pin_9},
+	{GPIOG, GPIO_Pin_10},
+	{GPIOA, GPIO_Pin_1},
+	{GPIOG, GPIO_Pin_11},
+	{GPIOG, GPIO_Pin_12},
+	{GPIOA, GPIO_Pin_2},
+	{GPIOB, GPIO_Pin_2}
+};
 
-int main(void) {
-  Init();
-
-  while(1) {
-    for (int i=0; i<kNumLeds; i++) {
-      leds.set(i, gate_input.ping());
-    }
-    gate_input.Read();
-    // __WFI();
+class Switches {
+ public:
+  Switches() { }
+  ~Switches() { }
+  
+  void Init();
+  void Debounce();
+  
+  inline bool released(uint8_t index) const {
+    return switch_state_[index] == 0x7f;
   }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
+  
+  inline bool just_pressed(uint8_t index) const {
+    return switch_state_[index] == 0x80;
   }
-}
+
+  inline bool pressed(uint8_t index) const {
+    return switch_state_[index] == 0x00;
+	}
+
+ private:
+  uint8_t switch_state_[kNumSwitches];
+  
+  DISALLOW_COPY_AND_ASSIGN(Switches);
+};
+
+}  // namespace multitap
+
+#endif  // MULTITAP_DRIVERS_SWITCHES_H_
