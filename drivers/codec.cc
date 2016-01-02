@@ -28,65 +28,70 @@
 
 #include "drivers/codec.h"
 
-#include <string.h>
-
-#define CODEC_I2C                      I2C2
-#define CODEC_I2C_CLK                  RCC_APB1Periph_I2C2
-#define CODEC_I2C_GPIO_CLOCK           RCC_AHB1Periph_GPIOB
-#define CODEC_I2C_GPIO_AF              GPIO_AF_I2C2
-#define CODEC_I2C_GPIO                 GPIOB
-#define CODEC_I2C_SCL_PIN              GPIO_Pin_10
-#define CODEC_I2C_SDA_PIN              GPIO_Pin_11
-#define CODEC_I2C_SCL_PINSRC           GPIO_PinSource10
-#define CODEC_I2C_SDA_PINSRC           GPIO_PinSource11
+#define CODEC_I2C                      I2C2 //I2C1
+#define CODEC_I2C_CLK                  RCC_APB1Periph_I2C2 //RCC_APB1Periph_I2C2
+#define CODEC_I2C_GPIO_CLOCK           RCC_AHB1Periph_GPIOB //RCC_AHB1Periph_GPIOB
+#define CODEC_I2C_GPIO_AF              GPIO_AF_I2C2 //GPIO_AF_I2C1
+#define CODEC_I2C_GPIO                 GPIOB //GPIOB
+#define CODEC_I2C_SCL_PIN              GPIO_Pin_10 //GPIO_Pin_8
+#define CODEC_I2C_SDA_PIN              GPIO_Pin_11 //GPIO_Pin_9
+#define CODEC_I2C_SCL_PINSRC           GPIO_PinSource10 //GPIO_PinSource8
+#define CODEC_I2C_SDA_PINSRC           GPIO_PinSource11 //GPIO_PinSource9
 #define CODEC_TIMEOUT                  ((uint32_t)0x1000)
 #define CODEC_LONG_TIMEOUT             ((uint32_t)(300 * CODEC_TIMEOUT))
 #define CODEC_I2C_SPEED                100000
 
-#define CODEC_I2S                      SPI2
-#define CODEC_I2S_EXT                  I2S2ext
-#define CODEC_I2S_CLK                  RCC_APB1Periph_SPI2
-#define CODEC_I2S_ADDRESS              0x4000380C
-#define CODEC_I2S_EXT_ADDRESS          0x4000340C
-#define CODEC_I2S_GPIO_AF              GPIO_AF_SPI2
-#define CODEC_I2S_IRQ                  SPI2_IRQn
-#define CODEC_I2S_EXT_IRQ              SPI2_IRQn
-#define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOB)
-#define CODEC_I2S_WS_PIN               GPIO_Pin_12
-#define CODEC_I2S_SCK_PIN              GPIO_Pin_13
-#define CODEC_I2S_SDI_PIN              GPIO_Pin_14
-#define CODEC_I2S_SDO_PIN              GPIO_Pin_15
-#define CODEC_I2S_MCK_PIN              GPIO_Pin_6
-#define CODEC_I2S_WS_PINSRC            GPIO_PinSource12
-#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource13
-#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource14
-#define CODEC_I2S_SDO_PINSRC           GPIO_PinSource15
-#define CODEC_I2S_MCK_PINSRC           GPIO_PinSource6
-#define CODEC_I2S_GPIO                 GPIOB
-#define CODEC_I2S_MCK_GPIO             GPIOC
-#define AUDIO_I2S_IRQHandler           SPI2_IRQHandler
+#define CODEC_I2S                      SPI2 //SPI3
+#define CODEC_I2S_EXT                  I2S2ext //I2S3ext
+#define CODEC_I2S_CLK                  RCC_APB1Periph_SPI2 //RCC_APB1Periph_SPI3
+#define CODEC_I2S_ADDRESS              0x4000380C //0x40003C0C
+#define CODEC_I2S_EXT_ADDRESS          0x4000340C //0x4000400C
+#define CODEC_I2S_GPIO_AF              GPIO_AF_SPI2 //GPIO_AF_SPI3
+#define CODEC_I2S_IRQ                  SPI2_IRQn //SPI3_IRQn
+#define CODEC_I2S_EXT_IRQ              SPI2_IRQn //SPI3_IRQn
+#define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOB) //(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC)
+#define CODEC_I2S_WS_PIN               GPIO_Pin_12 //GPIO_Pin_15
+#define CODEC_I2S_WS_PINSRC            GPIO_PinSource12 //GPIO_PinSource_15
+#define CODEC_I2S_WS_GPIO              GPIOB //GPIOA
+#define CODEC_I2S_SCK_PIN              GPIO_Pin_13 //3
+#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource13 //3
+#define CODEC_I2S_SCK_GPIO             GPIOB //B
+#define CODEC_I2S_SDI_PIN              GPIO_Pin_14 //4
+#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource14 //4
+#define CODEC_I2S_SDI_GPIO             GPIOB //B
+#define CODEC_I2S_SDO_PIN              GPIO_Pin_15 //12
+#define CODEC_I2S_SDO_PINSRC           GPIO_PinSource15 //12
+#define CODEC_I2S_SDO_GPIO             GPIOB //C
+#define CODEC_I2S_MCK_PIN              GPIO_Pin_6 //7
+#define CODEC_I2S_MCK_PINSRC           GPIO_PinSource6 //7
+#define CODEC_I2S_MCK_GPIO             GPIOC //C
+#define AUDIO_I2S_IRQHandler           SPI2_IRQHandler //SPI3_IRQHandler
 
 #define AUDIO_DMA_PERIPH_DATA_SIZE     DMA_PeripheralDataSize_HalfWord
 #define AUDIO_DMA_MEM_DATA_SIZE        DMA_MemoryDataSize_HalfWord
 #define AUDIO_I2S_DMA_CLOCK            RCC_AHB1Periph_DMA1
-#define AUDIO_I2S_DMA_STREAM           DMA1_Stream4
-#define AUDIO_I2S_DMA_DREG             CODEC_I2S_ADDRESS
+#define AUDIO_I2S_DMA_STREAM           DMA1_Stream4 //DMA1_Stream5
+#define AUDIO_I2S_DMA_DREG             CODEC_I2S_ADDRESS //TODO
+                                                         //careful
+                                                         //changes
+                                                         //from one to
+                                                         //the other!!
 #define AUDIO_I2S_DMA_CHANNEL          DMA_Channel_0
-#define AUDIO_I2S_DMA_IRQ              DMA1_Stream4_IRQn
-#define AUDIO_I2S_DMA_FLAG_TC          DMA_FLAG_TCIF4
-#define AUDIO_I2S_DMA_FLAG_HT          DMA_FLAG_HTIF4
-#define AUDIO_I2S_DMA_FLAG_FE          DMA_FLAG_FEIF4
-#define AUDIO_I2S_DMA_FLAG_TE          DMA_FLAG_TEIF4
-#define AUDIO_I2S_DMA_FLAG_DME         DMA_FLAG_DMEIF4
-#define AUDIO_I2S_EXT_DMA_STREAM       DMA1_Stream3
-#define AUDIO_I2S_EXT_DMA_DREG         CODEC_I2S_EXT_ADDRESS
-#define AUDIO_I2S_EXT_DMA_CHANNEL      DMA_Channel_3
-#define AUDIO_I2S_EXT_DMA_IRQ          DMA1_Stream3_IRQn
-#define AUDIO_I2S_EXT_DMA_FLAG_TC      DMA_FLAG_TCIF3
-#define AUDIO_I2S_EXT_DMA_FLAG_HT      DMA_FLAG_HTIF3
-#define AUDIO_I2S_EXT_DMA_FLAG_FE      DMA_FLAG_FEIF3
-#define AUDIO_I2S_EXT_DMA_FLAG_TE      DMA_FLAG_TEIF3
-#define AUDIO_I2S_EXT_DMA_FLAG_DME     DMA_FLAG_DMEIF3
+#define AUDIO_I2S_DMA_IRQ              DMA1_Stream4_IRQn //DMA1_Stream5_IRQn
+#define AUDIO_I2S_DMA_FLAG_TC          DMA_FLAG_TCIF0
+#define AUDIO_I2S_DMA_FLAG_HT          DMA_FLAG_HTIF0
+#define AUDIO_I2S_DMA_FLAG_FE          DMA_FLAG_FEIF0
+#define AUDIO_I2S_DMA_FLAG_TE          DMA_FLAG_TEIF0
+#define AUDIO_I2S_DMA_FLAG_DME         DMA_FLAG_DMEIF0
+#define AUDIO_I2S_EXT_DMA_STREAM       DMA1_Stream3 //DMA1_Stream2
+#define AUDIO_I2S_EXT_DMA_DREG         CODEC_I2S_EXT_ADDRESS //TODO careful!
+#define AUDIO_I2S_EXT_DMA_CHANNEL      DMA_Channel_3 //DMA_Channel_2
+#define AUDIO_I2S_EXT_DMA_IRQ          DMA1_Stream3_IRQn //DMA1_Stream2_IRQn
+#define AUDIO_I2S_EXT_DMA_FLAG_TC      DMA_FLAG_TCIF3 //DMA_FLAG_TCIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_HT      DMA_FLAG_HTIF3 //DMA_FLAG_HTIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_FE      DMA_FLAG_FEIF3 //DMA_FLAG_FEIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_TE      DMA_FLAG_TEIF3 //DMA_FLAG_TEIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_DME     DMA_FLAG_DMEIF3 //DMA_FLAG_DMEIF2
 #define AUDIO_I2S_EXT_DMA_REG          DMA1
 #define AUDIO_I2S_EXT_DMA_ISR          LISR
 #define AUDIO_I2S_EXT_DMA_IFCR         LIFCR
@@ -192,22 +197,32 @@ bool Codec::InitializeGPIO() {
   GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SDA_PINSRC, CODEC_I2C_GPIO_AF);
   
   // Initialize I2S pins
-  gpio_init.GPIO_Pin = CODEC_I2S_SCK_PIN | CODEC_I2S_SDO_PIN | \
-      CODEC_I2S_SDI_PIN | CODEC_I2S_WS_PIN; 
   gpio_init.GPIO_Mode = GPIO_Mode_AF;
   gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
   gpio_init.GPIO_OType = GPIO_OType_PP;
   gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(CODEC_I2S_GPIO, &gpio_init);
-  
+
+
+  gpio_init.GPIO_Pin = CODEC_I2S_SCK_PIN;
+  GPIO_Init(CODEC_I2S_SCK_GPIO, &gpio_init);
+
+  gpio_init.GPIO_Pin = CODEC_I2S_SDO_PIN;
+  GPIO_Init(CODEC_I2S_SDO_GPIO, &gpio_init);
+
+  gpio_init.GPIO_Pin = CODEC_I2S_SDI_PIN;
+  GPIO_Init(CODEC_I2S_SDI_GPIO, &gpio_init);
+
+  gpio_init.GPIO_Pin = CODEC_I2S_WS_PIN;
+  GPIO_Init(CODEC_I2S_WS_GPIO, &gpio_init);
+
   gpio_init.GPIO_Pin = CODEC_I2S_MCK_PIN; 
   GPIO_Init(CODEC_I2S_MCK_GPIO, &gpio_init);
   
   // Connect pins to I2S peripheral.
-  GPIO_PinAFConfig(CODEC_I2S_GPIO, CODEC_I2S_WS_PINSRC, CODEC_I2S_GPIO_AF);  
-  GPIO_PinAFConfig(CODEC_I2S_GPIO, CODEC_I2S_SCK_PINSRC, CODEC_I2S_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_GPIO, CODEC_I2S_SDO_PINSRC, CODEC_I2S_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_GPIO, CODEC_I2S_SDI_PINSRC, CODEC_I2S_GPIO_AF);
+  GPIO_PinAFConfig(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PINSRC, CODEC_I2S_GPIO_AF);
+  GPIO_PinAFConfig(CODEC_I2S_SCK_GPIO, CODEC_I2S_SCK_PINSRC, CODEC_I2S_GPIO_AF);
+  GPIO_PinAFConfig(CODEC_I2S_SDO_GPIO, CODEC_I2S_SDO_PINSRC, CODEC_I2S_GPIO_AF);
+  GPIO_PinAFConfig(CODEC_I2S_SDI_GPIO, CODEC_I2S_SDI_PINSRC, CODEC_I2S_GPIO_AF);
   GPIO_PinAFConfig(CODEC_I2S_MCK_GPIO, CODEC_I2S_MCK_PINSRC, CODEC_I2S_GPIO_AF); 
   return true;
 }
@@ -462,8 +477,8 @@ bool Codec::Start(size_t block_size, FillBufferCallback callback) {
   }
   
   if (!mcu_is_master_) {
-    while(GPIO_ReadInputDataBit(CODEC_I2S_GPIO, CODEC_I2S_WS_PIN));
-    while(!GPIO_ReadInputDataBit(CODEC_I2S_GPIO, CODEC_I2S_WS_PIN));
+    while(GPIO_ReadInputDataBit(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PIN));
+    while(!GPIO_ReadInputDataBit(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PIN));
   }
   
   callback_ = callback;
