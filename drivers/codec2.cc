@@ -257,16 +257,17 @@ bool Codec2::InitializeAudioInterface(
   RCC_PLLI2SCmd(DISABLE);
   if (sample_rate == 48000) {
     // 47.992kHz
-    RCC_PLLI2SConfig(258, 3);
+    RCC_PLLI2SConfig(258, 3, 0); // TODO added last argument, no idea
+                                  // what it does...
   } else if (sample_rate == 44100) {
     // 44.11kHz
-    RCC_PLLI2SConfig(271, 6);
+    RCC_PLLI2SConfig(271, 6, 0);
   } else if (sample_rate == 32000) {
     // 32.003kHz
-    RCC_PLLI2SConfig(426, 4);
+    RCC_PLLI2SConfig(426, 4, 0);
   } else if (sample_rate == 96000) {
     // 95.95 kHz
-    RCC_PLLI2SConfig(393, 4);
+    RCC_PLLI2SConfig(393, 4, 0);
   } else {
     // Unsupported sample rate!
     return false;
