@@ -26,8 +26,8 @@
 //
 // WM8371 Codec support.
 
-#ifndef MULTITAP_DRIVERS_CODEC_H_
-#define MULTITAP_DRIVERS_CODEC_H_
+#ifndef MULTITAP_DRIVERS_CODEC1_H_
+#define MULTITAP_DRIVERS_CODEC1_H_
 
 #include <stm32f4xx_conf.h>
 
@@ -36,12 +36,12 @@
 
 namespace multitap {
 
-const size_t kMaxCodecBlockSize = 32;
+const size_t kMaxCodec1BlockSize = 32;
 
-class Codec {
+class Codec1 {
  public:
-  Codec() { }
-  ~Codec() { }
+  Codec1() { }
+  ~Codec1() { }
   
   typedef struct {
     short l;
@@ -67,7 +67,7 @@ class Codec {
   bool set_line_input_gain(int32_t channel, int32_t gain);
   bool set_line_input_gain(int32_t gain);
 
-  static Codec* GetInstance() { return instance_; }
+  static Codec1* GetInstance() { return instance_; }
   
  private:
   bool InitializeGPIO();
@@ -79,7 +79,7 @@ class Codec {
 
   bool InitializeDMA();
   
-  static Codec* instance_;
+  static Codec1* instance_;
   
   bool mcu_is_master_;
   int32_t sample_rate_;
@@ -91,12 +91,12 @@ class Codec {
   DMA_InitTypeDef dma_init_tx_;
   DMA_InitTypeDef dma_init_rx_;
   
-  short tx_dma_buffer_[kMaxCodecBlockSize * 6 * 2];
-  short rx_dma_buffer_[kMaxCodecBlockSize * 6 * 2];
+  short tx_dma_buffer_[kMaxCodec1BlockSize * 6 * 2];
+  short rx_dma_buffer_[kMaxCodec1BlockSize * 6 * 2];
 
-  DISALLOW_COPY_AND_ASSIGN(Codec);
+  DISALLOW_COPY_AND_ASSIGN(Codec1);
 };
 
 }  // namespace multitap
 
-#endif  // MULTITAP_DRIVERS_CODEC_H_
+#endif  // MULTITAP_DRIVERS_CODEC1_H_

@@ -26,72 +26,68 @@
 //
 // WM8371 Codec support.
 
-#include "drivers/codec.h"
+#include "drivers/codec1.h"
 
-#define CODEC_I2C                      I2C2 //I2C1
-#define CODEC_I2C_CLK                  RCC_APB1Periph_I2C2 //RCC_APB1Periph_I2C2
-#define CODEC_I2C_GPIO_CLOCK           RCC_AHB1Periph_GPIOB //RCC_AHB1Periph_GPIOB
-#define CODEC_I2C_GPIO_AF              GPIO_AF_I2C2 //GPIO_AF_I2C1
-#define CODEC_I2C_GPIO                 GPIOB //GPIOB
-#define CODEC_I2C_SCL_PIN              GPIO_Pin_10 //GPIO_Pin_8
-#define CODEC_I2C_SDA_PIN              GPIO_Pin_11 //GPIO_Pin_9
-#define CODEC_I2C_SCL_PINSRC           GPIO_PinSource10 //GPIO_PinSource8
-#define CODEC_I2C_SDA_PINSRC           GPIO_PinSource11 //GPIO_PinSource9
+#define CODEC_I2C                      I2C1
+#define CODEC_I2C_CLK                  RCC_APB1Periph_I2C1
+#define CODEC_I2C_GPIO_CLOCK           RCC_AHB1Periph_GPIOB
+#define CODEC_I2C_GPIO_AF              GPIO_AF_I2C1
+#define CODEC_I2C_GPIO                 GPIOB
+#define CODEC_I2C_SCL_PIN              GPIO_Pin_8
+#define CODEC_I2C_SDA_PIN              GPIO_Pin_9
+#define CODEC_I2C_SCL_PINSRC           GPIO_PinSource8
+#define CODEC_I2C_SDA_PINSRC           GPIO_PinSource9
 #define CODEC_TIMEOUT                  ((uint32_t)0x1000)
 #define CODEC_LONG_TIMEOUT             ((uint32_t)(300 * CODEC_TIMEOUT))
 #define CODEC_I2C_SPEED                100000
 
-#define CODEC_I2S                      SPI2 //SPI3
-#define CODEC_I2S_EXT                  I2S2ext //I2S3ext
-#define CODEC_I2S_CLK                  RCC_APB1Periph_SPI2 //RCC_APB1Periph_SPI3
-#define CODEC_I2S_ADDRESS              0x4000380C //0x40003C0C
-#define CODEC_I2S_EXT_ADDRESS          0x4000340C //0x4000400C
-#define CODEC_I2S_GPIO_AF              GPIO_AF_SPI2 //GPIO_AF_SPI3
-#define CODEC_I2S_IRQ                  SPI2_IRQn //SPI3_IRQn
-#define CODEC_I2S_EXT_IRQ              SPI2_IRQn //SPI3_IRQn
-#define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOB) //(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC)
-#define CODEC_I2S_WS_PIN               GPIO_Pin_12 //GPIO_Pin_15
-#define CODEC_I2S_WS_PINSRC            GPIO_PinSource12 //GPIO_PinSource_15
-#define CODEC_I2S_WS_GPIO              GPIOB //GPIOA
-#define CODEC_I2S_SCK_PIN              GPIO_Pin_13 //3
-#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource13 //3
-#define CODEC_I2S_SCK_GPIO             GPIOB //B
-#define CODEC_I2S_SDI_PIN              GPIO_Pin_14 //4
-#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource14 //4
-#define CODEC_I2S_SDI_GPIO             GPIOB //B
-#define CODEC_I2S_SDO_PIN              GPIO_Pin_15 //12
-#define CODEC_I2S_SDO_PINSRC           GPIO_PinSource15 //12
-#define CODEC_I2S_SDO_GPIO             GPIOB //C
-#define CODEC_I2S_MCK_PIN              GPIO_Pin_6 //7
-#define CODEC_I2S_MCK_PINSRC           GPIO_PinSource6 //7
-#define CODEC_I2S_MCK_GPIO             GPIOC //C
-#define AUDIO_I2S_IRQHandler           SPI2_IRQHandler //SPI3_IRQHandler
+#define CODEC_I2S                      SPI3
+#define CODEC_I2S_EXT                  I2S3ext
+#define CODEC_I2S_CLK                  RCC_APB1Periph_SPI3
+#define CODEC_I2S_ADDRESS              0x40003C0C
+#define CODEC_I2S_EXT_ADDRESS          0x4000400C
+#define CODEC_I2S_GPIO_AF              GPIO_AF_SPI3
+#define CODEC_I2S_IRQ                  SPI3_IRQn
+#define CODEC_I2S_EXT_IRQ              SPI3_IRQn
+#define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC)
+#define CODEC_I2S_WS_PIN               GPIO_Pin_15
+#define CODEC_I2S_WS_PINSRC            GPIO_PinSource15
+#define CODEC_I2S_WS_GPIO              GPIOA
+#define CODEC_I2S_SCK_PIN              GPIO_Pin_3
+#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource3
+#define CODEC_I2S_SCK_GPIO             GPIOB
+#define CODEC_I2S_SDI_PIN              GPIO_Pin_4
+#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource4
+#define CODEC_I2S_SDI_GPIO             GPIOB
+#define CODEC_I2S_SDO_PIN              GPIO_Pin_12
+#define CODEC_I2S_SDO_PINSRC           GPIO_PinSource12
+#define CODEC_I2S_SDO_GPIO             GPIOC
+#define CODEC_I2S_MCK_PIN              GPIO_Pin_7
+#define CODEC_I2S_MCK_PINSRC           GPIO_PinSource7
+#define CODEC_I2S_MCK_GPIO             GPIOC
+#define AUDIO_I2S_IRQHandler           SPI3_IRQHandler
 
 #define AUDIO_DMA_PERIPH_DATA_SIZE     DMA_PeripheralDataSize_HalfWord
 #define AUDIO_DMA_MEM_DATA_SIZE        DMA_MemoryDataSize_HalfWord
 #define AUDIO_I2S_DMA_CLOCK            RCC_AHB1Periph_DMA1
-#define AUDIO_I2S_DMA_STREAM           DMA1_Stream4 //DMA1_Stream5
-#define AUDIO_I2S_DMA_DREG             CODEC_I2S_ADDRESS //TODO
-                                                         //careful
-                                                         //changes
-                                                         //from one to
-                                                         //the other!!
+#define AUDIO_I2S_DMA_STREAM           DMA1_Stream5
+#define AUDIO_I2S_DMA_DREG             CODEC_I2S_ADDRESS
 #define AUDIO_I2S_DMA_CHANNEL          DMA_Channel_0
-#define AUDIO_I2S_DMA_IRQ              DMA1_Stream4_IRQn //DMA1_Stream5_IRQn
+#define AUDIO_I2S_DMA_IRQ              DMA1_Stream5_IRQn
 #define AUDIO_I2S_DMA_FLAG_TC          DMA_FLAG_TCIF0
 #define AUDIO_I2S_DMA_FLAG_HT          DMA_FLAG_HTIF0
 #define AUDIO_I2S_DMA_FLAG_FE          DMA_FLAG_FEIF0
 #define AUDIO_I2S_DMA_FLAG_TE          DMA_FLAG_TEIF0
 #define AUDIO_I2S_DMA_FLAG_DME         DMA_FLAG_DMEIF0
-#define AUDIO_I2S_EXT_DMA_STREAM       DMA1_Stream3 //DMA1_Stream2
-#define AUDIO_I2S_EXT_DMA_DREG         CODEC_I2S_EXT_ADDRESS //TODO careful!
-#define AUDIO_I2S_EXT_DMA_CHANNEL      DMA_Channel_3 //DMA_Channel_2
-#define AUDIO_I2S_EXT_DMA_IRQ          DMA1_Stream3_IRQn //DMA1_Stream2_IRQn
-#define AUDIO_I2S_EXT_DMA_FLAG_TC      DMA_FLAG_TCIF3 //DMA_FLAG_TCIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_HT      DMA_FLAG_HTIF3 //DMA_FLAG_HTIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_FE      DMA_FLAG_FEIF3 //DMA_FLAG_FEIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_TE      DMA_FLAG_TEIF3 //DMA_FLAG_TEIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_DME     DMA_FLAG_DMEIF3 //DMA_FLAG_DMEIF2
+#define AUDIO_I2S_EXT_DMA_STREAM       DMA1_Stream2
+#define AUDIO_I2S_EXT_DMA_DREG         CODEC_I2S_EXT_ADDRESS
+#define AUDIO_I2S_EXT_DMA_CHANNEL      DMA_Channel_2
+#define AUDIO_I2S_EXT_DMA_IRQ          DMA1_Stream2_IRQn
+#define AUDIO_I2S_EXT_DMA_FLAG_TC      DMA_FLAG_TCIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_HT      DMA_FLAG_HTIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_FE      DMA_FLAG_FEIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_TE      DMA_FLAG_TEIF2
+#define AUDIO_I2S_EXT_DMA_FLAG_DME     DMA_FLAG_DMEIF2
 #define AUDIO_I2S_EXT_DMA_REG          DMA1
 #define AUDIO_I2S_EXT_DMA_ISR          LISR
 #define AUDIO_I2S_EXT_DMA_IFCR         LIFCR
@@ -114,7 +110,7 @@
 namespace multitap {
 
 /* static */
-Codec* Codec::instance_;
+Codec1* Codec1::instance_;
 
 enum CodecRegister {
   CODEC_REG_LEFT_LINE_IN = 0x00,
@@ -178,7 +174,7 @@ enum CodecSettings {
   CODEC_RATE_44K_44K = 0x08 << 2,
 };
 
-bool Codec::InitializeGPIO() {
+bool Codec1::InitializeGPIO() {
   GPIO_InitTypeDef gpio_init;
 
   // Start GPIO peripheral clocks.
@@ -227,7 +223,7 @@ bool Codec::InitializeGPIO() {
   return true;
 }
 
-bool Codec::InitializeControlInterface() {
+bool Codec1::InitializeControlInterface() {
   I2C_InitTypeDef i2c_init;
 
   // Initialize I2C
@@ -247,7 +243,7 @@ bool Codec::InitializeControlInterface() {
   return true;
 }
 
-bool Codec::InitializeAudioInterface(
+bool Codec1::InitializeAudioInterface(
     bool mcu_is_master,
     int32_t sample_rate) {
   // Configure PLL and I2S master clock.
@@ -298,7 +294,7 @@ bool Codec::InitializeAudioInterface(
   return true;
 }
 
-bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
+bool Codec1::WriteControlRegister(uint8_t address, uint16_t data) {
   uint8_t byte_1 = ((address << 1) & 0xfe) | ((data >> 8) & 0x01);
   uint8_t byte_2 = data & 0xff;
   
@@ -323,7 +319,7 @@ bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
   return true;  
 }
 
-bool Codec::InitializeCodec(
+bool Codec1::InitializeCodec(
     bool mcu_is_master,
     int32_t sample_rate) {
   bool s = true;  // success;
@@ -393,7 +389,7 @@ bool Codec::InitializeCodec(
   return s;
 }
 
-bool Codec::InitializeDMA() {
+bool Codec1::InitializeDMA() {
   RCC_AHB1PeriphClockCmd(AUDIO_I2S_DMA_CLOCK, ENABLE);
 
   // DMA setup for TX.
@@ -451,7 +447,7 @@ bool Codec::InitializeDMA() {
   return true;
 }
 
-bool Codec::Init(
+bool Codec1::Init(
     bool mcu_is_master,
     int32_t sample_rate) {
   instance_ = this;
@@ -467,12 +463,12 @@ bool Codec::Init(
       InitializeDMA();
 }
 
-bool Codec::Start(size_t block_size, FillBufferCallback callback) {
+bool Codec1::Start(size_t block_size, FillBufferCallback callback) {
   // Start the codec.
   if (!WriteControlRegister(CODEC_REG_ACTIVE, 0x01)) {
     return false;
   }
-  if (block_size > kMaxCodecBlockSize) {
+  if (block_size > kMaxCodec1BlockSize) {
     return false;
   }
   
@@ -524,20 +520,20 @@ bool Codec::Start(size_t block_size, FillBufferCallback callback) {
   return true;
 }
 
-void Codec::Stop() {
+void Codec1::Stop() {
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
 }
 
-bool Codec::set_line_input_gain(int32_t channel, int32_t gain) {
+bool Codec1::set_line_input_gain(int32_t channel, int32_t gain) {
   return WriteControlRegister(CODEC_REG_LEFT_LINE_IN + channel, gain);
 }
 
-bool Codec::set_line_input_gain(int32_t gain) {
+bool Codec1::set_line_input_gain(int32_t gain) {
   return WriteControlRegister(0, gain) && WriteControlRegister(1, gain);
 }
 
-void Codec::Fill(size_t offset) {
+void Codec1::Fill(size_t offset) {
   if (callback_) {
     offset *= block_size_ * stride_ * 2;
     short* in = &rx_dma_buffer_[offset];
@@ -565,14 +561,14 @@ extern "C" {
 // if (DMA_GetFlagStatus(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC) != RESET) {
 //  DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC);  
 
-void DMA1_Stream3_IRQHandler(void) {
+void DMA1_Stream2_IRQHandler(void) {
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
-    multitap::Codec::GetInstance()->Fill(1);
+    multitap::Codec1::GetInstance()->Fill(1);
   }
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
-    multitap::Codec::GetInstance()->Fill(0);
+    multitap::Codec1::GetInstance()->Fill(0);
   }
 }
   

@@ -33,7 +33,8 @@
 #include "drivers/gate_input.h"
 #include "drivers/gate_output.h"
 #include "drivers/adc.h"
-#include "drivers/codec.h"
+#include "drivers/codec1.h"
+#include "drivers/codec2.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -49,7 +50,8 @@ Switches switches;
 GateInput gate_input;
 GateOutput gate_output;
 Adc adc;
-Codec codec;
+Codec1 codec1;
+Codec2 codec2;
 
 extern "C" {
   void NMI_Handler() { }
@@ -74,7 +76,20 @@ extern "C" {
   float phase = 0;
   float phase_increment = 1.0f / SAMPLE_RATE * 100.0f;
 
-  void FillBuffer(Codec::Frame* input, Codec::Frame* output, size_t n) {
+  void FillBuffer1(Codec1::Frame* input, Codec1::Frame* output, size_t n) {
+    while (n--){
+      int16_t sin = Interpolate(lut_sin, phase, 1024.0f) * 30000.0f;
+      output->l = input->l; //Out A
+      output->r = static_cast<int16_t>(sin); //Dly A
+      // phase += phase_increment;
+      // if (phase > 1.0f) phase--;
+
+      input++;
+      output++;
+    }
+  }
+
+  void FillBuffer2(Codec2::Frame* input, Codec2::Frame* output, size_t n) {
     while (n--){
       int16_t sin = Interpolate(lut_sin, phase, 1024.0f) * 30000.0f;
       output->l = input->l; //Out B
@@ -96,8 +111,10 @@ void Init() {
   gate_input.Init();
   gate_output.Init();
   adc.Init();
-  if (!codec.Init(true, 44100)) { while(1); }
-  if (!codec.Start(32, &FillBuffer)) { while(1); }
+  if (!codec1.Init(true, 44100)) { while(1); }
+  if (!codec1.Start(32, &FillBuffer1)) { while(1); }
+  if (!codec2.Init(true, 44100)) { while(1); }
+  if (!codec2.Start(32, &FillBuffer2)) { while(1); }
 
   sys.StartTimers();
 }
