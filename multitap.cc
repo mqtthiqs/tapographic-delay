@@ -70,19 +70,22 @@ void Init() {
   sys.StartTimers();
 }
 
+uint8_t count = 0;
+
 int main(void) {
   Init();
 
   while(1) {
 
-    leds.set(LED_PING, gate_input.value(GATE_INPUT_PING));
-    leds.set(LED_REPEAT1, gate_input.value(GATE_INPUT_REPEAT1));
-    leds.set(LED_REPEAT2, gate_input.value(GATE_INPUT_REPEAT2));
-    leds.set(LED_CH1, gate_input.value(GATE_INPUT_REVERSE1));
-    leds.set(LED_CH2, gate_input.value(GATE_INPUT_REVERSE2));
+    leds.set(LED_PING, count < (adc.value(0) >> 8));
+    leds.set(LED_REPEAT1, count < (adc.value(1) >> 8));
+    leds.set(LED_REPEAT2, count < (adc.value(2) >> 8));
+    leds.set(LED_CH1, count < (adc.value(3) >> 8));
+    leds.set(LED_CH2, count < (adc.value(4) >> 8));
 
-    gate_output.Write(gate_input.value(GATE_INPUT_PING));
-    // __WFI();
+    leds.Write();
+
+    count++;
   }
 }
 
