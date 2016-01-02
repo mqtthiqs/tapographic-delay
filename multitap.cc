@@ -37,6 +37,9 @@
 
 #include <stm32f4xx_conf.h>
 
+#include "stmlib/dsp/dsp.h"     // TODO temp
+#include "resources.h"          // TODO temp
+
 using namespace multitap;
 using namespace stmlib;
 
@@ -68,10 +71,19 @@ extern "C" {
     adc.Convert();
   }
 
+  float phase = 0;
+  float phase_increment = 1.0f / SAMPLE_RATE * 100.0f;
+
   void FillBuffer(Codec::Frame* input, Codec::Frame* output, size_t n) {
     while (n--){
-      output->l = input->l;
-      output->r = input->r;
+      int16_t sin = Interpolate(lut_sin, phase, 1024.0f) * 30000.0f;
+      output->l = input->l; //Out B
+      output->r = static_cast<int16_t>(sin); //Dly B
+      phase += phase_increment;
+      if (phase > 1.0f) phase--;
+
+      input++;
+      output++;
     }
   }
 }
@@ -90,21 +102,19 @@ void Init() {
   sys.StartTimers();
 }
 
-uint8_t count = 0;
-
 int main(void) {
   Init();
 
-  while(1) {
+  int8_t count = 0;
 
+  while(1) {
     leds.set(LED_PING, count < (adc.value(0) >> 8));
     leds.set(LED_REPEAT1, count < (adc.value(1) >> 8));
     leds.set(LED_REPEAT2, count < (adc.value(2) >> 8));
     leds.set(LED_CH1, count < (adc.value(3) >> 8));
     leds.set(LED_CH2, count < (adc.value(4) >> 8));
 
-    leds.Write();
-
     count++;
+    leds.Write();
   }
 }
