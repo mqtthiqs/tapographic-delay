@@ -33,6 +33,7 @@
 #include "drivers/gate_input.h"
 #include "drivers/gate_output.h"
 #include "drivers/adc.h"
+#include "drivers/codec.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -45,6 +46,7 @@ Switches switches;
 GateInput gate_input;
 GateOutput gate_output;
 Adc adc;
+Codec codec;
 
 extern "C" {
   void NMI_Handler() { }
@@ -56,6 +58,22 @@ extern "C" {
   void DebugMon_Handler() { }
   void PendSV_Handler() { }
   void assert_failed(uint8_t* file, uint32_t line) { while (1); }
+
+  // slow timer for the UI
+  void SysTick_Handler() {
+    system_clock.Tick();  // increment global ms counter.
+    switches.Debounce();
+    leds.Write();
+    gate_input.Read();
+    adc.Convert();
+  }
+
+  void FillBuffer(Codec::Frame* input, Codec::Frame* output, size_t n) {
+    while (n--){
+      output->l = input->l;
+      output->r = input->r;
+    }
+  }
 }
 
 void Init() {
@@ -66,6 +84,8 @@ void Init() {
   gate_input.Init();
   gate_output.Init();
   adc.Init();
+  if (!codec.Init(true, 44100)) { while(1); }
+  if (!codec.Start(32, &FillBuffer)) { while(1); }
 
   sys.StartTimers();
 }
@@ -86,16 +106,5 @@ int main(void) {
     leds.Write();
 
     count++;
-  }
-}
-
-extern "C" {
-  // slow timer for the UI
-  void SysTick_Handler() {
-    system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
-    gate_input.Read();
-    adc.Convert();
   }
 }
