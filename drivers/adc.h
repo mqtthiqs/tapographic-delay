@@ -64,9 +64,8 @@ class Adc {
 			<< 4;											/* compensate for ADC max of 4096 */
 	}
   inline float float_value(uint8_t channel) const {
-		return static_cast<float>(values_[channel]) / 65536.0f
-			* 16;											/* compensate for ADC max of 4096 */
-  }
+		return static_cast<float>(values_[channel]) / 4096.0f; /* max is 4096 */
+	}
 	/* inline const uint16_t* values() { return &values_[0]; } */
   
  private:
