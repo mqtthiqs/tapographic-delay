@@ -35,6 +35,7 @@
 #include "drivers/adc.h"
 #include "drivers/codec1.h"
 #include "drivers/codec2.h"
+#include "drivers/sdram.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -52,6 +53,7 @@ GateOutput gate_output;
 Adc adc;
 Codec1 codec1;
 Codec2 codec2;
+SDRAM sdram;
 
 extern "C" {
   void NMI_Handler() { }
@@ -106,6 +108,7 @@ extern "C" {
 void Init() {
   sys.Init(false);
   system_clock.Init();
+  sdram.Init();
   leds.Init();
   switches.Init();
   gate_input.Init();
