@@ -28,13 +28,13 @@
 
 #include "stmlib/system/system_clock.h"
 #include "drivers/system.h"
-#include "drivers/leds.h"
-#include "drivers/switches.h"
 #include "drivers/gate_output.h"
 #include "drivers/codec1.h"
 #include "drivers/codec2.h"
 #include "drivers/sdram.h"
 #include "cv_scaler.h"
+#include "ui.h"
+#include "delay.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -42,13 +42,13 @@ using namespace multitap;
 using namespace stmlib;
 
 System sys;
-Leds leds;
-Switches switches;
 GateOutput gate_output;
 Codec1 codec1;
 Codec2 codec2;
 SDRAM sdram;
 CvScaler cv_scaler;
+Ui ui;
+Delay delay;
 
 Parameters parameters;
 
@@ -65,9 +65,8 @@ extern "C" {
 
   // slow timer for the UI
   void SysTick_Handler() {
+    ui.Poll();
     system_clock.Tick();  // increment global ms counter.
-    switches.Debounce();
-    leds.Write();
   }
 
   void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
@@ -95,33 +94,24 @@ void Init() {
   sys.Init(false);
   system_clock.Init();
   sdram.Init();
-  leds.Init();
-  switches.Init();
   gate_output.Init();
   cv_scaler.Init();
+  ui.Init(&cv_scaler);
+
   if (!codec1.Init(true, 44100)) { while(1); }
   if (!codec1.Start(32, &FillBuffer1)) { while(1); }
   if (!codec2.Init(true, 44100)) { while(1); }
   if (!codec2.Start(32, &FillBuffer2)) { while(1); }
 
   sys.StartTimers();
+  // sdram.Clear();
+  ui.Start();
 }
 
 int main(void) {
   Init();
 
-  float phase = 0;
-
   while(1) {
-    leds.set(LED_PING, phase < parameters.time[0]);
-    leds.set(LED_REPEAT1, phase < parameters.level[0]);
-    leds.set(LED_REPEAT2, phase < parameters.regen[0]);
-    leds.set(LED_CH1, phase < parameters.mix[0]);
-    leds.set(LED_CH2, true);
-
-    phase += 1.0f / 100.0f;
-    if (phase > 1.0f) phase--;
-
-    leds.Write();
+    ui.DoEvents();
   }
 }
