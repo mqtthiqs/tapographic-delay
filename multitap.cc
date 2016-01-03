@@ -70,7 +70,7 @@ extern "C" {
     leds.Write();
   }
 
-  void FillBuffer1(Codec1::Frame* input, Codec1::Frame* output, size_t n) {
+  void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
     while (n--){
       output->l = input->l; //In A -> Out A
@@ -80,7 +80,7 @@ extern "C" {
     }
   }
 
-  void FillBuffer2(Codec2::Frame* input, Codec2::Frame* output, size_t n) {
+  void FillBuffer2(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
     while (n--){
       output->l = input->l; //In B -> Out B

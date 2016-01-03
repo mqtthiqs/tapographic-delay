@@ -550,7 +550,7 @@ void Codec2::Fill(size_t offset) {
         in[i] = in[i * stride_];
       }
     }
-    (*callback_)((Frame*)(in), (Frame*)(out), block_size_);
+    (*callback_)((ShortFrame*)(in), (ShortFrame*)(out), block_size_);
     if (stride_) {
       // Pad for the WM8731.
       for (size_t i = block_size_ * 2 - 1; i > 0; --i) {

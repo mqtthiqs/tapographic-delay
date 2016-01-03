@@ -32,6 +32,7 @@
 #include <stm32f4xx_conf.h>
 
 #include "stmlib/stmlib.h"
+#include "parameters.h"
 
 namespace multitap {
 
@@ -41,13 +42,8 @@ class Codec1 {
  public:
   Codec1() { }
   ~Codec1() { }
-  
-  typedef struct {
-    short l;
-    short r;
-  } Frame;
-  
-  typedef void (*FillBufferCallback)(Frame* rx, Frame* tx, size_t size);
+
+  typedef void (*FillBufferCallback)(ShortFrame* rx, ShortFrame* tx, size_t size);
   
   bool Init(
       bool mcu_is_master,

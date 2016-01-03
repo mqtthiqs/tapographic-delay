@@ -24,7 +24,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Parameters of the granular effect.
+// Parameters.
 
 #ifndef MULTITAP_DSP_PARAMETERS_H_
 #define MULTITAP_DSP_PARAMETERS_H_
@@ -32,6 +32,9 @@
 #include "stmlib/stmlib.h"
 
 namespace multitap {
+
+typedef struct { short l; short r; } ShortFrame;
+typedef struct { float l; float r; } FloatFrame;
 
 enum TimeDivision {
   TIME_DIVISION_1,
