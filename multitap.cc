@@ -74,7 +74,7 @@ extern "C" {
     cv_scaler.Read(&parameters);
     while (n--){
       output->l = input->l; //In A -> Out A
-      output->r = output->l; //Aux A -> Dly A
+      output->r = input->r; //Aux A -> Dly A
       input++;
       output++;
     }
