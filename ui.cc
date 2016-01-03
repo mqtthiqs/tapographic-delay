@@ -46,7 +46,7 @@ void Ui::Init(CvScaler* cv_scaler) {
 }
 
 void Ui::Start() {
-  mode_ = UI_MODE_NORMAL;
+  // mode_ = UI_MODE_NORMAL;
 }
 
 void Ui::Poll() {
