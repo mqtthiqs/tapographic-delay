@@ -210,13 +210,13 @@ void SDRAM::Init() {
 
 
 	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-
-  // Clear SDRAM
-  // volatile uint32_t ptr = 0;
-  // for(ptr = SDRAM_BASE; ptr < (SDRAM_BASE + SDRAM_SIZE - 1); ptr += 4)
-  //   *((uint32_t *)ptr) = 0xFFFFFFFF;
 }
 
+void SDRAM::Clear() {
+  volatile uint32_t ptr = 0;
+  for(ptr = SDRAM_BASE; ptr < (SDRAM_BASE + SDRAM_SIZE - 1); ptr += 4)
+    *((uint32_t *)ptr) = 0xFFFFFFFF;
+}
 
 
 
