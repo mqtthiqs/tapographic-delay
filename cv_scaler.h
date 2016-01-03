@@ -1,6 +1,6 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2014 Olivier Gillet.
 //
-// Author: Matthias Puech (matthias.puech@gmail.com)
+// Author: Olivier Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,42 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Driver for the status LEDs.
+// Calibration settings.
 
-#ifndef MULTITAP_DRIVERS_LEDS_H_
-#define MULTITAP_DRIVERS_LEDS_H_
+#ifndef MULTITAP_CV_SCALER_H_
+#define MULTITAP_CV_SCALER_H_
 
 #include "stmlib/stmlib.h"
 
+#include "drivers/adc.h"
+#include "drivers/gate_input.h"
+#include "parameters.h"
+
 namespace multitap {
 
-const uint8_t kNumLeds = 5;
-
-enum LedNames {
-	LED_PING,
-	LED_REPEAT1,
-	LED_REPEAT2,
-	LED_CH1,
-	LED_CH2,
+struct CvTransformation {
+  bool flip;
+  float filter_coefficient;
 };
 
-class Leds {
+class CvScaler {
  public:
-  Leds() { }
-  ~Leds() { }
+  CvScaler() { }
+  ~CvScaler() { }
   
   void Init();
+  void Read(Parameters* parameters);
 
-  void set(uint8_t channel, bool value) {
-		values_[channel] = value;
-  }
-
-  void Write();
-  
  private:
-  bool values_[kNumLeds];
-  
-  DISALLOW_COPY_AND_ASSIGN(Leds);
+
+  Adc adc_;
+  GateInput gate_input_;
+
+  float lp_values_[ADC_CHANNEL_LAST];
+
+  DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };
 
 }  // namespace multitap
 
-#endif  // MULTITAP_DRIVERS_LEDS_H_
+#endif  // MULTITAP_CV_SCALER_H_

@@ -30,17 +30,13 @@
 #include "drivers/system.h"
 #include "drivers/leds.h"
 #include "drivers/switches.h"
-#include "drivers/gate_input.h"
 #include "drivers/gate_output.h"
-#include "drivers/adc.h"
 #include "drivers/codec1.h"
 #include "drivers/codec2.h"
 #include "drivers/sdram.h"
+#include "cv_scaler.h"
 
 #include <stm32f4xx_conf.h>
-
-#include "stmlib/dsp/dsp.h"     // TODO temp
-#include "resources.h"          // TODO temp
 
 using namespace multitap;
 using namespace stmlib;
@@ -48,12 +44,13 @@ using namespace stmlib;
 System sys;
 Leds leds;
 Switches switches;
-GateInput gate_input;
 GateOutput gate_output;
-Adc adc;
 Codec1 codec1;
 Codec2 codec2;
 SDRAM sdram;
+CvScaler cv_scaler;
+
+Parameters parameters;
 
 extern "C" {
   void NMI_Handler() { }
@@ -71,34 +68,23 @@ extern "C" {
     system_clock.Tick();  // increment global ms counter.
     switches.Debounce();
     leds.Write();
-    gate_input.Read();
-    adc.Convert();
   }
 
-  float phase = 0;
-  float phase_increment = 1.0f / SAMPLE_RATE * 100.0f;
-
   void FillBuffer1(Codec1::Frame* input, Codec1::Frame* output, size_t n) {
+    cv_scaler.Read(&parameters);
     while (n--){
-      int16_t sin = Interpolate(lut_sin, phase, 1024.0f) * 30000.0f;
-      output->l = input->l; //Out A
-      output->r = static_cast<int16_t>(sin); //Dly A
-      // phase += phase_increment;
-      // if (phase > 1.0f) phase--;
-
+      output->l = input->l; //In A -> Out A
+      output->r = output->l; //Aux A -> Dly A
       input++;
       output++;
     }
   }
 
   void FillBuffer2(Codec2::Frame* input, Codec2::Frame* output, size_t n) {
+    cv_scaler.Read(&parameters);
     while (n--){
-      int16_t sin = Interpolate(lut_sin, phase, 1024.0f) * 30000.0f;
-      output->l = input->l; //Out B
-      output->r = static_cast<int16_t>(sin); //Dly B
-      phase += phase_increment;
-      if (phase > 1.0f) phase--;
-
+      output->l = input->l; //In B -> Out B
+      output->r = input->r; //Aux B -> Dly B
       input++;
       output++;
     }
@@ -111,9 +97,8 @@ void Init() {
   sdram.Init();
   leds.Init();
   switches.Init();
-  gate_input.Init();
   gate_output.Init();
-  adc.Init();
+  cv_scaler.Init();
   if (!codec1.Init(true, 44100)) { while(1); }
   if (!codec1.Start(32, &FillBuffer1)) { while(1); }
   if (!codec2.Init(true, 44100)) { while(1); }
@@ -125,16 +110,18 @@ void Init() {
 int main(void) {
   Init();
 
-  int8_t count = 0;
+  float phase = 0;
 
   while(1) {
-    leds.set(LED_PING, count < (adc.value(0) >> 8));
-    leds.set(LED_REPEAT1, count < (adc.value(1) >> 8));
-    leds.set(LED_REPEAT2, count < (adc.value(2) >> 8));
-    leds.set(LED_CH1, count < (adc.value(3) >> 8));
-    leds.set(LED_CH2, count < (adc.value(4) >> 8));
+    leds.set(LED_PING, phase < parameters.time[0]);
+    leds.set(LED_REPEAT1, phase < parameters.level[0]);
+    leds.set(LED_REPEAT2, phase < parameters.regen[0]);
+    leds.set(LED_CH1, phase < parameters.mix[0]);
+    leds.set(LED_CH2, true);
 
-    count++;
+    phase += 1.0f / 100.0f;
+    if (phase > 1.0f) phase--;
+
     leds.Write();
   }
 }
