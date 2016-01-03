@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2015 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech (matthias.puech@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,49 +24,36 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Driver for the gate inputs.
+// Multitap delay
 
-#ifndef MULTITAP_DRIVERS_GATE_INPUT_H_
-#define MULTITAP_DRIVERS_GATE_INPUT_H_
+#include "delay.h"
 
-#include "stmlib/stmlib.h"
+namespace multitap 
+{
 
-#include <stm32f4xx_conf.h>
-
-namespace multitap {
-
-enum GateNames {
-	GATE_INPUT_PING,
-	GATE_INPUT_REVERSE1,					/* always ON on P2 */
-	GATE_INPUT_REVERSE2,					/* always ON on P2 */
-	GATE_INPUT_REPEAT1,
-	GATE_INPUT_REPEAT2,
-	GATE_INPUT_LAST
-};
-
-class GateInput {
- public:
-  GateInput() { }
-  ~GateInput() { }
-  
-  void Init();
-	void Read();
-	inline bool value(int8_t channel) const { return values_[channel]; }
-
-	inline bool rising_edge(int8_t channel) const {
-		return values_[channel] && !previous_values_[channel];
-  }
-	inline bool falling_edge(int8_t channel) const {
-		return !values_[channel] && previous_values_[channel];
+  void Delay::Init(ShortFrame* buffer, size_t buffer_size) {
+    cursor_ = 0;
+    buffer_ = buffer;
+    buffer_size_ = buffer_size;
   }
 
- private:
-	bool previous_values_[GATE_INPUT_LAST];
-	bool values_[GATE_INPUT_LAST];
+  void Delay::Process(ShortFrame* input, ShortFrame* output, size_t size) {
+    while (size--) {
 
-  DISALLOW_COPY_AND_ASSIGN(GateInput);
-};
+      buffer_[cursor_].l = input->l;
+      buffer_[cursor_].r = input->r;
 
-}  // namespace multitap
+      int16_t time = 0x4000-1;
+      volatile int16_t index = static_cast<int16_t>(cursor_) - time;
+      if (index < 0) index += buffer_size_;
 
-#endif  // MULTITAP_DRIVERS_GATE_INPUT_H_
+      output->l = buffer_[index].l;
+      output->r = buffer_[index].r;
+
+      input++;
+      output++;
+      cursor_ = (cursor_ + 1) % buffer_size_;
+    }
+  }
+
+}

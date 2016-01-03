@@ -48,7 +48,10 @@ Codec2 codec2;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
-Delay delay;
+Delay delay[2];
+
+// ShortFrame buffer[SDRAM_SIZE / sizeof(ShortFrame)] __attribute__ ((section (".sdram")));
+ShortFrame buffer[0x4000] __attribute__ ((section (".ccmdata")));
 
 Parameters parameters;
 
@@ -71,22 +74,12 @@ extern "C" {
 
   void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    while (n--){
-      output->l = input->l; //In A -> Out A
-      output->r = input->r; //Aux A -> Dly A
-      input++;
-      output++;
-    }
+    delay[0].Process(input, output, n);
   }
 
   void FillBuffer2(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    while (n--){
-      output->l = input->l; //In B -> Out B
-      output->r = input->r; //Aux B -> Dly B
-      input++;
-      output++;
-    }
+    // delay[1].Process(input, output, n);
   }
 }
 
@@ -103,14 +96,16 @@ void Init() {
   if (!codec2.Init(true, 44100)) { while(1); }
   if (!codec2.Start(32, &FillBuffer2)) { while(1); }
 
+  // delay[0].Init(buffer, 0x4000);
+  // delay[1].Init(buffer1, SDRAM_SIZE/4-1);
+
   sys.StartTimers();
-  // sdram.Clear();
+  sdram.Clear();
   ui.Start();
 }
 
 int main(void) {
   Init();
-
   while(1) {
     ui.DoEvents();
   }

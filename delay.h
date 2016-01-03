@@ -28,8 +28,6 @@
 
 #include "parameters.h"
 
-using namespace stmlib;
-
 namespace multitap 
 {
 
@@ -39,11 +37,15 @@ namespace multitap
     Delay() { }
     ~Delay() { }
 
-    void Init();
+    void Init(ShortFrame* buffer, size_t size);
     void Process(ShortFrame* input, ShortFrame* output, size_t size);
 
   private:
-    Parameters parameters_;
+
+    ShortFrame* buffer_;
+    uint16_t buffer_size_;
+
+    uint16_t cursor_;
 
     DISALLOW_COPY_AND_ASSIGN(Delay);
   };
