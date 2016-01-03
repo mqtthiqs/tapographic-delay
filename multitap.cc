@@ -83,6 +83,13 @@ extern "C" {
   }
 }
 
+void Panic() {
+  codec1.Stop();
+  codec2.Stop();
+  ui.Panic();
+  while(1);
+}
+
 void Init() {
   sys.Init(false);
   system_clock.Init();

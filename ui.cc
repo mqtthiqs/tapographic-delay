@@ -46,7 +46,7 @@ void Ui::Init(CvScaler* cv_scaler) {
 }
 
 void Ui::Start() {
-  // mode_ = UI_MODE_NORMAL;
+  mode_ = UI_MODE_NORMAL;
 }
 
 void Ui::Poll() {
@@ -86,13 +86,14 @@ void Ui::Poll() {
 
 void Ui::PaintLeds() {
 
-  bool blink = (system_clock.milliseconds() & 127) > 64;
+  if ((system_clock.milliseconds() & 63) == 0)
+    animation_counter_++;
 
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
     for (int i=0; i<kNumLeds; i++){
-      leds_.set(i, blink);
+      leds_.set(i, (animation_counter_ % kNumLeds) == i);
     }
   }
   break;
@@ -105,11 +106,23 @@ void Ui::PaintLeds() {
   }
   break;
 
+  case UI_MODE_PANIC:
+  {
+    for (int i=0; i<kNumLeds; i++){
+      leds_.set(i, (animation_counter_ & 7) < 1);
+    }
+  }
+  break;
+
     default:
       break;
   }
 
   leds_.Write();
+}
+
+void Ui::Panic() {
+  mode_ = UI_MODE_PANIC;
 }
 
 void Ui::OnSwitchPressed(const Event& e) {

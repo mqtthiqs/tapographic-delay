@@ -40,6 +40,7 @@ namespace multitap {
 enum UiMode {
   UI_MODE_SPLASH,
   UI_MODE_NORMAL,
+  UI_MODE_PANIC,
   UI_MODE_LAST
 };
 
@@ -57,6 +58,7 @@ class Ui {
   void Poll();
   void DoEvents();
   void Start();
+  void Panic();
 
  private:
   void OnSwitchPressed(const stmlib::Event& e);
@@ -74,6 +76,7 @@ class Ui {
   uint32_t press_time_[kNumSwitches];
   uint32_t long_press_time_[kNumSwitches];
   UiMode mode_;
+  uint16_t animation_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
