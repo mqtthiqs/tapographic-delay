@@ -32,6 +32,8 @@
 
 #include "sdram.h"
 
+#include "stmlib/utils/random.h"
+
 //Macros to initialize GPIOs
 
 #define MODE_INPUT 	0
@@ -218,9 +220,33 @@ void SDRAM::Clear() {
     *((uint32_t *)ptr) = 0xFFFFFFFF;
 }
 
+bool SDRAM::Test() {
 
+	uint32_t addr;
+  uint32_t t;
+	uint32_t i;
+	t=0;
 
-void FMC_Config(void){
+	addr=SDRAM_BASE;
+	for (i=0;i<5000;i++){
+    while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
+    *((uint16_t *)addr) = (uint16_t)i;
+    addr += 2;
+	}
+
+	addr=SDRAM_BASE;
+	for (i=0;i<5000;i++){
+    while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
+    t = *((uint16_t*)addr);
+    if (t != i)
+      return false;
+    addr += 2;
+	}
+
+  return true;
+}
+
+void SDRAM::FMC_Config(void){
 
   GPIO_InitTypeDef            GPIO_InitStructure;
   FMC_SDRAMInitTypeDef        FMC_SDRAMInitStructure;

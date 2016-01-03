@@ -77,8 +77,9 @@ class SDRAM {
   ~SDRAM() { }
 
   void Init();
-  void FMC_Config(void);
+  void FMC_Config();
   void Clear();
+  bool Test();
 
   /* DISALLOW_COPY_AND_ASSIGN(SDRAM); //TODO */
 };
