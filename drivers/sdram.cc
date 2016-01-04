@@ -1,5 +1,6 @@
 // Copyright 2013 Radoslaw Kwiecien.
 // Copyright 2015 Dan Green.
+// Copyright 2016 Matthias Puech.
 //
 // Author: Radoslaw Kwiecien (radek@dxp.pl)
 // Source: http://en.radzio.dxp.pl/stm32f429idiscovery/
@@ -32,64 +33,28 @@
 
 #include "sdram.h"
 
-#include "stmlib/utils/random.h"
-
-//Macros to initialize GPIOs
-
-#define MODE_INPUT 	0
-#define MODE_GPIO		1
-#define MODE_AF			2
-#define MODE_ANALOG	3
-
-#define TYPE_PUSHPULL 	0
-#define TYPE_OPENDRAIN 	1
-
-#define SPEED_2MHz		0
-#define SPEED_25MHz		1
-#define SPEED_50MHz		2
-#define SPEED_100MHz	3
-
-#define PULLUP_NONE		0
-#define PULLUP_UP			1
-#define PULLUP_DOWN		2
-
-#define MASK1BIT(pin) ((uint32_t)~(1 << (pin * 1)))
-#define MASK2BIT(pin) ((uint32_t)~(3 << (pin * 2)))
-#define MASK4BIT(pin) ((uint32_t)~(15 << (pin * 4)))
-#define AFMASKL(pin)	((uint32_t)~(15 << (pin * 4)))
-#define AFMASKH(pin)	((uint32_t)~(15 << ((pin - 8) * 4)))
-
-//About 50ms delay
-#define delay()						\
-do {							\
-  register unsigned int i;				\
-  for (i = 0; i < 1000000; ++i)				\
+static void Delay(__IO uint32_t nCount)
+{
+  __IO uint32_t index = 0; 
+  for(index = (100000 * nCount); index != 0; index--) {
     __asm__ __volatile__ ("nop\n\t":::"memory");	\
-} while (0)
-
-// Macros for SDRAM Timing Register
-#define TMRD(x) (x << 0)
-#define TXSR(x) (x << 4)
-#define TRAS(x) (x << 8)
-#define TRC(x)  (x << 12)
-#define TWR(x)  (x << 16)
-#define TRP(x)  (x << 20)
-#define TRCD(x) (x << 24)
+  }
+}
 
 namespace multitap {
 
 // GPIO configuration data
 static  GPIO_TypeDef * const GPIOInitTable[] = {
-  GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF,
-  GPIOG, GPIOG, GPIOG,
-  GPIOD, GPIOD, GPIOD, GPIOD,
-  GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE,
-  GPIOD, GPIOD, GPIOD,
-  GPIOB, GPIOB,
-  GPIOC,
-  GPIOE, GPIOE,
-  GPIOF,
-  GPIOG, GPIOG, GPIOG, GPIOG,
+  GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, GPIOF, //  0, 1, 2, 3, 4, 5, 12, 13, 14, 15,
+  GPIOG, GPIOG, GPIOG, //  0, 1, 2,
+  GPIOD, GPIOD, GPIOD, GPIOD, // 14, 15, 0, 1,
+  GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, GPIOE, // 7, 8, 9, 10, 11, 12, 13, 14, 15,
+  GPIOD, GPIOD, GPIOD, //  8, 9, 10,
+  GPIOB, GPIOB, // 5, 6,
+  GPIOC, // 0,
+  GPIOE, GPIOE, // 0, 1,
+  GPIOF, // 11,
+  GPIOG, GPIOG, GPIOG, GPIOG, // 4, 5, 8, 15
   0
 };
 
@@ -107,113 +72,6 @@ static uint8_t const PINInitTable[] = {
   0
 };
 
-void gpio_conf(GPIO_TypeDef * GPIO, uint8_t pin, uint8_t mode,
-               uint8_t type, uint8_t speed, uint8_t pullup, uint8_t af) {
-  GPIO->MODER 	= (GPIO->MODER   & MASK2BIT(pin))   | (mode << (pin * 2));
-  GPIO->OTYPER 	= (GPIO->OTYPER  & MASK1BIT(pin))   | (type << pin);
-  GPIO->OSPEEDR = (GPIO->OSPEEDR & MASK2BIT(pin))   | (speed << (pin * 2));
-  GPIO->PUPDR		= (GPIO->PUPDR   & MASK2BIT(pin))		| (pullup << (pin * 2));
-  if(pin > 7) {
-    GPIO->AFR[1] = (GPIO->AFR[1] & AFMASKH(pin)) | (af << ((pin - 8) * 4));
-  } else {
-    GPIO->AFR[0] = (GPIO->AFR[0] & AFMASKL(pin)) | (af << ((pin) * 4));
-  }
-}
-
-void SDRAM::Init() {
-  volatile uint32_t i = 0;
-
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
-
-	while(GPIOInitTable[i] != 0){
-		gpio_conf(GPIOInitTable[i], PINInitTable[i],  MODE_AF, TYPE_PUSHPULL, SPEED_100MHz, PULLUP_NONE, 12);
-		i++;
-	}
-
-	RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
-
-	// Initialization step 1
-
-  //SDCLK period = 2 x HCLK periods
-  //RBURST: single read requests are always managed as bursts
-  //RPIPE: (delay, in HCLK clock cycles, for reading data after CAS latency) = Two HCLK clock cycle delay
-	FMC_Bank5_6->SDCR[0] = FMC_SDCR1_SDCLK_1  | FMC_SDCR1_RBURST | FMC_SDCR1_RPIPE_1;
-	//FMC_Bank5_6->SDCR[0] = FMC_SDCR1_SDCLK_1   | FMC_SDCR1_RPIPE_1;
-
-  //64Mbit (8MByte):
-  //NR_0: Num Rows=12
-  //NC (not present): Num Columns=8
-  //MWID_0: Memory width=16 bits
-  //NB: Num Banks=4
-  //CAS: CAS latency=3 cycles
-  //FMC_Bank5_6->SDCR[1] = FMC_SDCR1_NR_0	  | FMC_SDCR1_MWID_0 | FMC_SDCR1_NB | FMC_SDCR1_CAS;
-
-  //256Mbit (32MByte):
-  //NR_1: Num Rows=13
-  //NC_0: Num Columns=9
-  //MWID_1: Memory width=16
-  //NB: Num Banks=4
-  //CAS: CAS latency=3 cycles
-	FMC_Bank5_6->SDCR[1] = FMC_SDCR1_NR_1 | FMC_SDCR1_NC_0 | FMC_SDCR1_MWID_0 | FMC_SDCR1_NB | FMC_SDCR1_CAS;
-
-	// Initialization step 2
-	// Timing characteristics, expressed in number of clock cycles (@180MHz, SDCLK is HCLK/2 means a value of 1 = 11.1ns, 2 = 22.2ns etc..)
-	FMC_Bank5_6->SDTR[0] = TRC(6)  | TRP(2);
-	FMC_Bank5_6->SDTR[1] = TMRD(2) | TXSR(6) | TRAS(4) | TWR(2) | TRCD(2);
-
-	// Initialization step 3
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-	//PALL command (Pre-charge all banks)
-	FMC_Bank5_6->SDCMR 	 = 1 | FMC_SDCMR_CTB2 | (1 << 5);
-
-	// Initialization step 4
-/*	do {
-	  register unsigned int i;
-	  for (i = 0; i < 1000000; ++i)
-    __asm__ __volatile__ ("nop\n\t":::"memory");
-    } while (0);
-*/
-	delay();
-  delay();
-
-	// Initialization step 5
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-	// 2 = PALL (“All Bank Precharge”) command
-	// SDRAM bank 2
-	// 1<<5 = 2 Auto-refresh cycles
-	FMC_Bank5_6->SDCMR 	 = 2 | FMC_SDCMR_CTB2 | (1 << 5);
-
-
-	// Initialization step 6
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-	// 3 = Auto-refresh command
-	// SDRAM bank 2
-	// 4<<5 = 5 Auto-refresh cycles
-	FMC_Bank5_6->SDCMR 	 = 3 | FMC_SDCMR_CTB2 | (4 << 5);
-
-	// Initialization step 7
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-	// 4 = Load Mode Register
-	// SDRAM bank 2
-	// 1<<5 = 2 Auto-refresh cycles
-	// Mode Register = 0x231: burst length 2, burst type sequential, CAS latency 3 clocks, Write burst mode single bit, normal operation mode
-	// Mode Register = 0x030: burst length 1, burst type sequential, CAS latency 3 clocks, Write burst mode = single location access, normal operation mode
-	FMC_Bank5_6->SDCMR 	 = 4 | FMC_SDCMR_CTB2 | (1 << 5) | (0x231 << 9);
-
-
-	// Initialization step 8
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-
-	// refresh rate in number of SDCLK clock cycles between the refresh cycles
-	// 683 = 7.6uS x 90Mhz
-	// 7.6uS x 8196 rows = 62ms refresh rate
-	FMC_Bank5_6->SDRTR |= (663 << 1);
-
-
-
-	while(FMC_Bank5_6->SDSR & FMC_SDSR_BUSY);
-}
-
 void SDRAM::Clear() {
   volatile uint32_t ptr = 0;
   for(ptr = SDRAM_BASE; ptr < (SDRAM_BASE + SDRAM_SIZE - 1); ptr += 4)
@@ -227,15 +85,15 @@ bool SDRAM::Test() {
 	uint32_t i;
 	t=0;
 
-	addr=SDRAM_BASE;
-	for (i=0;i<5000;i++){
+  addr=SDRAM_BASE;
+  for (i=0;i<SDRAM_SIZE;i++){
     while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
     *((uint16_t *)addr) = (uint16_t)i;
     addr += 2;
 	}
 
-	addr=SDRAM_BASE;
-	for (i=0;i<5000;i++){
+  addr=SDRAM_BASE;
+  for (i=0;i<5000;i++){
     while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
     t = *((uint16_t*)addr);
     if (t != i)
@@ -246,223 +104,147 @@ bool SDRAM::Test() {
   return true;
 }
 
-void SDRAM::FMC_Config(void){
-
-  GPIO_InitTypeDef            GPIO_InitStructure;
-  FMC_SDRAMInitTypeDef        FMC_SDRAMInitStructure;
-  FMC_SDRAMTimingInitTypeDef  FMC_SDRAMTimingInitStructure;
-  FMC_SDRAMCommandTypeDef     FMC_SDRAMCommandStructure;
-
-  uint32_t tmpr = 0;
-  uint32_t timeout = SDRAM_TIMEOUT;
-
-  /* GPIO configuration ------------------------------------------------------*/
-  /* Enable GPIOs clock */
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOE |
-                         RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG , ENABLE);
-
-  /* Common GPIO configuration */
-  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-
-  /* GPIOD configuration */
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource10, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource14, GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FMC);
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  |GPIO_Pin_1  |GPIO_Pin_8 |GPIO_Pin_9 |
-                                GPIO_Pin_10 |GPIO_Pin_14 |GPIO_Pin_15;
-
-  GPIO_Init(GPIOD, &GPIO_InitStructure);
-
-  /* GPIOE configuration */
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource0 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource1 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource7 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource8 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource9 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource10 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource11 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource12 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource13 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource14 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOE, GPIO_PinSource15 , GPIO_AF_FMC);
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1  | GPIO_Pin_7 | GPIO_Pin_8  |
-                                GPIO_Pin_9  | GPIO_Pin_10 | GPIO_Pin_11| GPIO_Pin_12 |
-                                GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-
-  GPIO_Init(GPIOE, &GPIO_InitStructure);
-
-  /* GPIOF configuration */
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource0 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource1 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource2 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource3 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource4 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource5 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource11 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource12 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource13 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource14 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOF, GPIO_PinSource15 , GPIO_AF_FMC);
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1  | GPIO_Pin_2  | GPIO_Pin_3  |
-                                GPIO_Pin_4  | GPIO_Pin_5  | GPIO_Pin_11 | GPIO_Pin_12 |
-                                GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-
-  GPIO_Init(GPIOF, &GPIO_InitStructure);
-
-  /* GPIOG configuration */
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource0 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource1 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource2 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource4 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource5 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource8 , GPIO_AF_FMC);
-  GPIO_PinAFConfig(GPIOG, GPIO_PinSource15 , GPIO_AF_FMC);
-
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |GPIO_Pin_1 |GPIO_Pin_2 |GPIO_Pin_4 |GPIO_Pin_5 |
-                                GPIO_Pin_8 | GPIO_Pin_15;
-
-  GPIO_Init(GPIOG, &GPIO_InitStructure);
-
-
-  /* Enable FMC clock */
-  RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FMC, ENABLE);
-
-  /* FMC SDRAM device initialization sequence --------------------------------*/
-  /* Step 1 ----------------------------------------------------*/
-  /* Timing configuration for 84 Mhz of SD clock frequency (168Mhz/2) */
-  /* TMRD: 2 Clock cycles */
-  FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay    = 3;
-  /* TXSR: min=70ns (6x11.90ns) */
-  FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
-  /* TRAS: min=42ns (4x11.90ns) max=120k (ns) */
-  FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime      = 5;
-  /* TRC:  min=70 (6x11.90ns) */
-  FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay        = 7;
-  /* TWR:  min=1+ 7ns (1+1x11.90ns) */
-  FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime    = 3;
-  /* TRP:  20ns => 2x11.90ns */
-  FMC_SDRAMTimingInitStructure.FMC_RPDelay              = 3;
-  /* TRCD: 20ns => 2x11.90ns */
-  FMC_SDRAMTimingInitStructure.FMC_RCDDelay             = 3;
-
-  /* Step 2 ----------------------------------------------------*/
-
-  /* FMC SDRAM control configuration */
-  FMC_SDRAMInitStructure.FMC_Bank = FMC_Bank2_SDRAM;
-
-  FMC_SDRAMInitStructure.FMC_ColumnBitsNumber   = FMC_ColumnBits_Number_9b;
-  FMC_SDRAMInitStructure.FMC_RowBitsNumber      = FMC_RowBits_Number_13b;
-  FMC_SDRAMInitStructure.FMC_SDMemoryDataWidth  = SDRAM_MEMORY_WIDTH;
-  FMC_SDRAMInitStructure.FMC_InternalBankNumber = FMC_InternalBank_Number_4;
-
-  /* CL: Cas Latency = 3 clock cycles */
-  FMC_SDRAMInitStructure.FMC_CASLatency         = FMC_CAS_Latency_3;
-  FMC_SDRAMInitStructure.FMC_WriteProtection    = FMC_Write_Protection_Disable;
-  FMC_SDRAMInitStructure.FMC_SDClockPeriod      = SDCLOCK_PERIOD;
-  FMC_SDRAMInitStructure.FMC_ReadBurst          = FMC_Read_Burst_Enable;
-  FMC_SDRAMInitStructure.FMC_ReadPipeDelay      = FMC_ReadPipe_Delay_1;
-  FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct  = &FMC_SDRAMTimingInitStructure;
-  /* FMC SDRAM bank initialization */
-  FMC_SDRAMInit(&FMC_SDRAMInitStructure);
-
-/* Step 3 --------------------------------------------------------------------*/
-  /* Configure a clock configuration enable command */
-  FMC_SDRAMCommandStructure.FMC_CommandMode            = FMC_Command_Mode_CLK_Enabled;
-  FMC_SDRAMCommandStructure.FMC_CommandTarget          = FMC_Command_Target_bank2;
-  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber      = 1;
-  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-  /* Wait until the SDRAM controller is ready */
-  while((FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET) && (timeout > 0))
-  {
-    timeout--;
-  }
-  /* Send the command */
-  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-
-/* Step 4 --------------------------------------------------------------------*/
-  /* Insert 100 ms delay */
- delay();
- delay();
-
-/* Step 5 --------------------------------------------------------------------*/
-  /* Configure a PALL (precharge all) command */
-  FMC_SDRAMCommandStructure.FMC_CommandMode            = FMC_Command_Mode_PALL;
-  FMC_SDRAMCommandStructure.FMC_CommandTarget          = FMC_Command_Target_bank2;
-  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber      = 2; //was 1
-  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-
-  /* Wait until the SDRAM controller is ready */
-  timeout = SDRAM_TIMEOUT;
-  while((FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET) && (timeout > 0))
-  {
-    timeout--;
-  }
-  /* Send the command */
-  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-
-/* Step 6 --------------------------------------------------------------------*/
-  /* Configure a Auto-Refresh command */
-  FMC_SDRAMCommandStructure.FMC_CommandMode            = FMC_Command_Mode_AutoRefresh;
-  FMC_SDRAMCommandStructure.FMC_CommandTarget          = FMC_Command_Target_bank2;
-  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber      = 5; //was 8
-  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-
-  /* Wait until the SDRAM controller is ready */
-  timeout = SDRAM_TIMEOUT;
-  while((FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET) && (timeout > 0))
-  {
-    timeout--;
-  }
-  /* Send the command */
-  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-
-/* Step 7 --------------------------------------------------------------------*/
-  /* Program the external memory mode register */
-  tmpr = (uint32_t)SDRAM_MODEREG_BURST_LENGTH_2          |
-                   SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL   |
-                   SDRAM_MODEREG_CAS_LATENCY_3           |
-                   SDRAM_MODEREG_OPERATING_MODE_STANDARD |
-                   SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
-
-  /* Configure a load Mode register command*/
-  FMC_SDRAMCommandStructure.FMC_CommandMode            = FMC_Command_Mode_LoadMode;
-  FMC_SDRAMCommandStructure.FMC_CommandTarget          = FMC_Command_Target_bank2;
-  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber      = 2;
-  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
-
-  /* Wait until the SDRAM controller is ready */
-  timeout = SDRAM_TIMEOUT;
-  while((FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET) && (timeout > 0))
-  {
-    timeout--;
-  }
-  /* Send the command */
-  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-
-/* Step 8 --------------------------------------------------------------------*/
-
-  /* Set the refresh rate counter */
-  /* (7.81 us x Freq) - 20 */
-  /* Set the device refresh counter */
-  FMC_SetRefreshCount(683); //was 636
-
-  /* Wait until the SDRAM controller is ready */
-  timeout = SDRAM_TIMEOUT;
-  while((FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET) && (timeout > 0))
-  {
-    timeout--;
-  }
+/* Wait until the SDRAM controller is ready */
+void Wait() {
+  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
 }
+
+
+void SDRAM::Init() {
+    //Enable all gpios
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN |
+                    RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN |
+                    RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN |
+                    RCC_AHB1ENR_GPIOGEN | RCC_AHB1ENR_GPIOHEN;
+
+
+    //For reasons unknown the write to GPIOB->AFR does not occur without a DMB
+    //in the middle
+    __DMB();
+
+
+    //First, configure SDRAM GPIOs
+    GPIOB->AFR[0]=0x0cc00000;
+    GPIOC->AFR[0]=0x0000000c;
+    GPIOD->AFR[0]=0x000000cc;
+    GPIOD->AFR[1]=0xcc000ccc;
+    GPIOE->AFR[0]=0xc00000cc;
+    GPIOE->AFR[1]=0xcccccccc;
+    GPIOF->AFR[0]=0x00cccccc;
+    GPIOF->AFR[1]=0xccccc000;
+    GPIOG->AFR[0]=0x00cc00cc;
+    GPIOG->AFR[1]=0xc000000c;
+
+
+    GPIOB->MODER=0x00002800;
+    GPIOC->MODER=0x00000002;
+    GPIOD->MODER=0xa02a000a;
+    GPIOE->MODER=0xaaaa800a;
+    GPIOF->MODER=0xaa800aaa;
+    GPIOG->MODER=0x80020a0a;
+
+
+    GPIOA->OSPEEDR=0xaaaaaaaa; //Default to 50MHz speed for all GPIOs...
+    GPIOB->OSPEEDR=0xaaaaaaaa | 0x00003c00; //...but 100MHz for the SDRAM pins
+    GPIOC->OSPEEDR=0xaaaaaaaa | 0x00000003;
+    GPIOD->OSPEEDR=0xaaaaaaaa | 0xf03f000f;
+    GPIOE->OSPEEDR=0xaaaaaaaa | 0xffffc00f;
+    GPIOF->OSPEEDR=0xaaaaaaaa | 0xffc00fff;
+    GPIOG->OSPEEDR=0xaaaaaaaa | 0xc0030f0f;
+    GPIOH->OSPEEDR=0xaaaaaaaa;
+
+
+    //Since we'we un-configured PB3/PB4 from the default at boot TDO,NTRST,
+    //finish the job and remove the default pull-up
+    GPIOB->PUPDR=0;
+
+
+    //Second, actually start the SDRAM controller
+    RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
+
+
+    //This doesn't seem to be needed, but better be safe
+    __DMB();
+
+
+    //SDRAM is a IS42S16400J -7 speed grade, connected to bank 2 (0xd0000000)
+    //Some bits in SDCR[1] are don't care, and the have to be set in SDCR[0],
+    //they aren't just don't care, the controller will fail if they aren't at 0
+    FMC_Bank5_6->SDCR[0]=FMC_SDCR1_SDCLK_1// SDRAM runs @ half CPU frequency
+                       | FMC_SDCR1_RBURST // Enable read burst
+                       | 0;               //  0 delay between reads after CAS
+    FMC_Bank5_6->SDCR[1]=1                //  9 bit column address
+                       | FMC_SDCR1_NR_1   // 13 bit row address
+                       | FMC_SDCR1_MWID_0 // 16 bit data bus
+                       | FMC_SDCR1_NB     //  4 banks
+                       | FMC_SDCR1_CAS_1; //  2 cycle CAS latency (F<133MHz)
+
+
+    #ifdef SYSCLK_FREQ_180MHz
+    //One SDRAM clock cycle is 11.1ns
+    //Some bits in SDTR[1] are don't care, and the have to be set in SDTR[0],
+    //they aren't just don't care, the controller will fail if they aren't at 0
+    FMC_Bank5_6->SDTR[0]=(6-1)<<12        // 6 cycle TRC  (66.6ns>63ns)
+                       | (2-1)<<20;       // 2 cycle TRP  (22.2ns>15ns)
+    FMC_Bank5_6->SDTR[1]=(2-1)<<0         // 2 cycle TMRD
+                       | (7-1)<<4         // 7 cycle TXSR (77.7ns>70ns)
+                       | (4-1)<<8         // 4 cycle TRAS (44.4ns>42ns)
+                       | (2-1)<<16        // 2 cycle TWR
+                       | (2-1)<<24;       // 2 cycle TRCD (22.2ns>15ns)
+    #elif defined(SYSCLK_FREQ_168MHz)
+    //One SDRAM clock cycle is 11.9ns
+    //Some bits in SDTR[1] are don't care, and the have to be set in SDTR[0],
+    //they aren't just don't care, the controller will fail if they aren't at 0
+    FMC_Bank5_6->SDTR[0]=(6-1)<<12        // 6 cycle TRC  (71.4ns>63ns)
+                       | (2-1)<<20;       // 2 cycle TRP  (23.8ns>15ns)
+    FMC_Bank5_6->SDTR[1]=(2-1)<<0         // 2 cycle TMRD
+                       | (6-1)<<4         // 6 cycle TXSR (71.4ns>70ns)
+                       | (4-1)<<8         // 4 cycle TRAS (47.6ns>42ns)
+                       | (2-1)<<16        // 2 cycle TWR
+                       | (2-1)<<24;       // 2 cycle TRCD (23.8ns>15ns)
+    #else
+    #error No SDRAM timings for this clock
+    #endif
+
+
+    FMC_Bank5_6->SDCMR=  FMC_SDCMR_CTB2   // Enable bank 2
+                       | 1;               // MODE=001 clock enabled
+    Wait();
+
+
+    //ST and SDRAM datasheet agree a 100us delay is required here.
+    Delay(10);
+
+
+    FMC_Bank5_6->SDCMR=  FMC_SDCMR_CTB2   // Enable bank 2
+                       | 2;               // MODE=010 precharge all command
+    Wait();
+
+
+    FMC_Bank5_6->SDCMR=  (8-1)<<5         // NRFS=8 SDRAM datasheet says
+                                          // "at least two AUTO REFRESH cycles"
+                       | FMC_SDCMR_CTB2   // Enable bank 2
+                       | 3;               // MODE=011 auto refresh
+    Wait();
+
+
+    FMC_Bank5_6->SDCMR=0x220<<9           // MRD=0x220:CAS latency=2 burst len=1
+                       | FMC_SDCMR_CTB2   // Enable bank 2
+                       | 4;               // MODE=100 load mode register
+    Wait();
+
+
+    // 64ms/4096=15.625us
+    #ifdef SYSCLK_FREQ_180MHz
+    //15.625us*90MHz=1406-20=1386
+    FMC_Bank5_6->SDRTR=1386<<1;
+    #elif defined(SYSCLK_FREQ_168MHz)
+    //15.625us*84MHz=1312-20=1292
+    FMC_Bank5_6->SDRTR=1292<<1;
+    #else
+    #error No refresh timings for this clock
+    #endif
+}
+
 
 }

@@ -50,9 +50,6 @@ CvScaler cv_scaler;
 Ui ui;
 Delay delay[2];
 
-// ShortFrame buffer[SDRAM_SIZE / sizeof(ShortFrame)] __attribute__ ((section (".sdram")));
-ShortFrame buffer[0x4000] __attribute__ ((section (".ccmdata")));
-
 Parameters parameters;
 
 extern "C" {
@@ -97,18 +94,22 @@ void Init() {
   gate_output.Init();
   cv_scaler.Init();
   ui.Init(&cv_scaler);
+  sys.StartTimers();
 
   if (!codec1.Init(true, 44100)) { while(1); }
-  if (!codec1.Start(32, &FillBuffer1)) { while(1); }
   if (!codec2.Init(true, 44100)) { while(1); }
-  if (!codec2.Start(32, &FillBuffer2)) { while(1); }
 
-  // delay[0].Init(buffer, 0x4000);
+  ShortFrame* buffer = (ShortFrame*)SDRAM_BASE;
+
+  if (!sdram.Test())
+    Panic();
+
+  delay[0].Init(buffer, 0x4000);
   // delay[1].Init(buffer1, SDRAM_SIZE/4-1);
 
-  sys.StartTimers();
-  sdram.Clear();
   ui.Start();
+  if (!codec1.Start(32, &FillBuffer1)) { while(1); }
+  if (!codec2.Start(32, &FillBuffer2)) { while(1); }
 }
 
 int main(void) {
