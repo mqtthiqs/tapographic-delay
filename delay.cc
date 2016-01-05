@@ -43,7 +43,7 @@ namespace multitap
       buffer_[cursor_].l = input->l;
       buffer_[cursor_].r = input->r;
 
-      int16_t time = 0x4000-1;
+      int16_t time = buffer_size_-1;
       volatile int16_t index = static_cast<int16_t>(cursor_) - time;
       if (index < 0) index += buffer_size_;
 
