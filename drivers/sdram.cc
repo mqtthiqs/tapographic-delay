@@ -81,22 +81,20 @@ void SDRAM::Clear() {
 bool SDRAM::Test() {
 
 	uint32_t addr;
-  uint32_t t;
-	uint32_t i;
-	t=0;
+  uint32_t i;
 
   addr=SDRAM_BASE;
-  for (i=0;i<SDRAM_SIZE;i++){
+  for (i=0;i<SDRAM_SIZE/2;i++){
     while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
     *((uint16_t *)addr) = (uint16_t)i;
     addr += 2;
 	}
 
   addr=SDRAM_BASE;
-  for (i=0;i<5000;i++){
+  for (i=0;i<SDRAM_SIZE/2;i++){
     while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET){;}
-    t = *((uint16_t*)addr);
-    if (t != i)
+    uint16_t t = *((uint16_t*)addr);
+    if (t != (uint16_t)i)
       return false;
     addr += 2;
 	}
