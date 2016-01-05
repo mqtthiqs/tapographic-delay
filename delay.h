@@ -37,15 +37,15 @@ namespace multitap
     Delay() { }
     ~Delay() { }
 
-    void Init(ShortFrame* buffer, size_t size);
+    void Init(ShortFrame* buffer, int32_t size);
     void Process(ShortFrame* input, ShortFrame* output, size_t size);
 
   private:
 
     ShortFrame* buffer_;
-    uint16_t buffer_size_;
+    uint32_t buffer_size_;
 
-    uint16_t cursor_;
+    uint32_t cursor_;
 
     DISALLOW_COPY_AND_ASSIGN(Delay);
   };

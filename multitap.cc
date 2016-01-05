@@ -101,10 +101,10 @@ void Init() {
 
   ShortFrame* buffer = (ShortFrame*)SDRAM_BASE;
 
-  if (!sdram.Test())
-    Panic();
+  // if (!sdram.Test())
+  //   Panic();
 
-  delay[0].Init(buffer, 0x4000);
+  delay[0].Init(buffer, SDRAM_SIZE/4);
   // delay[1].Init(buffer1, SDRAM_SIZE/4-1);
 
   ui.Start();

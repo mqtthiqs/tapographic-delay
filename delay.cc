@@ -30,8 +30,7 @@
 
 namespace multitap 
 {
-
-  void Delay::Init(ShortFrame* buffer, size_t buffer_size) {
+  void Delay::Init(ShortFrame* buffer, int32_t buffer_size) {
     cursor_ = 0;
     buffer_ = buffer;
     buffer_size_ = buffer_size;
@@ -43,9 +42,9 @@ namespace multitap
       buffer_[cursor_].l = input->l;
       buffer_[cursor_].r = input->r;
 
-      int16_t time = buffer_size_-1;
-      volatile int16_t index = static_cast<int16_t>(cursor_) - time;
-      if (index < 0) index += buffer_size_;
+      uint32_t time = (buffer_size_-1)/2;
+      volatile uint32_t index = cursor_ - time;
+      if (cursor_ < time) index += buffer_size_;
 
       output->l = buffer_[index].l;
       output->r = buffer_[index].r;
@@ -55,5 +54,4 @@ namespace multitap
       cursor_ = (cursor_ + 1) % buffer_size_;
     }
   }
-
 }
