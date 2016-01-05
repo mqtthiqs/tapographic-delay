@@ -48,7 +48,6 @@ class SDRAM {
   void Init();
   void Clear();
   bool Test();
-  void configureSdram();
 
   /* DISALLOW_COPY_AND_ASSIGN(SDRAM); //TODO */
 };
