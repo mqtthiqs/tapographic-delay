@@ -33,7 +33,7 @@ FAMILY         = f4xx
 UPLOAD_COMMAND  = upload_jtag
 
 # Packages to build
-TARGET         = multitap_bootloader
+TARGET         = mtd_bootloader
 PACKAGES       = bootloader drivers stmlib/utils stmlib/system
 
 include stmlib/makefile.inc

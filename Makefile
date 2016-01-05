@@ -41,8 +41,8 @@ SAMPLE_RATE    = 44100
 UPLOAD_COMMAND  = upload_combo_jtag
 
 # Packages to build
-TARGET         = multitap
-BOOTLOADER     = multitap_bootloader
+TARGET         = mtd
+BOOTLOADER     = mtd_bootloader
 PACKAGES       = . drivers stmlib/utils stmlib/system
 RESOURCES      = resources
 

@@ -26,8 +26,8 @@
 //
 // Calibration settings.
 
-#ifndef MULTITAP_CV_SCALER_H_
-#define MULTITAP_CV_SCALER_H_
+#ifndef MTD_CV_SCALER_H_
+#define MTD_CV_SCALER_H_
 
 #include "stmlib/stmlib.h"
 
@@ -35,7 +35,7 @@
 #include "drivers/gate_input.h"
 #include "parameters.h"
 
-namespace multitap {
+namespace mtd {
 
 struct CvTransformation {
   bool flip;
@@ -60,6 +60,6 @@ class CvScaler {
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_CV_SCALER_H_
+#endif  // MTD_CV_SCALER_H_

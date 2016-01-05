@@ -30,15 +30,15 @@
 //
 // SDRAM driver
 
-#ifndef MULTITAP_DRIVERS_SDRAM_H_
-#define MULTITAP_DRIVERS_SDRAM_H_
+#ifndef MTD_DRIVERS_SDRAM_H_
+#define MTD_DRIVERS_SDRAM_H_
 
 #include <stm32f4xx.h>
 
 #define SDRAM_BASE 0xD0000000
 #define SDRAM_SIZE 0x02000000
 
-namespace multitap {
+namespace mtd {
 
 class SDRAM {
  public:
@@ -52,6 +52,6 @@ class SDRAM {
   /* DISALLOW_COPY_AND_ASSIGN(SDRAM); //TODO */
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif /* MULTITAP_DRIVERS_SDRAM_H_ */
+#endif /* MTD_DRIVERS_SDRAM_H_ */

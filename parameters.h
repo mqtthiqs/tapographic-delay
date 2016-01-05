@@ -26,12 +26,12 @@
 //
 // Parameters.
 
-#ifndef MULTITAP_DSP_PARAMETERS_H_
-#define MULTITAP_DSP_PARAMETERS_H_
+#ifndef MTD_DSP_PARAMETERS_H_
+#define MTD_DSP_PARAMETERS_H_
 
 #include "stmlib/stmlib.h"
 
-namespace multitap {
+namespace mtd {
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -54,6 +54,6 @@ struct Parameters {
   bool tap;
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DSP_PARAMETERS_H_
+#endif  // MTD_DSP_PARAMETERS_H_

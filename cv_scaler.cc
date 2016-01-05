@@ -33,7 +33,7 @@
 
 #include "stmlib/dsp/dsp.h"
 
-namespace multitap {
+namespace mtd {
 
 using namespace std;
 
@@ -119,4 +119,4 @@ void CvScaler::Read(Parameters* parameters) {
   adc_.Convert();
 }
 
-}  // namespace multitap
+}  // namespace mtd

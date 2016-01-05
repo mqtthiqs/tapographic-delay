@@ -28,25 +28,25 @@
 //
 // System-level initialization.
 
-#ifndef MULTITAP_DRIVERS_SYSTEM_H_
-#define MULTITAP_DRIVERS_SYSTEM_H_
+#ifndef MTD_DRIVERS_SYSTEM_H_
+#define MTD_DRIVERS_SYSTEM_H_
 
 #include "stmlib/stmlib.h"
 
-namespace multitap {
+namespace mtd {
 
 class System {
  public:
   System() { }
   ~System() { }
   
-	void Init(bool application);
+  void Init(bool application);
   void StartTimers();
  
  private:
   DISALLOW_COPY_AND_ASSIGN(System);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_SYSTEM_H_
+#endif  // MTD_DRIVERS_SYSTEM_H_

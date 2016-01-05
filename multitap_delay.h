@@ -28,14 +28,14 @@
 
 #include "parameters.h"
 
-namespace multitap 
+namespace mtd 
 {
 
-  class Delay
+  class MultitapDelay
   {
   public:
-    Delay() { }
-    ~Delay() { }
+    MultitapDelay() { }
+    ~MultitapDelay() { }
 
     void Init(ShortFrame* buffer, int32_t size);
     void Process(ShortFrame* input, ShortFrame* output, size_t size);
@@ -47,6 +47,6 @@ namespace multitap
 
     uint32_t cursor_;
 
-    DISALLOW_COPY_AND_ASSIGN(Delay);
+    DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };
 }

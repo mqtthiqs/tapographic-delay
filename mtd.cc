@@ -34,11 +34,11 @@
 #include "drivers/sdram.h"
 #include "cv_scaler.h"
 #include "ui.h"
-#include "delay.h"
+#include "multitap_delay.h"
 
 #include <stm32f4xx_conf.h>
 
-using namespace multitap;
+using namespace mtd;
 using namespace stmlib;
 
 System sys;
@@ -48,7 +48,7 @@ Codec2 codec2;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
-Delay delay[2];
+MultitapDelay delay[2];
 
 Parameters parameters;
 

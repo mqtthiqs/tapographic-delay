@@ -26,14 +26,14 @@
 //
 // Driver for the end of cycles output pins.
 
-#ifndef MULTITAP_DRIVERS_GATE_OUTPUT_H_
-#define MULTITAP_DRIVERS_GATE_OUTPUT_H_
+#ifndef MTD_DRIVERS_GATE_OUTPUT_H_
+#define MTD_DRIVERS_GATE_OUTPUT_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 class GateOutput {
  public:
@@ -50,6 +50,6 @@ class GateOutput {
   DISALLOW_COPY_AND_ASSIGN(GateOutput);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_GATE_OUTPUT_H_
+#endif  // MTD_DRIVERS_GATE_OUTPUT_H_

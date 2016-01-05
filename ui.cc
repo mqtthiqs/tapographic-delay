@@ -29,7 +29,7 @@
 #include "cv_scaler.h"
 #include "ui.h"
 
-namespace multitap {
+namespace mtd {
 
 const int32_t kLongPressDuration = 1000;
 const int32_t kVeryLongPressDuration = 2500;
@@ -158,4 +158,4 @@ void Ui::DoEvents() {
   }
 }
 
-}  // namespace multitap
+}  // namespace mtd

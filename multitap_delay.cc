@@ -26,17 +26,17 @@
 //
 // Multitap delay
 
-#include "delay.h"
+#include "multitap_delay.h"
 
-namespace multitap 
+namespace mtd 
 {
-  void Delay::Init(ShortFrame* buffer, int32_t buffer_size) {
+  void MultitapDelay::Init(ShortFrame* buffer, int32_t buffer_size) {
     cursor_ = 0;
     buffer_ = buffer;
     buffer_size_ = buffer_size;
   }
 
-  void Delay::Process(ShortFrame* input, ShortFrame* output, size_t size) {
+  void MultitapDelay::Process(ShortFrame* input, ShortFrame* output, size_t size) {
     while (size--) {
 
       buffer_[cursor_].l = input->l;

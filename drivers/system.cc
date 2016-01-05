@@ -32,7 +32,7 @@
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 void System::Init(bool application) {
 	SystemInit();
@@ -47,4 +47,4 @@ void System::StartTimers() {
   SysTick_Config(F_CPU / 1000);
 }
 
-}  // namespace multitap
+}  // namespace mtd

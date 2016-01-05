@@ -30,7 +30,7 @@
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 void Leds::Init() {
 	GPIO_InitTypeDef gpio;
@@ -66,4 +66,4 @@ void Leds::Write() {
 	GPIO_WriteBit(GPIOA, GPIO_Pin_12, static_cast<BitAction>(values_[4])); // ch2
 }
 
-}  // namespace multitap
+}  // namespace mtd

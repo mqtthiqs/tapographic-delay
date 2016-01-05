@@ -33,7 +33,7 @@
 
 #include "sdram.h"
 
-namespace multitap {
+namespace mtd {
 
 void SDRAM::Clear() {
   volatile uint32_t ptr = 0;

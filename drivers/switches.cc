@@ -30,7 +30,7 @@
 
 #include <algorithm>
 
-namespace multitap {
+namespace mtd {
 
 using namespace std;
 
@@ -62,4 +62,4 @@ void Switches::Debounce() {
 	}
 }
 
-}  // namespace multitap
+}  // namespace mtd

@@ -30,7 +30,7 @@
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 	void GateOutput::Init() {
 		GPIO_InitTypeDef gpio;
@@ -44,4 +44,4 @@ namespace multitap {
 		GPIO_Init(GPIOE, &gpio);
 	}
 
-}  // namespace multitap
+}  // namespace mtd

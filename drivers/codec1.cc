@@ -108,7 +108,7 @@
   while (x) { if ((timeout--) == 0) return false; } \
 }
 
-namespace multitap {
+namespace mtd {
 
 /* static */
 Codec1* Codec1::instance_;
@@ -556,7 +556,7 @@ void Codec1::Fill(size_t offset) {
   }
 }
 
-}  // namespace multitap
+}  // namespace mtd
 
 extern "C" {
 // Do not call into the firmware library to save on calls/jumps.
@@ -566,11 +566,11 @@ extern "C" {
 void DMA1_Stream2_IRQHandler(void) {
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
-    multitap::Codec1::GetInstance()->Fill(1);
+    mtd::Codec1::GetInstance()->Fill(1);
   }
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
-    multitap::Codec1::GetInstance()->Fill(0);
+    mtd::Codec1::GetInstance()->Fill(0);
   }
 }
   

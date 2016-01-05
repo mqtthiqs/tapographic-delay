@@ -30,7 +30,7 @@
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
   
 void Adc::Init() {
 
@@ -157,4 +157,4 @@ void Adc::DeInit() {
   ADC_DeInit();
 }
 
-}  // namespace multitap
+}  // namespace mtd

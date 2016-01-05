@@ -26,12 +26,12 @@
 //
 // Driver for ADC.
 
-#ifndef MULTITAP_DRIVERS_ADC_H_
-#define MULTITAP_DRIVERS_ADC_H_
+#ifndef MTD_DRIVERS_ADC_H_
+#define MTD_DRIVERS_ADC_H_
 
 #include "stmlib/stmlib.h"
 
-namespace multitap {
+namespace mtd {
 
 enum AdcChannel {
 	ADC_TIME1_POT,
@@ -72,6 +72,6 @@ class Adc {
   DISALLOW_COPY_AND_ASSIGN(Adc);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_ADC_H_
+#endif  // MTD_DRIVERS_ADC_H_

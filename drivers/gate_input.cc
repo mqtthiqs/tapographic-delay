@@ -28,7 +28,7 @@
 
 #include "drivers/gate_input.h"
 
-namespace multitap {
+namespace mtd {
 
 void GateInput::Init() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -67,4 +67,4 @@ void GateInput::Read() {
 	values_[GATE_INPUT_REVERSE2] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_3);
 }
 
-}  // namespace multitap
+}  // namespace mtd

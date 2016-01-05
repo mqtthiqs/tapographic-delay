@@ -26,14 +26,14 @@
 //
 // Driver for the gate inputs.
 
-#ifndef MULTITAP_DRIVERS_GATE_INPUT_H_
-#define MULTITAP_DRIVERS_GATE_INPUT_H_
+#ifndef MTD_DRIVERS_GATE_INPUT_H_
+#define MTD_DRIVERS_GATE_INPUT_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 enum GateNames {
 	GATE_INPUT_PING,
@@ -67,6 +67,6 @@ class GateInput {
   DISALLOW_COPY_AND_ASSIGN(GateInput);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_GATE_INPUT_H_
+#endif  // MTD_DRIVERS_GATE_INPUT_H_

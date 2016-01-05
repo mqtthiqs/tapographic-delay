@@ -26,15 +26,15 @@
 //
 // WM8371 Codec support.
 
-#ifndef MULTITAP_DRIVERS_CODEC1_H_
-#define MULTITAP_DRIVERS_CODEC1_H_
+#ifndef MTD_DRIVERS_CODEC1_H_
+#define MTD_DRIVERS_CODEC1_H_
 
 #include <stm32f4xx_conf.h>
 
 #include "stmlib/stmlib.h"
 #include "parameters.h"
 
-namespace multitap {
+namespace mtd {
 
 const size_t kMaxCodec1BlockSize = 32;
 
@@ -92,6 +92,6 @@ class Codec1 {
   DISALLOW_COPY_AND_ASSIGN(Codec1);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_CODEC1_H_
+#endif  // MTD_DRIVERS_CODEC1_H_

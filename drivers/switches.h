@@ -26,14 +26,14 @@
 //
 // Driver for the front panel switches.
 
-#ifndef MULTITAP_DRIVERS_SWITCHES_H_
-#define MULTITAP_DRIVERS_SWITCHES_H_
+#ifndef MTD_DRIVERS_SWITCHES_H_
+#define MTD_DRIVERS_SWITCHES_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 
-namespace multitap {
+namespace mtd {
 
 const uint8_t kNumSwitches = 9;
 
@@ -92,6 +92,6 @@ class Switches {
   DISALLOW_COPY_AND_ASSIGN(Switches);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_SWITCHES_H_
+#endif  // MTD_DRIVERS_SWITCHES_H_

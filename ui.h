@@ -26,8 +26,8 @@
 //
 // User interface
 
-#ifndef MULTITAP_UI_H_
-#define MULTITAP_UI_H_
+#ifndef MTD_UI_H_
+#define MTD_UI_H_
 
 #include "stmlib/stmlib.h"
 #include "stmlib/ui/event_queue.h"
@@ -35,7 +35,7 @@
 #include "drivers/leds.h"
 #include "drivers/switches.h"
 
-namespace multitap {
+namespace mtd {
 
 enum UiMode {
   UI_MODE_SPLASH,
@@ -81,6 +81,6 @@ class Ui {
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_UI_H_
+#endif  // MTD_UI_H_

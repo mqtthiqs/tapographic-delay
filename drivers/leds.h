@@ -26,12 +26,12 @@
 //
 // Driver for the status LEDs.
 
-#ifndef MULTITAP_DRIVERS_LEDS_H_
-#define MULTITAP_DRIVERS_LEDS_H_
+#ifndef MTD_DRIVERS_LEDS_H_
+#define MTD_DRIVERS_LEDS_H_
 
 #include "stmlib/stmlib.h"
 
-namespace multitap {
+namespace mtd {
 
 const uint8_t kNumLeds = 5;
 
@@ -62,6 +62,6 @@ class Leds {
   DISALLOW_COPY_AND_ASSIGN(Leds);
 };
 
-}  // namespace multitap
+}  // namespace mtd
 
-#endif  // MULTITAP_DRIVERS_LEDS_H_
+#endif  // MTD_DRIVERS_LEDS_H_
