@@ -36,25 +36,28 @@
 
 namespace mtd 
 {
-  template<typename T, int32_t BUFFER_SIZE>
+  template<typename T>
   class RingBuffer
   {
   public:
     RingBuffer() { }
     ~RingBuffer() { }
 
-    void Init(T* buffer) {
+    void Init(T* buffer, uint32_t buffer_size) {
       buffer_ = buffer;
+      buffer_size_ = buffer_size;
     }
 
     void Clear() {
-      std::fill(buffer_, buffer_ + BUFFER_SIZE, 0);
+      std::fill(buffer_, buffer_ + buffer_size_, 0);
     }
+
+    uint32_t size() { return buffer_size_; }
 
     /* Write one value at cursor and increment it */
     void Write(T value) {
       buffer_[cursor_] = value;
-      if (cursor_ == BUFFER_SIZE) {
+      if (cursor_ == buffer_size_) {
         cursor_ = 0;
       } else {
         cursor_++;
@@ -64,8 +67,8 @@ namespace mtd
     /* Write [size] values at cursor and increment it. */
     void Write(T *src, size_t size) {
       size_t written = size;
-      if (cursor_ > BUFFER_SIZE - size) {
-        written = BUFFER_SIZE - cursor_;
+      if (cursor_ > buffer_size_ - size) {
+        written = buffer_size_ - cursor_;
       }
       std::copy(src, src + written, buffer_ + cursor_);
       if (written < size) {
@@ -80,7 +83,7 @@ namespace mtd
     T Read(uint32_t pos) {
       uint32_t index;// = cursor_ - pos;
       if (cursor_ < pos) {
-        index = BUFFER_SIZE - pos + cursor_;
+        index = buffer_size_ - pos + cursor_;
       } else {
         index = cursor_ - pos;
       }
@@ -88,14 +91,14 @@ namespace mtd
     }
 
     /* Reads the [size] values until [pos] writes ago.
-     * assert (pos + size < BUFFER_SIZE) */
+     * assert (pos + size < buffer_size_) */
     void Read(T* dest, uint32_t pos, size_t size) {
       uint32_t index;
       size_t read = size;
       if (cursor_ < pos + size) {
-        index = BUFFER_SIZE - pos - size + cursor_;
-        if (index > BUFFER_SIZE - size) {
-          read = BUFFER_SIZE - index;
+        index = buffer_size_ - pos - size + cursor_;
+        if (index > buffer_size_ - size) {
+          read = buffer_size_ - index;
           std::copy(buffer_, buffer_ + size - read, dest + read);
         }
       } else {
@@ -108,6 +111,7 @@ namespace mtd
 
     T* buffer_;
     uint32_t cursor_;
+    uint32_t buffer_size_;
 
     DISALLOW_COPY_AND_ASSIGN(RingBuffer);
   };
