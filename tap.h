@@ -33,7 +33,8 @@
 
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 30;
+  const uint8_t kMaxTaps = 1;
+  const size_t kDelayMargin = 10;
 
   struct TapParameters {
     float time;               /* in samples */
@@ -52,21 +53,27 @@ namespace mtd
       tap_params_ = tap_params;
     };
 
-    void Process(DelayParameters* params, float* output, size_t size) {
-      int16_t buf[size+1];
-      float time = tap_params_[tap_nr_].time * params->scale;
+    void Process(DelayParameters* prev_params, DelayParameters* params, float* output, size_t size) {
+      int16_t buf[size+kDelayMargin];
+      float time = tap_params_[tap_nr_].time * prev_params->scale;
+      float time_end = tap_params_[tap_nr_].time * params->scale;
       float velocity = tap_params_[tap_nr_].velocity;
 
-      MAKE_INTEGRAL_FRACTIONAL(time);
+      int32_t orig_time_integral = static_cast<int32_t>(time);
+      buffer_->Read(buf, orig_time_integral, size+kDelayMargin);
 
-      buffer_->Read(buf, time_integral, size+1);
+      float step = 1.0f / static_cast<float>(size);
+      float time_increment = (time_end - time) * step;
 
       int16_t *s = buf;
       while(size--) {
-        int16_t a = *s;
-        int16_t b = *(s+1);
+        MAKE_INTEGRAL_FRACTIONAL(time);
+        int16_t jumps = time_integral - orig_time_integral;
+        int16_t a = *(s+kDelayMargin/2+jumps);
+        int16_t b = *(s+kDelayMargin/2+1+jumps);
         float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
         *output += sample * velocity;
+        time += time_increment;
         output++;
         s++;
       }
