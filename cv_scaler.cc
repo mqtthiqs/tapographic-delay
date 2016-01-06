@@ -51,9 +51,9 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
   // ADC_REGEN2_POT,
   { false, 0.01f },
   // ADC_MIX1_POT,
-  { false, 0.0001f },
+  { false, 0.0005f },
   // ADC_MIX2_POT,
-  { false, 0.0001f },
+  { false, 0.0005f },
   // ADC_TIME1_CV,
   { false, 0.05f },
   // ADC_TIME2_CV,
@@ -109,7 +109,9 @@ void CvScaler::Read(Parameters* parameters) {
     float scale =
       lp_values_[ADC_MIX1_POT + i];
     CONSTRAIN(scale, 0.0f, 1.0f);
-    parameters->delay[i].scale = scale;
+    scale = scale*2;
+    scale *= scale;
+    parameters->delay[i].scale = scale; // 0..1..4
 
     parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
     parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
