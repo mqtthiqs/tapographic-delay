@@ -45,7 +45,7 @@ enum TimeDivision {
 struct DelayParameters {
   float time;
   float level;
-  float regen;
+  float feedback;
   float mix;
 
   bool repeat;

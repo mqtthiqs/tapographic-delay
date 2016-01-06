@@ -100,11 +100,11 @@ void CvScaler::Read(Parameters* parameters) {
     CONSTRAIN(level, 0.0f, 1.0f);
     parameters->delay[i].level = level;
 
-    float regen =
+    float feedback =
       lp_values_[ADC_REGEN1_POT + i] +
       lp_values_[ADC_REGEN1_CV + i];
-    CONSTRAIN(regen, 0.0f, 1.0f);
-    parameters->delay[i].regen = regen;
+    CONSTRAIN(feedback, 0.0f, 1.0f);
+    parameters->delay[i].feedback = feedback;
 
     float mix =
       lp_values_[ADC_MIX1_POT + i];
