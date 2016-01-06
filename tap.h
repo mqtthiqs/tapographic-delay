@@ -29,19 +29,15 @@
 #include "parameters.h"
 #include "ring_buffer.h"
 
+#include "stmlib/dsp/dsp.h"
+
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 16;
+  const uint8_t kMaxTaps = 30;
 
-  struct TapParameter {
+  struct TapParameters {
     float time;               /* in samples */
     float velocity;           /* 0..1 */
-  };
-
-  struct TapState {
-    RingBuffer<short> buffer;
-    VelocityType velocity_type;
-    TapParameter tap_params[kMaxTaps];
   };
 
   class Tap
@@ -50,21 +46,38 @@ namespace mtd
     Tap() { }
     ~Tap() { }
 
-    void Init(uint8_t tap_nr) {
+    void Init(RingBuffer<short>* buffer, TapParameters* tap_params, uint8_t tap_nr) {
       tap_nr_ = tap_nr;
+      buffer_ = buffer;
+      tap_params_ = tap_params;
     };
 
-    void Process(TapState* state, float* output, size_t size) {
-      int16_t buf[size];
-      float time = state->tap_params[tap_nr_].time;
+    void Process(DelayParameters* params, float* output, size_t size) {
+      int16_t buf[size+1];
+      float time = tap_params_[tap_nr_].time * params->scale;
+      float velocity = tap_params_[tap_nr_].velocity;
 
-      state->buffer.Read(buf, static_cast<uint32_t>(time), size);
+      MAKE_INTEGRAL_FRACTIONAL(time);
+
+      buffer_->Read(buf, time_integral, size+1);
+
+      int16_t *s = buf;
+      while(size--) {
+        int16_t a = *s;
+        int16_t b = *(s+1);
+        float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
+        *output += sample * velocity;
+        output++;
+        s++;
+      }
     };
 
   private:
     uint8_t tap_nr_;
+    RingBuffer<short>* buffer_;
+    TapParameters* tap_params_;
 
-    DISALLOW_COPY_AND_ASSIGN(Tap);
+    /* DISALLOW_COPY_AND_ASSIGN(Tap); */
   };
 }
 
