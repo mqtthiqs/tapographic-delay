@@ -26,31 +26,50 @@
 //
 // Multitap delay
 
-#include "parameters.h"
-#include "ring_buffer.h"
-#include "tap.h"
+#include "multitap_delay.h"
+#include "stmlib/dsp/dsp.h"
 
 using namespace stmlib;
 
 namespace mtd 
 {
-  class MultitapDelay
-  {
-  public:
-    MultitapDelay() { }
-    ~MultitapDelay() { }
+  void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
+    buffer_.Init(buffer, buffer_size);
+    for (size_t i=0; i<kMaxTaps; i++) {
+      tap[i].Init(&buffer_, &tap_params_[0], i);
+      tap_params_[i].time = i * i * SAMPLE_RATE * 0.01f + 5000;
+      tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
+    }
+  };
 
-    void Init(short* buffer, int32_t buffer_size);
-    void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size);
+  void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size) {
 
-  private:
-    Tap tap[kMaxTaps];
-    RingBuffer<short> buffer_;
-    TapParameters tap_params_[kMaxTaps];
-    int16_t feedback_buffer[kBlockSize];   /* max block size */
+    { /* Write into the buffer */
+      int16_t buf[size];
 
-    DelayParameters prev_params;
+      for (size_t i=0; i<size; i++) {
+        int32_t sample = input[i].l
+          + params->feedback * feedback_buffer[i];
+        buf[i] = Clip16(sample);
+      }
+      buffer_.Write(buf, size);
+    }
 
-    DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
+    float buf[size];
+    std::fill(buf, buf+size, 0.0f);
+
+    /* Read & accumulate buffers of all taps */
+    for (int i=0; i<kMaxTaps; i++) {
+      tap[i].Process(&prev_params, params, buf, size);
+    }
+
+    /* convert, output and feed back */
+    for (size_t i=0; i<size; i++) {
+      int16_t sample = Clip16(static_cast<int32_t>(buf[i] * 32768.0f));
+      feedback_buffer[i] = sample;
+      output[i].l = sample;
+    }
+
+    prev_params = *params;
   };
 }
