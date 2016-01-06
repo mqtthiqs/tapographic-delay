@@ -27,25 +27,40 @@
 // Multitap delay
 
 #include "parameters.h"
+#include "ring_buffer.h"
 
 namespace mtd 
 {
 
+  template<int32_t BUFFER_SIZE>
   class MultitapDelay
   {
   public:
     MultitapDelay() { }
     ~MultitapDelay() { }
 
-    void Init(ShortFrame* buffer, int32_t size);
-    void Process(ShortFrame* input, ShortFrame* output, size_t size);
+    void Init(short* buffer) {
+      buffer_.Init(buffer);
+    };
+
+    void Process(ShortFrame* input, ShortFrame* output, size_t size) {
+    };
+
+    void SimpleDelay(DelayParameters params, ShortFrame* input, ShortFrame* output, size_t size) {
+      while (size--) {
+        uint32_t time = BUFFER_SIZE-1;
+        buffer_.Write(input->l + input->r);
+        output->l = output->r = buffer_.Read(time);
+
+        input++;
+        output++;
+      }
+
+    };
 
   private:
 
-    ShortFrame* buffer_;
-    uint32_t buffer_size_;
-
-    uint32_t cursor_;
+    RingBuffer<short, BUFFER_SIZE> buffer_;
 
     DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };

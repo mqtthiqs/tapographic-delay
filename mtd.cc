@@ -48,7 +48,7 @@ Codec2 codec2;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
-MultitapDelay delay[2];
+MultitapDelay<100000> delay[2];
 
 Parameters parameters;
 
@@ -71,12 +71,12 @@ extern "C" {
 
   void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    delay[0].Process(input, output, n);
+    delay[0].SimpleDelay(parameters.delay[0], input, output, n);
   }
 
   void FillBuffer2(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    // delay[1].Process(input, output, n);
+    // delay[1].SimpleDelay(input, output, n);
   }
 }
 
@@ -99,12 +99,12 @@ void Init() {
   if (!codec1.Init(true, 44100)) { while(1); }
   if (!codec2.Init(true, 44100)) { while(1); }
 
-  ShortFrame* buffer = (ShortFrame*)SDRAM_BASE;
+  short* buffer = (short*)SDRAM_BASE;
 
   // if (!sdram.Test())
   //   Panic();
 
-  delay[0].Init(buffer, SDRAM_SIZE/4);
+  delay[0].Init(buffer);
   // delay[1].Init(buffer1, SDRAM_SIZE/4-1);
 
   ui.Start();
