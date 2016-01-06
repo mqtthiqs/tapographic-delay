@@ -29,6 +29,7 @@
 #include "parameters.h"
 #include "ring_buffer.h"
 #include "tap.h"
+#include "stmlib/dsp/filter.h"
 
 using namespace stmlib;
 
@@ -49,7 +50,8 @@ namespace mtd
     TapParameters tap_params_[kMaxTaps];
     int16_t feedback_buffer[kBlockSize];   /* max block size */
 
-    DelayParameters prev_params;
+    DelayParameters prev_params_;
+    Svf dc_blocker_;
 
     DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };

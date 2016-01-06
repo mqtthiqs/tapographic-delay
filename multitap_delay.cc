@@ -35,6 +35,9 @@ namespace mtd
 {
   void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
     buffer_.Init(buffer, buffer_size);
+    dc_blocker_.Init();
+    dc_blocker_.set_f_q<FREQUENCY_FAST>(20.0f / SAMPLE_RATE, 1.0f);
+
     for (size_t i=0; i<kMaxTaps; i++) {
       tap[i].Init(&buffer_, &tap_params_[0], i);
       tap_params_[i].time = i * i * SAMPLE_RATE * 0.01f + 5000;
@@ -60,16 +63,17 @@ namespace mtd
 
     /* Read & accumulate buffers of all taps */
     for (int i=0; i<kMaxTaps; i++) {
-      tap[i].Process(&prev_params, params, buf, size);
+      tap[i].Process(&prev_params_, params, buf, size);
     }
 
     /* convert, output and feed back */
     for (size_t i=0; i<size; i++) {
-      int16_t sample = Clip16(static_cast<int32_t>(buf[i] * 32768.0f));
+      float s = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(buf[i]);
+      int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
       feedback_buffer[i] = sample;
       output[i].l = sample;
     }
 
-    prev_params = *params;
+    prev_params_ = *params;
   };
 }
