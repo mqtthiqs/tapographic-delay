@@ -33,6 +33,8 @@
 
 namespace mtd {
 
+const size_t kBlockSize = 32;
+
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
 
@@ -40,6 +42,11 @@ enum TimeDivision {
   TIME_DIVISION_1,
   TIME_DIVISION_2,
   TIME_DIVISION_3,
+};
+
+enum VelocityType {
+  VELOCITY_AMPLITUDE,
+  VELOCITY_LP,
 };
 
 struct DelayParameters {
@@ -56,6 +63,7 @@ struct DelayParameters {
 struct Parameters {
   DelayParameters delay[2];
   bool tap;
+  VelocityType velocity_type;
 };
 
 }  // namespace mtd
