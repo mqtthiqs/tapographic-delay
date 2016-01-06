@@ -53,7 +53,7 @@ struct DelayParameters {
   float time;
   float level;
   float feedback;
-  float mix;
+  float scale;
 
   bool repeat;
   bool reverse;
