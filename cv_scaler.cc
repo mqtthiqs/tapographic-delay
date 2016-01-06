@@ -92,27 +92,29 @@ void CvScaler::Read(Parameters* parameters) {
       lp_values_[ADC_TIME1_POT + i] +
       lp_values_[ADC_TIME1_CV + i];
     CONSTRAIN(time, 0.0f, 1.0f);
-    parameters->time[i] = time;
+    parameters->delay[i].time = time;
 
     float level =
       lp_values_[ADC_LEVEL1_POT + i] +
       lp_values_[ADC_LEVEL1_CV + i];
     CONSTRAIN(level, 0.0f, 1.0f);
-    parameters->level[i] = level;
+    parameters->delay[i].level = level;
 
     float regen =
       lp_values_[ADC_REGEN1_POT + i] +
       lp_values_[ADC_REGEN1_CV + i];
     CONSTRAIN(regen, 0.0f, 1.0f);
-    parameters->regen[i] = regen;
+    parameters->delay[i].regen = regen;
 
     float mix =
       lp_values_[ADC_MIX1_POT + i];
     CONSTRAIN(mix, 0.0f, 1.0f);
-    parameters->mix[i] = mix;
+    parameters->delay[i].mix = mix;
 
-    parameters->repeat[i] = gate_input_.value(GATE_INPUT_REPEAT1 + i);
-    parameters->reverse[i] = gate_input_.value(GATE_INPUT_REVERSE1 + i);
+    parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
+    parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
+
+    // TODO: time division, repeat, reverse, tap
   }
 
   gate_input_.Read();

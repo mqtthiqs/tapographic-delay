@@ -42,15 +42,19 @@ enum TimeDivision {
   TIME_DIVISION_3,
 };
 
-struct Parameters {
-  float time[2];
-  float level[2];
-  float regen[2];
-  float mix[2];
+struct DelayParameters {
+  float time;
+  float level;
+  float regen;
+  float mix;
 
-  bool repeat[2];
-  bool reverse[2];
-  TimeDivision time_division[2];
+  bool repeat;
+  bool reverse;
+  TimeDivision time_division;
+};
+
+struct Parameters {
+  DelayParameters delay[2];
   bool tap;
 };
 
