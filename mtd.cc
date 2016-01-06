@@ -71,7 +71,7 @@ extern "C" {
 
   void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    delay[0].SimpleDelay(&parameters.delay[0], input, output, n);
+    delay[0].Process(&parameters.delay[0], input, output, n);
   }
 
   void FillBuffer2(ShortFrame* input, ShortFrame* output, size_t n) {
@@ -104,7 +104,7 @@ void Init() {
   // if (!sdram.Test())
   //   Panic();
 
-  delay[0].Init(buffer, 100000);
+  delay[0].Init(buffer, SDRAM_SIZE/4);
   // delay[1].Init(buffer1, SDRAM_SIZE/4-1);
 
   ui.Start();
