@@ -43,9 +43,12 @@ namespace mtd
     ~MultitapDelay() { }
 
     void Init(short* buffer, int32_t buffer_size) {
-      state_.buffer.Init(buffer, buffer_size);
-      for (size_t i=0; i<kMaxTaps; i++)
-        tap[i].Init(i);
+      buffer_.Init(buffer, buffer_size);
+      for (size_t i=0; i<kMaxTaps; i++) {
+        tap[i].Init(&buffer_, &tap_params_[0], i);
+        tap_params_[i].time = i * i * SAMPLE_RATE * 0.01f;
+        tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
+      }
     };
 
     void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size) {
@@ -54,17 +57,19 @@ namespace mtd
         int16_t buf[size];
 
         for (size_t i=0; i<size; i++) {
-          buf[i] = input[i].l
+          int32_t sample = input[i].l
             + params->feedback * feedback_buffer[i];
+          buf[i] = Clip16(sample);
         }
-        state_.buffer.Write(buf, size);
+        buffer_.Write(buf, size);
       }
 
       float buf[size];
+      std::fill(buf, buf+size, 0.0f);
 
-      /* Accumulate buffers of all taps */
+      /* Read & accumulate buffers of all taps */
       for (int i=0; i<kMaxTaps; i++) {
-        tap[i].Process(&state_, buf, size);
+        tap[i].Process(params, buf, size);
       }
 
       /* convert, output and feed back */
@@ -76,24 +81,12 @@ namespace mtd
 
     };
 
-    void SimpleDelay(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size) {
-      int16_t buf[size];
-
-      for (size_t i=0; i<size; i++)
-        buf[i] = input[i].l + input[i].r;
-
-      uint32_t time = state_.buffer.size()-size; /* = max delay */
-      state_.buffer.Write(buf, size);
-      state_.buffer.Read(buf, time, size);
-
-      for (size_t i=0; i<size; i++)
-        output[i].l = output[i].r = buf[i];
-    };
-
   private:
 
     Tap tap[kMaxTaps];
-    TapState state_;
+
+    RingBuffer<short> buffer_;
+    TapParameters tap_params_[kMaxTaps];
 
     int16_t feedback_buffer[kBlockSize];   /* max block size */
 
