@@ -28,6 +28,7 @@
 
 #include "multitap_delay.h"
 #include "stmlib/dsp/dsp.h"
+#include "resources.h"
 
 using namespace stmlib;
 
@@ -36,16 +37,20 @@ namespace mtd
   void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init();
-    dc_blocker_.set_f_q<FREQUENCY_FAST>(20.0f / SAMPLE_RATE, 1.0f);
+    dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
 
     for (size_t i=0; i<kMaxTaps; i++) {
       tap[i].Init(&buffer_, &tap_params_[0], i);
-      tap_params_[i].time = i * i * SAMPLE_RATE * 0.01f + 5000;
+      tap_params_[i].time = i * i * SAMPLE_RATE * 0.05f//;
+        + 5000.0f; // TODO remove
       tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
     }
   };
 
   void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size) {
+
+    // TODO: remove
+    params->feedback = 0.0f;
 
     { /* Write into the buffer */
       int16_t buf[size];
@@ -55,8 +60,15 @@ namespace mtd
           + params->feedback * feedback_buffer[i];
         buf[i] = Clip16(sample);
       }
-      buffer_.Write(buf, size);
+      if (params->playing) {
+        buffer_.Write(buf, size);
+      }
     }
+
+    static float phase = 0.0f;
+    params->time_mod = Interpolate(lut_sin, phase, 1024.0f) * 5000.0f;
+    phase += 2.0f / SAMPLE_RATE * size;
+    if (phase > 1.0f) phase--;
 
     float buf[size];
     std::fill(buf, buf+size, 0.0f);
