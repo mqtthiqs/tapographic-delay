@@ -66,21 +66,21 @@ namespace mtd
       if (time_end < 0.0f) time_end = 0.0f;
 
       float read_size = size + time_start - time_end;
+
+      MAKE_INTEGRAL_FRACTIONAL(time_start);
+      float time = -time_start_fractional; /* why "-"? */
+      float time_increment = read_size / static_cast<float>(size);
+
       if (read_size < 0) {
-        /* read_start = time_end; */
         read_size = -read_size;
+        time = read_size;
       }
 
       /* +1 for interpolation, +1 for rounding to the next */
-      int32_t buf_size = static_cast<int32_t>(read_size) + 2;
+      uint32_t buf_size = static_cast<uint32_t>(read_size) + 2;
       int16_t buf[buf_size];
 
-      MAKE_INTEGRAL_FRACTIONAL(time_start);
-
       buffer_->Read(buf, time_start_integral, buf_size);
-
-      float time = -time_start_fractional;
-      float time_increment = read_size / static_cast<float>(size);
 
       while(size--) {
         MAKE_INTEGRAL_FRACTIONAL(time);
@@ -103,7 +103,7 @@ namespace mtd
     TapParameters* tap_params_;
     OnePole filter_;
 
-    /* DISALLOW_COPY_AND_ASSIGN(Tap); */
+    DISALLOW_COPY_AND_ASSIGN(Tap);
   };
 }
 
