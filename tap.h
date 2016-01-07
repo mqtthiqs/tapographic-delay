@@ -30,11 +30,13 @@
 #include "ring_buffer.h"
 
 #include "stmlib/dsp/dsp.h"
+#include "stmlib/dsp/filter.h"
+
+using namespace stmlib;
 
 namespace mtd 
 {
   const uint8_t kMaxTaps = 1;
-  const size_t kDelayMargin = 10;
 
   struct TapParameters {
     float time;               /* in samples */
@@ -54,35 +56,52 @@ namespace mtd
     };
 
     void Process(DelayParameters* prev_params, DelayParameters* params, float* output, size_t size) {
-      int16_t buf[size+kDelayMargin];
-      float time = tap_params_[tap_nr_].time * prev_params->scale;
-      float time_end = tap_params_[tap_nr_].time * params->scale;
+
       float velocity = tap_params_[tap_nr_].velocity;
+      filter_.set_f<FREQUENCY_FAST>(velocity * velocity / 32.0f);
 
-      int32_t orig_time_integral = static_cast<int32_t>(time);
-      buffer_->Read(buf, orig_time_integral, size+kDelayMargin);
+      float time_start = tap_params_[tap_nr_].time + prev_params->time_mod;//* prev_params->scale;
+      float time_end = tap_params_[tap_nr_].time + params->time_mod;//* params->scale;
+      if (time_start < 0.0f) time_start = 0.0f;
+      if (time_end < 0.0f) time_end = 0.0f;
 
-      float step = 1.0f / static_cast<float>(size);
-      float time_increment = (time_end - time) * step;
+      float read_size = size + time_start - time_end;
+      if (read_size < 0) {
+        /* read_start = time_end; */
+        read_size = -read_size;
+      }
 
-      int16_t *s = buf;
+      /* +1 for interpolation, +1 for rounding to the next */
+      int32_t buf_size = static_cast<int32_t>(read_size) + 2;
+      int16_t buf[buf_size];
+
+      MAKE_INTEGRAL_FRACTIONAL(time_start);
+
+      buffer_->Read(buf, time_start_integral, buf_size);
+
+      float time = -time_start_fractional;
+      float time_increment = read_size / static_cast<float>(size);
+
       while(size--) {
         MAKE_INTEGRAL_FRACTIONAL(time);
-        int16_t jumps = time_integral - orig_time_integral;
-        int16_t a = *(s+kDelayMargin/2+jumps);
-        int16_t b = *(s+kDelayMargin/2+1+jumps);
+        int16_t a = buf[time_integral];
+        int16_t b = buf[time_integral + 1];
         float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
-        *output += sample * velocity;
+
+        /* sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample); */
+        *output += sample * (2.0f - velocity) * velocity;
+
         time += time_increment;
         output++;
-        s++;
       }
     };
 
   private:
+
     uint8_t tap_nr_;
     RingBuffer<short>* buffer_;
     TapParameters* tap_params_;
+    OnePole filter_;
 
     /* DISALLOW_COPY_AND_ASSIGN(Tap); */
   };
