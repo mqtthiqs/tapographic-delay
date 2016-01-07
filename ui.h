@@ -34,6 +34,7 @@
 
 #include "drivers/leds.h"
 #include "drivers/switches.h"
+#include "parameters.h"
 
 namespace mtd {
 
@@ -54,7 +55,7 @@ class Ui {
   Ui() { }
   ~Ui() { }
   
-  void Init(CvScaler* cv_scaler);
+  void Init(CvScaler* cv_scaler, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Start();
@@ -70,6 +71,7 @@ class Ui {
   stmlib::EventQueue<16> queue_;
 
   CvScaler* cv_scaler_;
+  Parameters* parameters_;
   
   Leds leds_;
   Switches switches_;

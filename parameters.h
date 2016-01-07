@@ -54,9 +54,11 @@ struct DelayParameters {
   float level;
   float feedback;
   float scale;
+  float time_mod;
 
   bool repeat;
   bool reverse;
+  bool playing;
   TimeDivision time_division;
 };
 
