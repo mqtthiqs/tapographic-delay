@@ -28,6 +28,7 @@
 
 #include "parameters.h"
 #include "ring_buffer.h"
+#include "random_oscillator.h"
 
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
@@ -54,6 +55,8 @@ namespace mtd
       tap_nr_ = tap_nr;
       buffer_ = buffer;
       tap_params_ = tap_params;
+      lfo_.Init();
+      previous_lfo_sample_ = 0.0f;
     };
 
     void Process(DelayParameters* prev_params, DelayParameters* params, float* output, size_t size) {
@@ -61,8 +64,16 @@ namespace mtd
       float velocity = tap_params_[tap_nr_].velocity;
       filter_.set_f<FREQUENCY_FAST>(velocity * velocity / 32.0f);
 
-      float time_start = tap_params_[tap_nr_].time * prev_params->scale;
-      float time_end = tap_params_[tap_nr_].time * params->scale;
+      float time_start = tap_params_[tap_nr_].time;
+      float time_end = tap_params_[tap_nr_].time;
+
+      /* add random LFO */
+      lfo_.set_frequency(params->jitter_frequency * 20.0f * 32.0f);
+      float lfo_sample = lfo_.Next();
+      time_start += 5000.0f * previous_lfo_sample_ * prev_params->jitter_amount;
+      time_end += 5000.0f * lfo_sample * params->jitter_amount;
+      previous_lfo_sample_ = lfo_sample;
+
       if (time_start < 0.0f) time_start = 0.0f;
       if (time_end < 0.0f) time_end = 0.0f;
 
@@ -105,6 +116,9 @@ namespace mtd
     RingBuffer<short>* buffer_;
     TapParameters* tap_params_;
     OnePole filter_;
+
+    RandomOscillator lfo_;
+    float previous_lfo_sample_;
 
     DISALLOW_COPY_AND_ASSIGN(Tap);
   };
