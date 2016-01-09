@@ -54,7 +54,8 @@ struct DelayParameters {
   float level;
   float feedback;
   float scale;
-  float time_mod;
+  float jitter_frequency;
+  float jitter_amount;
 
   bool repeat;
   bool reverse;

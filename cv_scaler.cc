@@ -113,6 +113,18 @@ void CvScaler::Read(Parameters* parameters) {
     scale *= scale;
     parameters->delay[i].scale = scale; // 0..1..4
 
+    float jitter_amount =
+      lp_values_[ADC_LEVEL2_POT + i];
+    CONSTRAIN(jitter_amount, 0.0f, 1.0f);
+    jitter_amount *= jitter_amount;
+    parameters->delay[i].jitter_amount = jitter_amount; // 0..1..4
+
+    float jitter_frequency =
+      lp_values_[ADC_REGEN2_POT + i];
+    CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
+    jitter_frequency *= jitter_frequency;
+    parameters->delay[i].jitter_frequency = jitter_frequency; // 0..1..4
+
     parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
     parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
 
