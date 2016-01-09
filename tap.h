@@ -68,9 +68,7 @@ namespace mtd
 
       float read_size = size + time_start - time_end;
 
-      if (read_size > kMaxBufferSize) {
-        read_size = kMaxBufferSize;
-      }
+      CONSTRAIN(read_size, -kMaxBufferSize, kMaxBufferSize);
 
       MAKE_INTEGRAL_FRACTIONAL(time_start);
       float time = -time_start_fractional; /* why "-"? */
