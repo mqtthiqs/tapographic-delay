@@ -37,7 +37,7 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 1;
+  const uint8_t kMaxTaps = 16;
   const uint16_t kMaxBufferSize = 128;
 
   struct TapParameters {
@@ -68,10 +68,11 @@ namespace mtd
       float time_end = tap_params_[tap_nr_].time;
 
       /* add random LFO */
-      lfo_.set_frequency(params->jitter_frequency * 20.0f * 32.0f);
+      lfo_.set_frequency(params->jitter_frequency * 7.0f * 32.0f
+                         * (1.0f + 0.01f * tap_nr_)); /* small random shift to avoid unison */
       float lfo_sample = lfo_.Next();
-      time_start += 5000.0f * previous_lfo_sample_ * prev_params->jitter_amount;
-      time_end += 5000.0f * lfo_sample * params->jitter_amount;
+      time_start += 0.1f * SAMPLE_RATE * previous_lfo_sample_ * prev_params->jitter_amount;
+      time_end += 0.1f * SAMPLE_RATE * lfo_sample * params->jitter_amount;
       previous_lfo_sample_ = lfo_sample;
 
       if (time_start < 0.0f) time_start = 0.0f;

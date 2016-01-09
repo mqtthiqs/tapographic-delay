@@ -116,7 +116,7 @@ void CvScaler::Read(Parameters* parameters) {
     float jitter_amount =
       lp_values_[ADC_LEVEL2_POT + i];
     CONSTRAIN(jitter_amount, 0.0f, 1.0f);
-    jitter_amount *= jitter_amount;
+    // jitter_amount *= jitter_amount;
     parameters->delay[i].jitter_amount = jitter_amount; // 0..1..4
 
     float jitter_frequency =
