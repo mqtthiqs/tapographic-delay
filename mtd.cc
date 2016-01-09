@@ -30,7 +30,6 @@
 #include "drivers/system.h"
 #include "drivers/gate_output.h"
 #include "drivers/codec1.h"
-#include "drivers/codec2.h"
 #include "drivers/sdram.h"
 #include "cv_scaler.h"
 #include "ui.h"
@@ -44,11 +43,10 @@ using namespace stmlib;
 System sys;
 GateOutput gate_output;
 Codec1 codec1;
-Codec2 codec2;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
-MultitapDelay delays[2];
+MultitapDelay delay;
 
 Parameters parameters;
 
@@ -69,20 +67,14 @@ extern "C" {
     system_clock.Tick();  // increment global ms counter.
   }
 
-  void FillBuffer1(ShortFrame* input, ShortFrame* output, size_t n) {
+  void FillBuffer(ShortFrame* input, ShortFrame* output, size_t n) {
     cv_scaler.Read(&parameters);
-    delays[0].Process(&parameters.delay[0], input, output, n);
-  }
-
-  void FillBuffer2(ShortFrame* input, ShortFrame* output, size_t n) {
-    // cv_scaler.Read(&parameters);
-    // delays[1].SimpleDelay(input, output, n);
+    delay.Process(&parameters.delay[0], input, output, n);
   }
 }
 
 void Panic() {
   codec1.Stop();
-  codec2.Stop();
   ui.Panic();
   while(1);
 }
@@ -97,19 +89,16 @@ void Init() {
   sys.StartTimers();
 
   if (!codec1.Init(true, 44100)) { while(1); }
-  if (!codec2.Init(true, 44100)) { while(1); }
 
   short* buffer = (short*)SDRAM_BASE;
 
   // if (!sdram.Test())
   //   Panic();
 
-  delays[0].Init(buffer, SDRAM_SIZE/4);
-  // delays[1].Init(buffer1, SDRAM_SIZE/4-1);
+  delay.Init(buffer, SDRAM_SIZE/4);
 
   ui.Start();
-  if (!codec1.Start(kBlockSize, &FillBuffer1)) { while(1); }
-  if (!codec2.Start(kBlockSize, &FillBuffer2)) { while(1); }
+  if (!codec1.Start(kBlockSize, &FillBuffer)) { while(1); }
 }
 
 int main(void) {
