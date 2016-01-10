@@ -106,7 +106,13 @@ void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
-    leds_.set(LED_PING, clock_->running() && clock_->phase() < 0.5f);
+    if (clock_->running() && clock_->reset()) {
+      ping_led_counter_ = 20;
+    }
+    if (ping_led_counter_ > 0)
+      ping_led_counter_--;
+
+    leds_.set(LED_PING, ping_led_counter_);
     leds_.set(LED_REPEAT1, parameters_->delay[0].playing);
     leds_.set(LED_REPEAT2, parameters_->delay[1].playing);
   }

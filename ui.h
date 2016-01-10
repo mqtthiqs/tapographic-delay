@@ -76,6 +76,8 @@ class Ui {
   Parameters* parameters_;
   
   Leds leds_;
+  uint16_t ping_led_counter_;
+
   Switches switches_;
   uint32_t press_time_[kNumSwitches];
   uint32_t long_press_time_[kNumSwitches];
