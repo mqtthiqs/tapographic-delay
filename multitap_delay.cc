@@ -41,7 +41,7 @@ namespace mtd
 
     for (size_t i=0; i<kMaxTaps; i++) {
       tap[i].Init(&buffer_, &tap_params_[0], i);
-      tap_params_[i].time = i * i * SAMPLE_RATE * 0.2f / kMaxTaps + 10000.0f;
+      tap_params_[i].time = i * i * SAMPLE_RATE * 0.2f / kMaxTaps;
       tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
     }
   };
