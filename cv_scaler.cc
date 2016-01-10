@@ -128,6 +128,8 @@ void CvScaler::Read(Parameters* parameters) {
     parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
     parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
 
+    parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
+
     // TODO: time division, repeat, reverse, tap
   }
 

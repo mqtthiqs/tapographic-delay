@@ -34,6 +34,7 @@
 #include "cv_scaler.h"
 #include "ui.h"
 #include "multitap_delay.h"
+#include "clock.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -47,6 +48,7 @@ SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
 MultitapDelay delay;
+Clock clock;
 
 Parameters parameters;
 
@@ -68,7 +70,9 @@ extern "C" {
   }
 
   void FillBuffer(ShortFrame* input, ShortFrame* output, size_t n) {
+    clock.Tick();
     cv_scaler.Read(&parameters);
+    if (parameters.ping) clock.Tap();
     delay.Process(&parameters.delay[0], input, output, n);
   }
 }
@@ -85,7 +89,7 @@ void Init() {
   sdram.Init();
   gate_output.Init();
   cv_scaler.Init();
-  ui.Init(&cv_scaler, &parameters);
+  ui.Init(&cv_scaler, &clock, &parameters);
   sys.StartTimers();
 
   if (!codec1.Init(true, 44100)) { while(1); }
@@ -95,6 +99,7 @@ void Init() {
   // if (!sdram.Test())
   //   Panic();
 
+  clock.Init();
   delay.Init(buffer, SDRAM_SIZE/4);
 
   ui.Start();

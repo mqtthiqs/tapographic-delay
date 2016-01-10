@@ -36,9 +36,10 @@ const int32_t kVeryLongPressDuration = 2500;
 
 using namespace stmlib;
 
-  void Ui::Init(CvScaler* cv_scaler, Parameters* parameters) {
+  void Ui::Init(CvScaler* cv_scaler, Clock* clock, Parameters* parameters) {
   cv_scaler_ = cv_scaler;
   parameters_ = parameters;
+  clock_ = clock;
 
   leds_.Init();
   switches_.Init();
@@ -105,9 +106,7 @@ void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
-    for (int i=0; i<kNumLeds; i++){
-      leds_.set(i, true);
-    }
+    leds_.set(LED_PING, clock_->running() && clock_->phase() < 0.5f);
     leds_.set(LED_REPEAT1, parameters_->delay[0].playing);
     leds_.set(LED_REPEAT2, parameters_->delay[1].playing);
   }
@@ -133,6 +132,11 @@ void Ui::Panic() {
 }
 
 void Ui::OnSwitchPressed(const Event& e) {
+  switch (e.control_id) {
+  case SWITCH_PING:
+    clock_->Tap();
+    break;
+  }
 }
 
 void Ui::OnSwitchReleased(const Event& e) {
@@ -140,7 +144,7 @@ void Ui::OnSwitchReleased(const Event& e) {
 
     case SWITCH_PING:
       if (e.data >= kLongPressDuration) {
-        mode_ = UI_MODE_NORMAL;
+        clock_->Stop();
       } else {
       }
       break;

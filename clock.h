@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2015 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech (matthias.puech@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,51 +24,44 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Parameters.
+// Main clock
 
-#ifndef MTD_DSP_PARAMETERS_H_
-#define MTD_DSP_PARAMETERS_H_
+#include "drivers/gate_input.h"
+#include "ring_buffer.h"
 
-#include "stmlib/stmlib.h"
+#ifndef MTD_CLOCK_H_
+#define MTD_CLOCK_H_
 
-namespace mtd {
+namespace mtd 
+{
+  const uint8_t kHistorySize = 4;
 
-const size_t kBlockSize = 32;
+  class Clock
+  {
+  public:
+    Clock() { }
+    ~Clock() { }
 
-typedef struct { short l; short r; } ShortFrame;
-typedef struct { float l; float r; } FloatFrame;
+    void Init();
+    void Tick();
+    void Tap();
+    void Start();
+    void Stop();
 
-enum TimeDivision {
-  TIME_DIVISION_1,
-  TIME_DIVISION_2,
-  TIME_DIVISION_3,
-};
+    float phase() { return phase_; }
+    bool running() { return running_; }
 
-enum VelocityType {
-  VELOCITY_AMPLITUDE,
-  VELOCITY_LP,
-};
+  private:
+    uint32_t counter_;
+    bool running_;
+    float phase_;
+    float phase_increment_;
 
-struct DelayParameters {
-  float time;
-  float level;
-  float feedback;
-  float scale;
-  float jitter_frequency;
-  float jitter_amount;
+    uint32_t history_[kHistorySize];
+    uint8_t history_cursor_;
 
-  bool repeat;
-  bool reverse;
-  bool playing;
-  TimeDivision time_division;
-};
+    DISALLOW_COPY_AND_ASSIGN(Clock);
+  };
+}
 
-struct Parameters {
-  DelayParameters delay[2];
-  bool ping;
-  VelocityType velocity_type;
-};
-
-}  // namespace mtd
-
-#endif  // MTD_DSP_PARAMETERS_H_
+#endif  // MTD_CLOCK_H_

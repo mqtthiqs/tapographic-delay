@@ -35,6 +35,7 @@
 #include "drivers/leds.h"
 #include "drivers/switches.h"
 #include "parameters.h"
+#include "clock.h"
 
 namespace mtd {
 
@@ -55,7 +56,7 @@ class Ui {
   Ui() { }
   ~Ui() { }
   
-  void Init(CvScaler* cv_scaler, Parameters* parameters);
+  void Init(CvScaler* cv_scaler, Clock* clock, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Start();
@@ -71,6 +72,7 @@ class Ui {
   stmlib::EventQueue<16> queue_;
 
   CvScaler* cv_scaler_;
+  Clock* clock_;
   Parameters* parameters_;
   
   Leds leds_;

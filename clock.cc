@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2015 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech (matthias.puech@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,51 +24,66 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Parameters.
+// Main clock
 
-#ifndef MTD_DSP_PARAMETERS_H_
-#define MTD_DSP_PARAMETERS_H_
+#include "clock.h"
 
-#include "stmlib/stmlib.h"
+#include "drivers/gate_input.h"
 
-namespace mtd {
+namespace mtd 
+{
+  void Clock::Init() {
+    phase_ = 0.0f;
+    phase_increment_ = 0.0f;
+    counter_ = 0;
+    running_ = true;
+    for (int i=0; i<kHistorySize; i++)
+      history_[i] = 0;
+    history_cursor_ = 0;
+  }
 
-const size_t kBlockSize = 32;
+  void Clock::Tick() {
+    if (running_) {
+      phase_ += phase_increment_;
+      if (phase_ > 1.0f) phase_--;
+      counter_++;
+    }
+  }
 
-typedef struct { short l; short r; } ShortFrame;
-typedef struct { float l; float r; } FloatFrame;
+  void Clock::Start() {
+    phase_ = 0.0f;
+    running_ = true;
+  }
 
-enum TimeDivision {
-  TIME_DIVISION_1,
-  TIME_DIVISION_2,
-  TIME_DIVISION_3,
-};
+  void Clock::Stop() {
+    running_ = false;
+    counter_ = 0;
+    phase_increment_ = 0.0f;
+    for (int i=0; i<kHistorySize; i++)
+      history_[i] = 0;
+  }
 
-enum VelocityType {
-  VELOCITY_AMPLITUDE,
-  VELOCITY_LP,
-};
+  void Clock::Tap() {
+    Start();
+    history_[history_cursor_++] = counter_;
+    counter_ = 0;
 
-struct DelayParameters {
-  float time;
-  float level;
-  float feedback;
-  float scale;
-  float jitter_frequency;
-  float jitter_amount;
+    if (history_cursor_ == kHistorySize)
+      history_cursor_ = 0;
 
-  bool repeat;
-  bool reverse;
-  bool playing;
-  TimeDivision time_division;
-};
+    float mean = 0;
+    int8_t div = 0;
+    for (int i=0; i<kHistorySize; i++) {
+      uint32_t v = history_[i];
+      if (v != 0) {
+        mean += static_cast<float>(v);
+        div++;
+      }
+    }
+    mean /= div;
 
-struct Parameters {
-  DelayParameters delay[2];
-  bool ping;
-  VelocityType velocity_type;
-};
-
-}  // namespace mtd
-
-#endif  // MTD_DSP_PARAMETERS_H_
+    if (mean > 1) {
+      phase_increment_ = 1.0f / mean;
+    }
+  }
+}
