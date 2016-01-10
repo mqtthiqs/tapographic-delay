@@ -45,6 +45,7 @@ namespace mtd
     void Init();
     void Tick();
     void Tap();
+    void RecordLastTap();
     void Start();
     void Stop();
 
@@ -58,6 +59,7 @@ namespace mtd
 
   private:
     uint32_t counter_;
+    uint32_t last_tap_;
     bool running_;
     bool reset_;
     float phase_;

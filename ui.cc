@@ -148,12 +148,13 @@ void Ui::OnSwitchPressed(const Event& e) {
 void Ui::OnSwitchReleased(const Event& e) {
   switch (e.control_id) {
 
-    case SWITCH_PING:
-      if (e.data >= kLongPressDuration) {
-        clock_->Stop();
-      } else {
-      }
-      break;
+  case SWITCH_PING:
+    if (e.data >= kLongPressDuration) {
+      clock_->Stop();
+    } else {
+      clock_->RecordLastTap();
+    }
+    break;
   case SWITCH_REPEAT1:
     parameters_->delay[0].playing = !parameters_->delay[0].playing;
     break;

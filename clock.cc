@@ -56,6 +56,7 @@ namespace mtd
   void Clock::Start() {
     phase_ = 0.0f;
     running_ = true;
+    reset_ = true;
   }
 
   void Clock::Stop() {
@@ -67,9 +68,13 @@ namespace mtd
   }
 
   void Clock::Tap() {
-    Start();
-    history_[history_cursor_++] = counter_;
+    last_tap_ = counter_;
     counter_ = 0;
+    Start();
+  }
+
+  void Clock::RecordLastTap() {
+    history_[history_cursor_++] = last_tap_;
 
     if (history_cursor_ == kHistorySize)
       history_cursor_ = 0;
