@@ -42,7 +42,7 @@ namespace mtd
     ~MultitapDelay() { }
 
     void Init(short* buffer, int32_t buffer_size);
-    void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size);
+    void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output);
 
   private:
     Tap tap[kMaxTaps];

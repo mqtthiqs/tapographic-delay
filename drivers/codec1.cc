@@ -465,12 +465,12 @@ bool Codec1::Init(
       InitializeDMA();
 }
 
-bool Codec1::Start(size_t block_size, FillBufferCallback callback) {
+bool Codec1::Start(FillBufferCallback callback) {
   // Start the codec.
   if (!WriteControlRegister(CODEC_REG_ACTIVE, 0x01)) {
     return false;
   }
-  if (block_size > kMaxCodec1BlockSize) {
+  if (kBlockSize > kMaxCodec1BlockSize) {
     return false;
   }
   
@@ -508,11 +508,10 @@ bool Codec1::Start(size_t block_size, FillBufferCallback callback) {
     }
   }
 
-  block_size_ = block_size;
   stride_ = stride;
 
-  dma_init_tx_.DMA_BufferSize = 2 * stride * block_size * 2;
-  dma_init_rx_.DMA_BufferSize = 2 * stride * block_size * 2;
+  dma_init_tx_.DMA_BufferSize = 2 * stride * kBlockSize * 2;
+  dma_init_rx_.DMA_BufferSize = 2 * stride * kBlockSize * 2;
   
   DMA_Init(AUDIO_I2S_DMA_STREAM, &dma_init_tx_);
   DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);
@@ -537,19 +536,19 @@ bool Codec1::set_line_input_gain(int32_t gain) {
 
 void Codec1::Fill(size_t offset) {
   if (callback_) {
-    offset *= block_size_ * stride_ * 2;
+    offset *= kBlockSize * stride_ * 2;
     short* in = &rx_dma_buffer_[offset];
     short* out = &tx_dma_buffer_[offset];
     if (stride_) {
       // Undo the padding from the WM8731.
-      for (size_t i = 1; i < block_size_ * 2; ++i) {
+      for (size_t i = 1; i < kBlockSize * 2; ++i) {
         in[i] = in[i * stride_];
       }
     }
-    (*callback_)((ShortFrame*)(in), (ShortFrame*)(out), block_size_);
+    (*callback_)((ShortFrame*)(in), (ShortFrame*)(out));
     if (stride_) {
       // Pad for the WM8731.
-      for (size_t i = block_size_ * 2 - 1; i > 0; --i) {
+      for (size_t i = kBlockSize * 2 - 1; i > 0; --i) {
         out[i * stride_] = out[i];
       }
     }

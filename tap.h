@@ -37,7 +37,7 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 16;
+  const uint8_t kMaxTaps = 18;
   const uint16_t kMaxBufferSize = 128;
 
   struct TapParameters {
@@ -59,7 +59,7 @@ namespace mtd
       previous_lfo_sample_ = 0.0f;
     };
 
-    void Process(DelayParameters* prev_params, DelayParameters* params, float* output, size_t size) {
+    void Process(DelayParameters* prev_params, DelayParameters* params, float* output) {
 
       float velocity = tap_params_[tap_nr_].velocity;
       filter_.set_f<FREQUENCY_FAST>(velocity * velocity / 32.0f);
@@ -78,13 +78,13 @@ namespace mtd
       if (time_start < 0.0f) time_start = 0.0f;
       if (time_end < 0.0f) time_end = 0.0f;
 
-      float read_size = size + time_start - time_end;
+      float read_size = kBlockSize + time_start - time_end;
 
       CONSTRAIN(read_size, -kMaxBufferSize, kMaxBufferSize);
 
       MAKE_INTEGRAL_FRACTIONAL(time_start);
       float time = -time_start_fractional; /* why "-"? */
-      float time_increment = read_size / static_cast<float>(size);
+      float time_increment = read_size / static_cast<float>(kBlockSize);
 
       if (read_size < 0) {
         read_size = -read_size;
@@ -97,6 +97,7 @@ namespace mtd
 
       buffer_->Read(buf, time_start_integral, buf_size);
 
+      size_t size = kBlockSize;
       while(size--) {
         MAKE_INTEGRAL_FRACTIONAL(time);
         int16_t a = buf[time_integral];

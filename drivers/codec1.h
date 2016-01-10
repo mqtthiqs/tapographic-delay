@@ -43,18 +43,18 @@ class Codec1 {
   Codec1() { }
   ~Codec1() { }
 
-  typedef void (*FillBufferCallback)(ShortFrame* rx, ShortFrame* tx, size_t size);
+  typedef void (*FillBufferCallback)(ShortFrame* rx, ShortFrame* tx);
   
   bool Init(
       bool mcu_is_master,
       int32_t sample_rate);
   
-  bool Start(size_t block_size) {
+  bool Start() {
     // No callback - the caller is supposed to poll with available()
-    return Start(block_size, NULL);
+    return Start(NULL);
   }
   
-  bool Start(size_t block_size, FillBufferCallback callback);
+  bool Start(FillBufferCallback callback);
   void Stop();
   
   void Fill(size_t offset);
@@ -78,7 +78,6 @@ class Codec1 {
   
   bool mcu_is_master_;
   int32_t sample_rate_;
-  size_t block_size_;
   size_t stride_;
   
   FillBufferCallback callback_;

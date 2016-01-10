@@ -46,31 +46,31 @@ namespace mtd
     }
   };
 
-  void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output, size_t size) {
+  void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
 
     { /* Write into the buffer */
-      int16_t buf[size];
+      int16_t buf[kBlockSize];
 
-      for (size_t i=0; i<size; i++) {
+      for (size_t i=0; i<kBlockSize; i++) {
         int32_t sample = input[i].l
           + params->feedback * feedback_buffer[i];
         buf[i] = Clip16(sample);
       }
       if (params->playing) {
-        buffer_.Write(buf, size);
+        buffer_.Write(buf, kBlockSize);
       }
     }
 
-    float buf[size];
-    std::fill(buf, buf+size, 0.0f);
+    float buf[kBlockSize];
+    std::fill(buf, buf+kBlockSize, 0.0f);
 
     /* Read & accumulate buffers of all taps */
     for (int i=0; i<kMaxTaps; i++) {
-      tap[i].Process(&prev_params_, params, buf, size);
+      tap[i].Process(&prev_params_, params, buf);
     }
 
     /* convert, output and feed back */
-    for (size_t i=0; i<size; i++) {
+    for (size_t i=0; i<kBlockSize; i++) {
       float s = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(buf[i]);
       int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
       feedback_buffer[i] = sample;

@@ -69,11 +69,11 @@ extern "C" {
     system_clock.Tick();  // increment global ms counter.
   }
 
-  void FillBuffer(ShortFrame* input, ShortFrame* output, size_t n) {
+  void FillBuffer(ShortFrame* input, ShortFrame* output) {
     clock.Tick();
     cv_scaler.Read(&parameters);
     if (parameters.ping) clock.Tap();
-    delay.Process(&parameters.delay[0], input, output, n);
+    delay.Process(&parameters.delay[0], input, output);
   }
 }
 
@@ -103,7 +103,7 @@ void Init() {
   delay.Init(buffer, SDRAM_SIZE/4);
 
   ui.Start();
-  if (!codec1.Start(kBlockSize, &FillBuffer)) { while(1); }
+  if (!codec1.Start(&FillBuffer)) { while(1); }
 }
 
 int main(void) {
