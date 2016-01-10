@@ -58,7 +58,7 @@ class Leds {
   
  private:
   bool values_[kNumLeds];
-  
+
   DISALLOW_COPY_AND_ASSIGN(Leds);
 };
 

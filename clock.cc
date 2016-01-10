@@ -45,7 +45,10 @@ namespace mtd
   void Clock::Tick() {
     if (running_) {
       phase_ += phase_increment_;
-      if (phase_ > 1.0f) phase_--;
+      if (phase_ > 1.0f) {
+        phase_--;
+        reset_ = true;
+      }
       counter_++;
     }
   }

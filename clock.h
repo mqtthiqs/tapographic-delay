@@ -34,7 +34,7 @@
 
 namespace mtd 
 {
-  const uint8_t kHistorySize = 4;
+  const uint8_t kHistorySize = 3;
 
   class Clock
   {
@@ -49,11 +49,17 @@ namespace mtd
     void Stop();
 
     float phase() { return phase_; }
+    float reset() {
+      bool r = reset_;
+      reset_ = false;
+      return r;
+    }
     bool running() { return running_; }
 
   private:
     uint32_t counter_;
     bool running_;
+    bool reset_;
     float phase_;
     float phase_increment_;
 
