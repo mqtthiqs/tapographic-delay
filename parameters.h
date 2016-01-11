@@ -59,7 +59,6 @@ struct DelayParameters {
 
   bool repeat;
   bool reverse;
-  bool playing;
   TimeDivision time_division;
 };
 

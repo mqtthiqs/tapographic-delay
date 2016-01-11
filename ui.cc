@@ -45,10 +45,6 @@ using namespace stmlib;
   switches_.Init();
   
   mode_ = UI_MODE_SPLASH;
-
-  for (int i=0; i<2; i++) {
-    parameters_->delay[i].playing = true;
-  }
 }
 
 void Ui::Start() {
@@ -113,8 +109,8 @@ void Ui::PaintLeds() {
       ping_led_counter_--;
 
     leds_.set(LED_PING, ping_led_counter_);
-    leds_.set(LED_REPEAT1, parameters_->delay[0].playing);
-    leds_.set(LED_REPEAT2, parameters_->delay[1].playing);
+    leds_.set(LED_REPEAT1, parameters_->delay[0].repeat);
+    leds_.set(LED_REPEAT2, parameters_->delay[1].repeat);
   }
   break;
 
@@ -156,10 +152,10 @@ void Ui::OnSwitchReleased(const Event& e) {
     }
     break;
   case SWITCH_REPEAT1:
-    parameters_->delay[0].playing = !parameters_->delay[0].playing;
+    parameters_->delay[0].repeat = !parameters_->delay[0].repeat;
     break;
   case SWITCH_REPEAT2:
-    parameters_->delay[1].playing = !parameters_->delay[1].playing;
+    parameters_->delay[1].repeat = !parameters_->delay[1].repeat;
     break;
 
   }

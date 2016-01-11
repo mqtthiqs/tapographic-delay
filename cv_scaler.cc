@@ -125,8 +125,8 @@ void CvScaler::Read(Parameters* parameters) {
     jitter_frequency *= jitter_frequency;
     parameters->delay[i].jitter_frequency = jitter_frequency; // 0..1..4
 
-    parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
-    parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
+    // parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
+    // parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
 
     parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
 

@@ -34,7 +34,9 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
+  void MultitapDelay::Init(short* buffer, int32_t buffer_size, Clock* clock) {
+    clock_ = clock;
+
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init();
     dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
@@ -51,14 +53,19 @@ namespace mtd
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
 
+      if (params->repeat && clock_->running()) {
+        uint32_t repeat_time = static_cast<uint32_t>(clock_->period() * kBlockSize);
+        buffer_.Read(buf, repeat_time, kBlockSize);
+      } else {
+        std::fill(buf, buf+kBlockSize, 0);
+      }
+
       for (size_t i=0; i<kBlockSize; i++) {
         int32_t sample = input[i].l
           + params->feedback * feedback_buffer[i];
-        buf[i] = Clip16(sample);
+        buf[i] += Clip16(sample);
       }
-      if (params->playing) {
-        buffer_.Write(buf, kBlockSize);
-      }
+      buffer_.Write(buf, kBlockSize);
     }
 
     float buf[kBlockSize];

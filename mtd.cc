@@ -72,7 +72,10 @@ extern "C" {
   void FillBuffer(ShortFrame* input, ShortFrame* output) {
     clock.Tick();
     cv_scaler.Read(&parameters);
-    if (parameters.ping) clock.Tap();
+    if (parameters.ping) {
+      clock.Tap();
+      clock.RecordLastTap();
+    }
     delay.Process(&parameters.delay[0], input, output);
   }
 }
@@ -100,7 +103,7 @@ void Init() {
   //   Panic();
 
   clock.Init();
-  delay.Init(buffer, SDRAM_SIZE/4);
+  delay.Init(buffer, SDRAM_SIZE/4, &clock);
 
   ui.Start();
   if (!codec1.Start(&FillBuffer)) { while(1); }

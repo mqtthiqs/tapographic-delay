@@ -56,6 +56,7 @@ namespace mtd
       return r;
     }
     bool running() { return running_; }
+    float period() { return 1.0f / phase_increment_; }
 
   private:
     uint32_t counter_;
