@@ -37,7 +37,6 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 18;
   const uint16_t kMaxBufferSize = 128;
 
   struct TapParameters {

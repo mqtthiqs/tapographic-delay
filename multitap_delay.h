@@ -36,6 +36,8 @@ using namespace stmlib;
 
 namespace mtd 
 {
+  const uint8_t kMaxTaps = 17;
+
   class MultitapDelay
   {
   public:

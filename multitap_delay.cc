@@ -43,7 +43,7 @@ namespace mtd
 
     for (size_t i=0; i<kMaxTaps; i++) {
       tap[i].Init(&buffer_, &tap_params_[0], i);
-      tap_params_[i].time = i * i * SAMPLE_RATE * 0.2f / kMaxTaps;
+      tap_params_[i].time = i * i * SAMPLE_RATE * 1.0f / kMaxTaps;
       tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
     }
   };
@@ -72,7 +72,11 @@ namespace mtd
     std::fill(buf, buf+kBlockSize, 0.0f);
 
     /* Read & accumulate buffers of all taps */
-    for (int i=0; i<kMaxTaps; i++) {
+    float buf0[kBlockSize];
+    std::fill(buf0, buf0+kBlockSize, 0.0f);
+    tap[0].Process(&prev_params_, params, buf0);
+
+    for (int i=1; i<kMaxTaps; i++) {
       tap[i].Process(&prev_params_, params, buf);
     }
 
@@ -81,7 +85,8 @@ namespace mtd
       float s = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(buf[i]);
       int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
       feedback_buffer[i] = sample;
-      output[i].l = sample;
+      int16_t sample0 = Clip16(static_cast<int32_t>(buf0[i] * 32768.0f));
+      output[i].l = sample + sample0;
     }
 
     prev_params_ = *params;
