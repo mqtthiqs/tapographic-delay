@@ -39,36 +39,62 @@ namespace mtd
 {
   const uint16_t kMaxBufferSize = 128;
 
-  struct TapParameters {
-    float time;               /* in samples */
-    float velocity;           /* 0..1 */
-  };
-
   class Tap
   {
   public:
     Tap() { }
     ~Tap() { }
 
-    void Init(RingBuffer<short>* buffer, TapParameters* tap_params, uint8_t tap_nr) {
-      tap_nr_ = tap_nr;
+    void Init(RingBuffer<short>* buffer) {
       buffer_ = buffer;
-      tap_params_ = tap_params;
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
+      volume_ = 1.0f;
     };
+
+    void set_time(float time) { time_ = time; }
+    void set_velocity(float velocity) { velocity_ = velocity; }
+
+    void fade_in(float length, uint32_t delay) {
+      delay_ = delay;
+      volume_increment_ = 1.0f / length;
+    }
+
+    void fade_out(float length) {
+      volume_increment_ = -1.0f / length;
+    }
 
     void Process(DelayParameters* prev_params, DelayParameters* params, float* output) {
 
-      float velocity = tap_params_[tap_nr_].velocity;
-      filter_.set_f<FREQUENCY_FAST>(velocity * velocity / 32.0f);
+      /* compute volume increment */
+      float volume = volume_;
+      float volume_end;
 
-      float time_start = tap_params_[tap_nr_].time;
-      float time_end = tap_params_[tap_nr_].time;
+      if (delay_) {
+        volume_end = volume;
+        delay_--;
+      } else {
+        volume_end = volume + volume_increment_;
+
+        if (volume_end < 0.0f) {
+          volume_end = 0.0f;
+          volume_increment_ = 0.0f;
+        } else if (volume_end > 1.0f) {
+          volume_end = 1.0f;
+          volume_increment_ = 0.0f;
+        }
+      }
+
+      float volume_increment = (volume_end - volume) / kBlockSize;
+
+      filter_.set_f<FREQUENCY_FAST>(velocity_ * velocity_ / 32.0f);
+
+      float time_start = time_;
+      float time_end = time_;
 
       /* add random LFO */
       lfo_.set_frequency(params->jitter_frequency * 7.0f * 32.0f
-                         * (1.0f + 0.01f * tap_nr_)); /* small random shift to avoid unison */
+                         * (1.0f + 0.1f * velocity_)); /* small random shift to avoid unison */
       float lfo_sample = lfo_.Next();
       time_start += 0.1f * SAMPLE_RATE * previous_lfo_sample_ * prev_params->jitter_amount;
       time_end += 0.1f * SAMPLE_RATE * lfo_sample * params->jitter_amount;
@@ -104,19 +130,25 @@ namespace mtd
         float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
 
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
-        *output += sample * (2.0f - velocity) * velocity;
+        *output += sample * (2.0f - velocity_) * velocity_ * volume;
 
         time += time_increment;
+        volume += volume_increment;
+
         output++;
       }
     };
 
   private:
 
-    uint8_t tap_nr_;
     RingBuffer<short>* buffer_;
-    TapParameters* tap_params_;
     OnePole filter_;
+
+    float time_;
+    float velocity_;
+
+    float volume_, volume_increment_;
+    uint32_t delay_;
 
     RandomOscillator lfo_;
     float previous_lfo_sample_;

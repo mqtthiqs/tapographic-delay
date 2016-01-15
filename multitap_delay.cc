@@ -42,10 +42,13 @@ namespace mtd
     dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
 
     for (size_t i=0; i<kMaxTaps; i++) {
-      tap[i].Init(&buffer_, &tap_params_[0], i);
-      tap_params_[i].time = i * i * SAMPLE_RATE * 1.0f / kMaxTaps;
-      tap_params_[i].velocity = (float)(i+1) / kMaxTaps;
+      taps_[i].set_time(i * i * SAMPLE_RATE * 1.0f / kMaxTaps);
+      taps_[i].set_velocity(static_cast<float>(i+1) / kMaxTaps);
+      taps_[i].Init(&buffer_);
     }
+
+    // TODO
+    // tap_allocator_.Init(taps_);
   };
 
   void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
@@ -74,10 +77,10 @@ namespace mtd
     /* Read & accumulate buffers of all taps */
     float buf0[kBlockSize];
     std::fill(buf0, buf0+kBlockSize, 0.0f);
-    tap[0].Process(&prev_params_, params, buf0);
+    taps_[0].Process(&prev_params_, params, buf0);
 
     for (int i=1; i<kMaxTaps; i++) {
-      tap[i].Process(&prev_params_, params, buf);
+      taps_[i].Process(&prev_params_, params, buf);
     }
 
     /* convert, output and feed back */

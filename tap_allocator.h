@@ -24,40 +24,30 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Multitap delay
+// Tap allocator
 
-#include "parameters.h"
-#include "ring_buffer.h"
-#include "clock.h"
-#include "tap_allocator.h"
-
-#include "stmlib/dsp/filter.h"
-
-using namespace stmlib;
+#include "tap.h"
 
 namespace mtd 
 {
-  class MultitapDelay
+  const uint8_t kMaxTaps = 16;
+
+  class TapAllocator
   {
   public:
-    MultitapDelay() { }
-    ~MultitapDelay() { }
+    TapAllocator() { }
+    ~TapAllocator() { }
 
-    void Init(short* buffer, int32_t buffer_size, Clock* clock);
-    void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output);
+    void Init(Tap* taps);
+    void AddTap(float time, float velocity);
+    void RemoveTap();
 
   private:
-    TapAllocator tap_allocator_;
-    Tap taps_[kMaxTaps];
-    RingBuffer<short> buffer_;
-    int16_t feedback_buffer[kBlockSize];   /* max block size */
-    float prev_repeat_time_;
+    Tap* taps_;
 
-    DelayParameters prev_params_;
-    Svf dc_blocker_;
+    uint8_t oldest_voice_;
+    uint8_t newest_voice_;
 
-    Clock* clock_;
-
-    DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
+    DISALLOW_COPY_AND_ASSIGN(TapAllocator);
   };
 }

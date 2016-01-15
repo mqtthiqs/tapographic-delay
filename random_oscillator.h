@@ -30,6 +30,9 @@
 #include "stmlib/utils/random.h"
 #include "stmlib/dsp/dsp.h"
 
+#ifndef MTD_RANDOM_OSCILLATOR_H_
+#define MTD_RANDOM_OSCILLATOR_H_
+
 using namespace stmlib;
 
 namespace mtd 
@@ -70,3 +73,5 @@ namespace mtd
     float next_value_;
   };
 }
+
+#endif
