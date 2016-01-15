@@ -64,8 +64,8 @@ namespace mtd
       }
 
       for (size_t i=0; i<kBlockSize; i++) {
-        int32_t sample = input[i].l
-          + params->feedback * feedback_buffer[i];
+        int32_t sample = static_cast<int32_t>(input[i].l);
+          // + params->feedback * feedback_buffer[i];
         buf[i] += Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
@@ -88,8 +88,8 @@ namespace mtd
       float s = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(buf[i]);
       int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
       feedback_buffer[i] = sample;
-      int16_t sample0 = Clip16(static_cast<int32_t>(buf0[i] * 32768.0f));
-      output[i].l = sample + sample0;
+      int16_t sample0 = Clip16(static_cast<int32_t>(buf0[i] * 32768.0f + sample));
+      output[i].l = sample0;
     }
 
     prev_params_ = *params;
