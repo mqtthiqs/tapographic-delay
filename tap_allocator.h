@@ -38,7 +38,7 @@ namespace mtd
     TapAllocator() { }
     ~TapAllocator() { }
 
-    void Init(Tap* taps);
+    void Init(Tap taps[kMaxTaps]);
     void AddTap(float time, float velocity);
     void RemoveTap();
 

@@ -31,7 +31,7 @@
 
 namespace mtd 
 {
-  void TapAllocator::Init(Tap* taps) {
+  void TapAllocator::Init(Tap taps[kMaxTaps]) {
     taps_ = taps;
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].set_time(i * i * SAMPLE_RATE * 1.0f / kMaxTaps);

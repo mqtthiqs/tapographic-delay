@@ -42,13 +42,10 @@ namespace mtd
     dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
 
     for (size_t i=0; i<kMaxTaps; i++) {
-      taps_[i].set_time(i * i * SAMPLE_RATE * 1.0f / kMaxTaps);
-      taps_[i].set_velocity(static_cast<float>(i+1) / kMaxTaps);
       taps_[i].Init(&buffer_);
     }
 
-    // TODO
-    // tap_allocator_.Init(taps_);
+    tap_allocator_.Init(taps_);
   };
 
   void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
@@ -64,8 +61,8 @@ namespace mtd
       }
 
       for (size_t i=0; i<kBlockSize; i++) {
-        int32_t sample = static_cast<int32_t>(input[i].l);
-          // + params->feedback * feedback_buffer[i];
+        int32_t sample = static_cast<int32_t>(input[i].l)
+          + params->feedback * feedback_buffer[i];
         buf[i] += Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
