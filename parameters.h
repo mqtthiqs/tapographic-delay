@@ -34,6 +34,7 @@
 namespace mtd {
 
 const size_t kBlockSize = 32;
+const uint8_t kMaxTaps = 16;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;

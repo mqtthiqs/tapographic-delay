@@ -37,12 +37,15 @@ namespace mtd
     ~TapAllocator() { }
 
     void Init(Tap taps[kMaxTaps]);
-    void AddTap(float time, float velocity);
-    void RemoveTap();
+    void Add(float time, float velocity);
+    void Remove();
+    void Clear();
 
     void set_fade_time(float fade_time) {
       fade_time_ = fade_time;
     }
+
+    float max_time() { return max_time_; }
 
   private:
     Tap* taps_;
@@ -50,6 +53,8 @@ namespace mtd
     uint8_t busy_voices_;
     uint8_t next_voice_;
     float fade_time_;
+
+    float max_time_;
 
     DISALLOW_COPY_AND_ASSIGN(TapAllocator);
   };

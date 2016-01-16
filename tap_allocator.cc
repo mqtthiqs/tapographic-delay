@@ -36,17 +36,17 @@ namespace mtd
     fade_time_ = 100.0f;
 
     for (size_t i=0; i<kMaxTaps; i++) {
-      taps_[i].set_time(i * i * SAMPLE_RATE * 1.0f / kMaxTaps);
-      taps_[i].set_velocity(static_cast<float>(i+1) / kMaxTaps);
       taps_[i].set_busy_voices_counter(&busy_voices_);
-      taps_[i].fade_in(fade_time_);
     }
   }
 
-  void TapAllocator::AddTap(float time, float velocity) {
+  void TapAllocator::Add(float time, float velocity) {
     taps_[next_voice_].fade_in(fade_time_);
     taps_[next_voice_].set_time(time);
     taps_[next_voice_].set_velocity(velocity);
+
+    if (time > max_time_)
+      max_time_ = time;
 
     if (busy_voices_ == kMaxTaps) {
       int16_t oldest_voice = next_voice_ == 0 ? kMaxTaps - 1 : next_voice_ - 1;
@@ -56,11 +56,18 @@ namespace mtd
     next_voice_ = next_voice_ == kMaxTaps-1 ? 0 : next_voice_ + 1;
   }
 
-  void TapAllocator::RemoveTap() {
+  void TapAllocator::Remove() {
     int16_t oldest_voice = next_voice_ - busy_voices_;
     if (oldest_voice < 0) oldest_voice += kMaxTaps;
 
     taps_[oldest_voice].fade_out(fade_time_);
   }
 
+  void TapAllocator::Clear() {
+    for (size_t i=0; i<kMaxTaps-1; i++) {
+      taps_[i].fade_out(fade_time_);
+    }
+    max_time_ = 0.0f;
+    next_voice_ = 0;
+  }
 }

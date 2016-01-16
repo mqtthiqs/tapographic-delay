@@ -46,6 +46,12 @@ namespace mtd
     }
 
     tap_allocator_.Init(taps_);
+
+    for (size_t i=0; i<kMaxTaps-1; i++) {
+      tap_allocator_.Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps,
+                         static_cast<float>(i+1) / kMaxTaps);
+    }
+
   };
 
   void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
@@ -53,9 +59,11 @@ namespace mtd
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
 
-      if (params->repeat && clock_->running()) {
-        uint32_t repeat_time = static_cast<uint32_t>(clock_->period() * kBlockSize);
-        buffer_.Read(buf, repeat_time, kBlockSize);
+      if (params->repeat) {
+          uint32_t repeat_time = clock_->running() ?
+            static_cast<uint32_t>(clock_->period() * kBlockSize) :
+            tap_allocator_.max_time();
+          buffer_.Read(buf, repeat_time, kBlockSize);
       } else {
         std::fill(buf, buf+kBlockSize, 0);
       }
