@@ -38,6 +38,7 @@ using namespace stmlib;
 namespace mtd 
 {
   const uint16_t kMaxBufferSize = 128;
+  const uint8_t kMaxTaps = 16;
 
   class Tap
   {
@@ -49,15 +50,23 @@ namespace mtd
       buffer_ = buffer;
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
-      volume_ = 1.0f;
+      volume_ = 0.0f;
+      time_ = 0.0f;
+      velocity_ = 0.0f;
     };
 
     void set_time(float time) { time_ = time; }
     void set_velocity(float velocity) { velocity_ = velocity; }
 
-    void fade_in(float length, uint32_t delay) {
-      delay_ = delay;
+    void set_busy_voices_counter(uint8_t *busy_voices) {
+      busy_voices_ = busy_voices;
+    }
+
+    void fade_in(float length) {
+      queued_ = true;
       volume_increment_ = 1.0f / length;
+      if (volume_ == 0.0f)
+        (*busy_voices_)++;
     }
 
     void fade_out(float length) {
@@ -70,16 +79,19 @@ namespace mtd
       float volume = volume_;
       float volume_end;
 
-      if (delay_) {
+      if (queued_ && *busy_voices_ == kMaxTaps) {
         volume_end = volume;
-        delay_--;
       } else {
+        queued_ = false;
         volume_end = volume + volume_increment_;
 
         if (volume_end < 0.0f) {
+          /* end of fade out */
+          (*busy_voices_)--;
           volume_end = 0.0f;
           volume_increment_ = 0.0f;
         } else if (volume_end > 1.0f) {
+          /* end of fade in */
           volume_end = 1.0f;
           volume_increment_ = 0.0f;
         }
@@ -137,6 +149,8 @@ namespace mtd
 
         output++;
       }
+
+      volume_ = volume;
     };
 
   private:
@@ -148,7 +162,9 @@ namespace mtd
     float velocity_;
 
     float volume_, volume_increment_;
-    uint32_t delay_;
+    bool queued_;
+
+    uint8_t* busy_voices_;
 
     RandomOscillator lfo_;
     float previous_lfo_sample_;

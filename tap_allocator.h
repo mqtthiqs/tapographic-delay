@@ -30,8 +30,6 @@
 
 namespace mtd 
 {
-  const uint8_t kMaxTaps = 16;
-
   class TapAllocator
   {
   public:
@@ -42,11 +40,16 @@ namespace mtd
     void AddTap(float time, float velocity);
     void RemoveTap();
 
+    void set_fade_time(float fade_time) {
+      fade_time_ = fade_time;
+    }
+
   private:
     Tap* taps_;
 
-    uint8_t oldest_voice_;
-    uint8_t newest_voice_;
+    uint8_t busy_voices_;
+    uint8_t next_voice_;
+    float fade_time_;
 
     DISALLOW_COPY_AND_ASSIGN(TapAllocator);
   };
