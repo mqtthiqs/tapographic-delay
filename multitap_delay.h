@@ -57,7 +57,6 @@ namespace mtd
     Tap taps_[kMaxTaps];
     RingBuffer<short> buffer_;
     int16_t feedback_buffer[kBlockSize];   /* max block size */
-    float prev_repeat_time_;
 
     Parameters prev_params_;
     Svf dc_blocker_;
@@ -66,6 +65,7 @@ namespace mtd
 
     bool counter_running_;
     uint32_t counter_;
+    uint32_t repeat_time_;
 
     DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };

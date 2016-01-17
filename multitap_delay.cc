@@ -59,19 +59,12 @@ namespace mtd
   void MultitapDelay::AddTap(float velocity, EditMode edit_mode) {
     counter_running_ = true;
 
-    uint32_t time = counter_ * kBlockSize;
-    uint32_t repeat_time = clock_->running() ?
-      clock_->period() * kBlockSize :
-      tap_allocator_.max_time();
-
     if (edit_mode == EDIT_MODE_NORMAL) {
-      if (time < buffer_.size()) {
-        tap_allocator_.Add(time, velocity);
-      }
+      tap_allocator_.Add(counter_, velocity);
     } else if (edit_mode == EDIT_MODE_OVERDUB) {
-      tap_allocator_.Add(time % repeat_time, velocity);
+      tap_allocator_.Add(counter_, velocity);
     } else if (edit_mode == EDIT_MODE_OVERWRITE) {
-      tap_allocator_.Add(time % repeat_time, velocity);
+      tap_allocator_.Add(counter_, velocity);
       tap_allocator_.Remove();
     }
   }
@@ -84,23 +77,34 @@ namespace mtd
 
   void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
-    if (counter_running_) {
-      counter_++;
+    // repeat time, in samples
+    repeat_time_ = clock_->running() ?
+      clock_->period() * kBlockSize :
+      tap_allocator_.max_time();
+
+    if (repeat_time_ > buffer_.size() ||
+        repeat_time_ < 100) {
+      repeat_time_ = 0;
     }
 
+    // increment sample counter
+    if (counter_running_) {
+      counter_ += kBlockSize;
+      // in the right edit modes, reset counter
+      if (params->edit_mode != EDIT_MODE_NORMAL &&
+          counter_ > repeat_time_) {
+        counter_ = 0;
+      }
+    }
+
+    // set fade time
     tap_allocator_.set_fade_time(params->morph * 5000);
 
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
 
-      if (params->repeat) {
-          uint32_t repeat_time = clock_->running() ?
-            static_cast<uint32_t>(clock_->period() * kBlockSize) :
-            tap_allocator_.max_time();
-          if (repeat_time < buffer_.size() &&
-              repeat_time > 100.0f) {
-            buffer_.Read(buf, repeat_time, kBlockSize);
-          }
+      if (params->repeat && repeat_time_) {
+        buffer_.Read(buf, repeat_time_, kBlockSize);
       } else {
         std::fill(buf, buf+kBlockSize, 0);
       }
