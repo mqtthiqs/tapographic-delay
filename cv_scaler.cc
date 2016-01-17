@@ -87,51 +87,49 @@ void CvScaler::Read(Parameters* parameters) {
         (value - lp_values_[i]);
   }
 
-  for (int8_t i=0; i<2; i++) {
-    float time =
-      lp_values_[ADC_TIME1_POT + i] +
-      lp_values_[ADC_TIME1_CV + i];
-    CONSTRAIN(time, 0.0f, 1.0f);
-    parameters->delay[i].time = time;
+  float time =
+    lp_values_[ADC_TIME1_POT] +
+    lp_values_[ADC_TIME1_CV];
+  CONSTRAIN(time, 0.0f, 1.0f);
+  parameters->time = time;
 
-    float level =
-      lp_values_[ADC_LEVEL1_POT + i] +
-      lp_values_[ADC_LEVEL1_CV + i];
-    CONSTRAIN(level, 0.0f, 1.0f);
-    parameters->delay[i].level = level;
+  float level =
+    lp_values_[ADC_LEVEL1_POT] +
+    lp_values_[ADC_LEVEL1_CV];
+  CONSTRAIN(level, 0.0f, 1.0f);
+  parameters->level = level;
 
-    float feedback =
-      lp_values_[ADC_REGEN1_POT + i] +
-      lp_values_[ADC_REGEN1_CV + i];
-    CONSTRAIN(feedback, 0.0f, 1.0f);
-    parameters->delay[i].feedback = feedback;
+  float feedback =
+    lp_values_[ADC_REGEN1_POT] +
+    lp_values_[ADC_REGEN1_CV];
+  CONSTRAIN(feedback, 0.0f, 1.0f);
+  parameters->feedback = feedback;
 
-    float scale =
-      lp_values_[ADC_MIX1_POT + i];
-    CONSTRAIN(scale, 0.0f, 1.0f);
-    scale = scale*2;
-    scale *= scale;
-    parameters->delay[i].scale = scale; // 0..1..4
+  float scale =
+    lp_values_[ADC_MIX1_POT];
+  CONSTRAIN(scale, 0.0f, 1.0f);
+  scale = scale*2;
+  scale *= scale;
+  parameters->scale = scale; // 0..1..4
 
-    float jitter_amount =
-      lp_values_[ADC_LEVEL2_POT + i];
-    CONSTRAIN(jitter_amount, 0.0f, 1.0f);
-    // jitter_amount *= jitter_amount;
-    parameters->delay[i].jitter_amount = jitter_amount; // 0..1..4
+  float jitter_amount =
+    lp_values_[ADC_LEVEL2_POT];
+  CONSTRAIN(jitter_amount, 0.0f, 1.0f);
+  jitter_amount *= jitter_amount;
+  parameters->jitter_amount = jitter_amount; // 0..1..4
 
-    float jitter_frequency =
-      lp_values_[ADC_REGEN2_POT + i];
-    CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
-    jitter_frequency *= jitter_frequency;
-    parameters->delay[i].jitter_frequency = jitter_frequency; // 0..1..4
+  float jitter_frequency =
+    lp_values_[ADC_REGEN2_POT];
+  CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
+  jitter_frequency *= jitter_frequency;
+  parameters->jitter_frequency = jitter_frequency; // 0..1..4
 
-    // parameters->delay[i].repeat = gate_input_.value(GATE_INPUT_REPEAT1 + i);
-    // parameters->delay[i].reverse = gate_input_.value(GATE_INPUT_REVERSE1 + i);
+  float morph =
+    lp_values_[ADC_TIME2_POT];
+  CONSTRAIN(morph, 0.0f, 1.0f);
+  parameters->morph = morph; // 0..1..4
 
-    parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
-
-    // TODO: time division, repeat, reverse, tap
-  }
+  parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
 
   gate_input_.Read();
   adc_.Convert();

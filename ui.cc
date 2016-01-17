@@ -89,6 +89,10 @@ void Ui::Poll() {
     (switches_.pressed(SWITCH_TIME1_1) << 1 |
      switches_.pressed(SWITCH_TIME1_2));
 
+  parameters_->velocity_type = static_cast<VelocityType>
+    (switches_.pressed(SWITCH_TIME2_1) << 1 |
+     switches_.pressed(SWITCH_TIME2_2));
+
   PaintLeds();
 }
 
@@ -115,8 +119,7 @@ void Ui::PaintLeds() {
       ping_led_counter_--;
 
     leds_.set(LED_PING, ping_led_counter_);
-    leds_.set(LED_REPEAT1, parameters_->delay[0].repeat);
-    leds_.set(LED_REPEAT2, parameters_->delay[1].repeat);
+    leds_.set(LED_REPEAT1, parameters_->repeat);
   }
   break;
 
@@ -145,7 +148,8 @@ void Ui::OnSwitchPressed(const Event& e) {
     clock_->Tap();
     break;
   case SWITCH_REV1:
-    multitap_delay_->AddTap(parameters_->delay[0].level, parameters_->edit_mode);
+  case SWITCH_REV2:
+    multitap_delay_->AddTap(parameters_->level, parameters_->edit_mode);
     break;
   }
 }
@@ -161,15 +165,15 @@ void Ui::OnSwitchReleased(const Event& e) {
     }
     break;
   case SWITCH_REV1:
+  case SWITCH_REV2:
     if (e.data >= kLongPressDuration) {
       multitap_delay_->Clear();
     }
     break;
   case SWITCH_REPEAT1:
-    parameters_->delay[0].repeat = !parameters_->delay[0].repeat;
+    parameters_->repeat = !parameters_->repeat;
     break;
   case SWITCH_REPEAT2:
-    parameters_->delay[1].repeat = !parameters_->delay[1].repeat;
     break;
   }
 }

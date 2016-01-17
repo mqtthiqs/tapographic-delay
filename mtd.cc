@@ -81,7 +81,7 @@ extern "C" {
 
     gate.Process(input);
 
-    delay.Process(&parameters.delay[0], input, output);
+    delay.Process(&parameters, input, output);
   }
 }
 

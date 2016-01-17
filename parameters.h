@@ -39,15 +39,10 @@ const uint8_t kMaxTaps = 10;
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
 
-enum TimeDivision {
-  TIME_DIVISION_1,
-  TIME_DIVISION_2,
-  TIME_DIVISION_3,
-};
-
 enum VelocityType {
   VELOCITY_AMPLITUDE,
   VELOCITY_LP,
+  VELOCITY_BP,
 };
 
 enum EditMode {
@@ -56,21 +51,17 @@ enum EditMode {
   EDIT_MODE_OVERWRITE,
 };
 
-struct DelayParameters {
+struct Parameters {
   float time;
   float level;
   float feedback;
   float scale;
-  float jitter_frequency;
+  float morph;
   float jitter_amount;
+  float jitter_frequency;
 
   bool repeat;
-  bool reverse;
-  TimeDivision time_division;
-};
 
-struct Parameters {
-  DelayParameters delay[2];
   bool ping;
   EditMode edit_mode;
   VelocityType velocity_type;

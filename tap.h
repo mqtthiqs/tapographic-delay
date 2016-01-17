@@ -76,7 +76,7 @@ namespace mtd
       volume_increment_ = -1.0f / length;
     }
 
-    void Process(DelayParameters* prev_params, DelayParameters* params, float* output) {
+    void Process(Parameters* prev_params, Parameters* params, float* output) {
 
       /* compute volume increment */
       float volume = volume_;

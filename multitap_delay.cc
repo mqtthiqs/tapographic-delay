@@ -82,12 +82,13 @@ namespace mtd
     counter_ = 0;
   }
 
-  void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
+  void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
-    if (counter_running_)
+    if (counter_running_) {
       counter_++;
+    }
 
-    tap_allocator_.set_fade_time(params->scale * 4000);
+    tap_allocator_.set_fade_time(params->morph * 5000);
 
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
