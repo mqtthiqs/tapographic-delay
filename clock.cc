@@ -36,7 +36,7 @@ namespace mtd
     phase_ = 0.0f;
     phase_increment_ = 0.0f;
     counter_ = 0;
-    running_ = true;
+    running_ = false;
     for (int i=0; i<kHistorySize; i++)
       history_[i] = 0;
     history_cursor_ = 0;
