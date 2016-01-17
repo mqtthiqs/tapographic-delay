@@ -34,6 +34,23 @@ namespace mtd {
 
 using namespace std;
 
+struct PinAssign {
+	GPIO_TypeDef* gpio;
+	uint16_t pin;
+};
+
+const PinAssign pins[kNumSwitches] = {
+	{GPIOE, GPIO_Pin_5},
+	{GPIOD, GPIO_Pin_5},
+	{GPIOA, GPIO_Pin_9},
+	{GPIOG, GPIO_Pin_10},
+	{GPIOA, GPIO_Pin_1},
+	{GPIOG, GPIO_Pin_11},
+	{GPIOG, GPIO_Pin_12},
+	{GPIOA, GPIO_Pin_2},
+	{GPIOB, GPIO_Pin_2}
+};
+
 void Switches::Init() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);

@@ -49,23 +49,6 @@ enum SwitchNames {
 	SWITCH_TIME2_2
 };
 
-struct PinAssign {
-	GPIO_TypeDef* gpio;
-	uint16_t pin;
-};
-
-const PinAssign pins[kNumSwitches] = {
-	{GPIOE, GPIO_Pin_5},
-	{GPIOD, GPIO_Pin_5},
-	{GPIOA, GPIO_Pin_9},
-	{GPIOG, GPIO_Pin_10},
-	{GPIOA, GPIO_Pin_1},
-	{GPIOG, GPIO_Pin_11},
-	{GPIOG, GPIO_Pin_12},
-	{GPIOA, GPIO_Pin_2},
-	{GPIOB, GPIO_Pin_2}
-};
-
 class Switches {
  public:
   Switches() { }
