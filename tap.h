@@ -145,7 +145,7 @@ namespace mtd
         float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
 
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
-        *output += sample * (2.0f - velocity_) * velocity_ * volume;
+        *output += sample * (2.0f - velocity_) * velocity_ * volume * volume;
 
         time += time_increment;
         volume += volume_increment;
