@@ -26,15 +26,15 @@
 //
 // Parameters.
 
-#ifndef MTD_DSP_PARAMETERS_H_
-#define MTD_DSP_PARAMETERS_H_
+#ifndef MTD_PARAMETERS_H_
+#define MTD_PARAMETERS_H_
 
 #include "stmlib/stmlib.h"
 
 namespace mtd {
 
 const size_t kBlockSize = 32;
-const uint8_t kMaxTaps = 16;
+const uint8_t kMaxTaps = 10;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -48,6 +48,12 @@ enum TimeDivision {
 enum VelocityType {
   VELOCITY_AMPLITUDE,
   VELOCITY_LP,
+};
+
+enum EditMode {
+  EDIT_MODE_NORMAL,
+  EDIT_MODE_OVERDUB,
+  EDIT_MODE_OVERWRITE,
 };
 
 struct DelayParameters {
@@ -66,6 +72,7 @@ struct DelayParameters {
 struct Parameters {
   DelayParameters delay[2];
   bool ping;
+  EditMode edit_mode;
   VelocityType velocity_type;
 };
 

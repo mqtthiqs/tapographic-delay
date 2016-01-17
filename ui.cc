@@ -83,6 +83,11 @@ void Ui::Poll() {
       press_time_[i] = 0;
     }
   }
+
+  parameters_->edit_mode = static_cast<EditMode>
+    (switches_.pressed(SWITCH_TIME1_1) << 1 |
+     switches_.pressed(SWITCH_TIME1_2));
+
   PaintLeds();
 }
 
