@@ -36,8 +36,9 @@ const int32_t kVeryLongPressDuration = 2500;
 
 using namespace stmlib;
 
-  void Ui::Init(CvScaler* cv_scaler, Clock* clock, Parameters* parameters) {
+  void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters) {
   cv_scaler_ = cv_scaler;
+  multitap_delay_ = mtd;
   parameters_ = parameters;
   clock_ = clock;
 
@@ -143,6 +144,9 @@ void Ui::OnSwitchPressed(const Event& e) {
   case SWITCH_PING:
     clock_->Tap();
     break;
+  case SWITCH_REV1:
+    multitap_delay_->AddTap(parameters_->delay[0].level, parameters_->edit_mode);
+    break;
   }
 }
 
@@ -156,13 +160,17 @@ void Ui::OnSwitchReleased(const Event& e) {
       clock_->RecordLastTap();
     }
     break;
+  case SWITCH_REV1:
+    if (e.data >= kLongPressDuration) {
+      multitap_delay_->Clear();
+    }
+    break;
   case SWITCH_REPEAT1:
     parameters_->delay[0].repeat = !parameters_->delay[0].repeat;
     break;
   case SWITCH_REPEAT2:
     parameters_->delay[1].repeat = !parameters_->delay[1].repeat;
     break;
-
   }
 }
 

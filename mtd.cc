@@ -92,7 +92,7 @@ void Init() {
   sdram.Init();
   gate_output.Init();
   cv_scaler.Init();
-  ui.Init(&cv_scaler, &clock, &parameters);
+  ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
   if (!codec1.Init(true, 44100)) { while(1); }
@@ -103,7 +103,7 @@ void Init() {
   //   Panic();
 
   clock.Init();
-  delay.Init(buffer, SDRAM_SIZE/4, &clock);
+  delay.Init(buffer, SDRAM_SIZE/2, &clock);
 
   ui.Start();
   if (!codec1.Start(&FillBuffer)) { while(1); }

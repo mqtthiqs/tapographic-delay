@@ -36,6 +36,7 @@
 #include "drivers/switches.h"
 #include "parameters.h"
 #include "clock.h"
+#include "multitap_delay.h"
 
 namespace mtd {
 
@@ -46,7 +47,6 @@ enum UiMode {
   UI_MODE_LAST
 };
 
-class GranularProcessor;
 class CvScaler;
 class Meter;
 class Settings;
@@ -56,7 +56,7 @@ class Ui {
   Ui() { }
   ~Ui() { }
   
-  void Init(CvScaler* cv_scaler, Clock* clock, Parameters* parameters);
+  void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Start();
@@ -73,6 +73,7 @@ class Ui {
 
   CvScaler* cv_scaler_;
   Clock* clock_;
+  MultitapDelay* multitap_delay_;
   Parameters* parameters_;
   
   Leds leds_;
