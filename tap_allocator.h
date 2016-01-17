@@ -26,6 +26,9 @@
 //
 // Tap allocator
 
+#ifndef MTD_TAP_ALLOCATOR_H_
+#define MTD_TAP_ALLOCATOR_H_
+
 #include "tap.h"
 
 namespace mtd 
@@ -59,3 +62,5 @@ namespace mtd
     DISALLOW_COPY_AND_ASSIGN(TapAllocator);
   };
 }
+
+#endif

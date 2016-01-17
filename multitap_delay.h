@@ -26,6 +26,9 @@
 //
 // Multitap delay
 
+#ifndef MTD_MULTITAP_DELAY_H_
+#define MTD_MULTITAP_DELAY_H_
+
 #include "parameters.h"
 #include "ring_buffer.h"
 #include "clock.h"
@@ -61,3 +64,5 @@ namespace mtd
     DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };
 }
+
+#endif

@@ -33,6 +33,10 @@
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 
+
+#ifndef MTD_TAP_H_
+#define MTD_TAP_H_
+
 using namespace stmlib;
 
 namespace mtd 
@@ -172,3 +176,4 @@ namespace mtd
   };
 }
 
+#endif
