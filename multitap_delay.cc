@@ -96,14 +96,17 @@ namespace mtd
           uint32_t repeat_time = clock_->running() ?
             static_cast<uint32_t>(clock_->period() * kBlockSize) :
             tap_allocator_.max_time();
-          buffer_.Read(buf, repeat_time, kBlockSize);
+          if (repeat_time < buffer_.size() &&
+              repeat_time > 100.0f) {
+            buffer_.Read(buf, repeat_time, kBlockSize);
+          }
       } else {
         std::fill(buf, buf+kBlockSize, 0);
       }
 
       for (size_t i=0; i<kBlockSize; i++) {
         int32_t sample = static_cast<int32_t>(input[i].l)
-          + params->feedback * feedback_buffer[i];
+          + (params->feedback / kMaxTaps * 8.0f) * feedback_buffer[i];
         buf[i] += Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
