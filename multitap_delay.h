@@ -49,6 +49,9 @@ namespace mtd
     void Init(short* buffer, int32_t buffer_size, Clock* clock);
     void Process(DelayParameters *params, ShortFrame* input, ShortFrame* output);
 
+    void AddTap(float velocity, EditMode edit_mode);
+    void Clear();
+
   private:
     TapAllocator tap_allocator_;
     Tap taps_[kMaxTaps];
@@ -60,6 +63,9 @@ namespace mtd
     Svf dc_blocker_;
 
     Clock* clock_;
+
+    bool counter_running_;
+    uint32_t counter_;
 
     DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
   };

@@ -36,6 +36,8 @@ namespace mtd
 {
   void MultitapDelay::Init(short* buffer, int32_t buffer_size, Clock* clock) {
     clock_ = clock;
+    counter_ = 0;
+    counter_running_ = false;
 
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init();
@@ -47,14 +49,45 @@ namespace mtd
 
     tap_allocator_.Init(taps_);
 
-    for (size_t i=0; i<kMaxTaps-1; i++) {
-      tap_allocator_.Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps,
-                         static_cast<float>(i+1) / kMaxTaps);
-    }
-
+    // // Dummy IR generation
+    // for (size_t i=0; i<kMaxTaps-1; i++) {
+    //   tap_allocator_.Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps,
+    //                      static_cast<float>(i+1) / kMaxTaps);
+    // }
   };
 
+  void MultitapDelay::AddTap(float velocity, EditMode edit_mode) {
+    counter_running_ = true;
+
+    uint32_t time = counter_ * kBlockSize;
+    uint32_t repeat_time = clock_->running() ?
+      clock_->period() * kBlockSize :
+      tap_allocator_.max_time();
+
+    if (edit_mode == EDIT_MODE_NORMAL) {
+      if (time < buffer_.size()) {
+        tap_allocator_.Add(time, velocity);
+      }
+    } else if (edit_mode == EDIT_MODE_OVERDUB) {
+      tap_allocator_.Add(time % repeat_time, velocity);
+    } else if (edit_mode == EDIT_MODE_OVERWRITE) {
+      tap_allocator_.Add(time % repeat_time, velocity);
+      tap_allocator_.Remove();
+    }
+  }
+
+  void MultitapDelay::Clear() {
+    counter_running_ = false;
+    tap_allocator_.Clear();
+    counter_ = 0;
+  }
+
   void MultitapDelay::Process(DelayParameters *params, ShortFrame* input, ShortFrame* output) {
+
+    if (counter_running_)
+      counter_++;
+
+    tap_allocator_.set_fade_time(params->scale * 4000);
 
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
