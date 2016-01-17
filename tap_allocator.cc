@@ -64,7 +64,7 @@ namespace mtd
   }
 
   void TapAllocator::Clear() {
-    for (size_t i=0; i<kMaxTaps-1; i++) {
+    for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].fade_out(fade_time_);
     }
     max_time_ = 0.0f;
