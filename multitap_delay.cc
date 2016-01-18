@@ -57,7 +57,11 @@ namespace mtd
   };
 
   void MultitapDelay::AddTap(float velocity, EditMode edit_mode) {
-    counter_running_ = true;
+
+    if (!counter_running_) {
+      counter_running_ = true;
+      return;
+    }
 
     if (edit_mode == EDIT_MODE_NORMAL
         && counter_ < buffer_.size()) {
@@ -112,43 +116,41 @@ namespace mtd
 
       for (size_t i=0; i<kBlockSize; i++) {
         int32_t sample = static_cast<int32_t>(input[i].l)
-          // + static_cast<int32_t>(input[i].r)
           + (params->feedback / 2.0f) * feedback_buffer[i]; // TODO: / busy_voices
         buf[i] += Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
     }
 
-    /* Read & accumulate buffers of all taps */
-    float buf_0[kBlockSize];
-    std::fill(buf_0, buf_0+kBlockSize, 0.0f);
-    taps_[0].Process(&prev_params_, params, buf_0);
-
     float buf_l[kBlockSize];
     float buf_r[kBlockSize];
     std::fill(buf_l, buf_r+kBlockSize, 0.0f);
     std::fill(buf_r, buf_r+kBlockSize, 0.0f);
 
-    for (int i=1; i<kMaxTaps; i++) {
-      if (i & 1)
+    for (int i=0; i<kMaxTaps; i++) {
+      if (i & 1) {
         taps_[i].Process(&prev_params_, params, buf_l);
-      else
+      } else {
         taps_[i].Process(&prev_params_, params, buf_r);
+      }
     }
 
     /* convert, output and feed back */
     for (size_t i=0; i<kBlockSize; i++) {
-      float sample_0 = buf_0[i];
       float sample_l = buf_l[i];
       float sample_r = buf_r[i];
 
       float fb = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(sample_l + sample_r);
+
+      // add dry signal
+      float dry = static_cast<float>(input[i].l) / 32768.0f;
+      sample_l += (dry - sample_l) * params->drywet;
+      sample_r += (dry - sample_r) * params->drywet;
+
       feedback_buffer[i] = Clip16(static_cast<int32_t>(32768.0f * fb));
 
-      float out_l = sample_0 + sample_l;
-      float out_r = sample_0 + sample_r;
-      output[i].l = Clip16(static_cast<int32_t>(32768.0f * out_l));
-      output[i].r = Clip16(static_cast<int32_t>(32768.0f * out_r));
+      output[i].l = Clip16(static_cast<int32_t>(32768.0f * sample_l));
+      output[i].r = Clip16(static_cast<int32_t>(32768.0f * sample_r));
     }
 
     prev_params_ = *params;

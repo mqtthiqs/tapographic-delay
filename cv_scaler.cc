@@ -51,9 +51,9 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
   // ADC_REGEN2_POT,
   { false, 0.01f },
   // ADC_MIX1_POT,
-  { false, 0.0005f },
+  { false, 0.01f },
   // ADC_MIX2_POT,
-  { false, 0.0005f },
+  { false, 0.01f },
   // ADC_TIME1_CV,
   { false, 0.05f },
   // ADC_TIME2_CV,
@@ -107,6 +107,8 @@ void CvScaler::Read(Parameters* parameters) {
 
   float drywet =
     lp_values_[ADC_MIX1_POT];
+  drywet = 1.0f - drywet;
+  drywet = drywet * 1.1f - 0.05f;
   CONSTRAIN(drywet, 0.0f, 1.0f);
   parameters->drywet = drywet; // 0..1..4
 
