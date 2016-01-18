@@ -103,9 +103,9 @@ namespace mtd
       float volume_increment = (volume_end - volume) / kBlockSize;
 
       if (params->velocity_type == VELOCITY_LP) {
-        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.7f);
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.6f);
       } else if (params->velocity_type == VELOCITY_BP) {
-        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 16.0f, 2.0f);
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 24.0f, 3.0f);
       }
 
       float time_start = time_;
