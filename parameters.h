@@ -34,13 +34,13 @@
 namespace mtd {
 
 const size_t kBlockSize = 32;
-const uint8_t kMaxTaps = 12;
+const uint8_t kMaxTaps = 8;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
 
 enum VelocityType {
-  VELOCITY_AMPLITUDE,
+  VELOCITY_AMP,
   VELOCITY_LP,
   VELOCITY_BP,
 };

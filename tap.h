@@ -102,7 +102,11 @@ namespace mtd
 
       float volume_increment = (volume_end - volume) / kBlockSize;
 
-      filter_.set_f<FREQUENCY_FAST>(velocity_ * velocity_ / 32.0f);
+      if (params->velocity_type == VELOCITY_LP) {
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.7f);
+      } else if (params->velocity_type == VELOCITY_BP) {
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 16.0f, 2.0f);
+      }
 
       float time_start = time_;
       float time_end = time_;
@@ -144,8 +148,17 @@ namespace mtd
         int16_t b = buf[time_integral + 1];
         float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
 
-        sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
-        *output += sample * (2.0f - velocity_) * velocity_ * volume * volume;
+        if (params->velocity_type == VELOCITY_AMP) {
+          sample *= velocity_ * velocity_;
+        } else if (params->velocity_type == VELOCITY_LP) {
+          sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
+          sample *= (2.0f - velocity_) * velocity_;
+        } else if (params->velocity_type == VELOCITY_BP) {
+          sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
+        }
+
+        sample *= volume * volume;
+        *output += sample;
 
         time += time_increment;
         volume += volume_increment;
@@ -159,7 +172,7 @@ namespace mtd
   private:
 
     RingBuffer<short>* buffer_;
-    OnePole filter_;
+    Svf filter_;
 
     float time_;
     float velocity_;
