@@ -85,7 +85,7 @@ namespace mtd
     // repeat time, in samples
     repeat_time_ = clock_->running() ?
       clock_->period() * kBlockSize :
-      tap_allocator_.max_time();
+      tap_allocator_.max_time() * params->scale;
 
     if (repeat_time_ > buffer_.size() ||
         repeat_time_ < 100) {

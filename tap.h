@@ -102,14 +102,15 @@ namespace mtd
 
       float volume_increment = (volume_end - volume) / kBlockSize;
 
+      /* set filter parameters */
       if (params->velocity_type == VELOCITY_LP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.6f);
       } else if (params->velocity_type == VELOCITY_BP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 24.0f, 3.0f);
       }
 
-      float time_start = time_;
-      float time_end = time_;
+      float time_start = time_ * params->scale;
+      float time_end = time_ * prev_params->scale;
 
       /* add random LFO */
       lfo_.set_frequency(params->jitter_frequency * 7.0f * 32.0f
@@ -122,6 +123,7 @@ namespace mtd
       if (time_start < 0.0f) time_start = 0.0f;
       if (time_end < 0.0f) time_end = 0.0f;
 
+      /* compute buffer read boundaries */
       float read_size = kBlockSize + time_start - time_end;
 
       CONSTRAIN(read_size, -kMaxBufferSize, kMaxBufferSize);

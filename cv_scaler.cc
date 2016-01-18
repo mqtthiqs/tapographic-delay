@@ -53,7 +53,7 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
   // ADC_MIX1_POT,
   { false, 0.01f },
   // ADC_MIX2_POT,
-  { false, 0.01f },
+  { false, 0.001f },
   // ADC_TIME1_CV,
   { false, 0.05f },
   // ADC_TIME2_CV,
@@ -117,7 +117,8 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(scale, 0.0f, 1.0f);
   scale = scale*2;
   scale *= scale;
-  parameters->scale = scale; // 0..1..4
+  SLOPE(scale_slope_, scale, 0.0005f, 0.0005f);
+  parameters->scale = scale_slope_; // 0..1..4
 
   float jitter_amount =
     lp_values_[ADC_LEVEL2_POT];

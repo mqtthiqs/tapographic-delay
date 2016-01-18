@@ -56,6 +56,7 @@ class CvScaler {
   GateInput gate_input_;
 
   float lp_values_[ADC_CHANNEL_LAST];
+  float scale_slope_;
 
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };
