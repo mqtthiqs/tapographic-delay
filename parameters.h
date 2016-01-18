@@ -34,7 +34,7 @@
 namespace mtd {
 
 const size_t kBlockSize = 32;
-const uint8_t kMaxTaps = 8;
+const uint8_t kMaxTaps = 7;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -55,10 +55,11 @@ struct Parameters {
   float time;
   float level;
   float feedback;
-  float scale;
+  float drywet;
   float morph;
   float jitter_amount;
   float jitter_frequency;
+  float scale;
 
   bool repeat;
 

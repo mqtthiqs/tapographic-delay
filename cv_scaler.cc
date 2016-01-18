@@ -105,8 +105,13 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(feedback, 0.0f, 1.0f);
   parameters->feedback = feedback;
 
-  float scale =
+  float drywet =
     lp_values_[ADC_MIX1_POT];
+  CONSTRAIN(drywet, 0.0f, 1.0f);
+  parameters->drywet = drywet; // 0..1..4
+
+  float scale =
+    lp_values_[ADC_MIX2_POT];
   CONSTRAIN(scale, 0.0f, 1.0f);
   scale = scale*2;
   scale *= scale;
