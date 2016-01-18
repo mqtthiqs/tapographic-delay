@@ -49,6 +49,7 @@ namespace mtd
     }
 
     float max_time() { return max_time_; }
+    uint8_t busy_voices() { return busy_voices_; }
 
   private:
     Tap* taps_;

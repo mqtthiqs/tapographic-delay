@@ -112,31 +112,43 @@ namespace mtd
 
       for (size_t i=0; i<kBlockSize; i++) {
         int32_t sample = static_cast<int32_t>(input[i].l)
-          + (params->feedback / kMaxTaps * 8.0f) * feedback_buffer[i];
+          // + static_cast<int32_t>(input[i].r)
+          + (params->feedback / 2.0f) * feedback_buffer[i]; // TODO: / busy_voices
         buf[i] += Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
     }
 
-    float buf[kBlockSize];
-    std::fill(buf, buf+kBlockSize, 0.0f);
-
     /* Read & accumulate buffers of all taps */
-    float buf0[kBlockSize];
-    std::fill(buf0, buf0+kBlockSize, 0.0f);
-    taps_[0].Process(&prev_params_, params, buf0);
+    float buf_0[kBlockSize];
+    std::fill(buf_0, buf_0+kBlockSize, 0.0f);
+    taps_[0].Process(&prev_params_, params, buf_0);
+
+    float buf_l[kBlockSize];
+    float buf_r[kBlockSize];
+    std::fill(buf_l, buf_r+kBlockSize, 0.0f);
+    std::fill(buf_r, buf_r+kBlockSize, 0.0f);
 
     for (int i=1; i<kMaxTaps; i++) {
-      taps_[i].Process(&prev_params_, params, buf);
+      if (i & 1)
+        taps_[i].Process(&prev_params_, params, buf_l);
+      else
+        taps_[i].Process(&prev_params_, params, buf_r);
     }
 
     /* convert, output and feed back */
     for (size_t i=0; i<kBlockSize; i++) {
-      float s = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(buf[i]);
-      int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
-      feedback_buffer[i] = sample;
-      int16_t sample0 = Clip16(static_cast<int32_t>(buf0[i] * 32768.0f + sample));
-      output[i].l = sample0;
+      float sample_0 = buf_0[i];
+      float sample_l = buf_l[i];
+      float sample_r = buf_r[i];
+
+      float fb = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(sample_l + sample_r);
+      feedback_buffer[i] = Clip16(static_cast<int32_t>(32768.0f * fb));
+
+      float out_l = sample_0 + sample_l;
+      float out_r = sample_0 + sample_r;
+      output[i].l = Clip16(static_cast<int32_t>(32768.0f * out_l));
+      output[i].r = Clip16(static_cast<int32_t>(32768.0f * out_r));
     }
 
     prev_params_ = *params;
