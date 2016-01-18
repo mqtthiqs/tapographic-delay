@@ -59,7 +59,8 @@ namespace mtd
   void MultitapDelay::AddTap(float velocity, EditMode edit_mode) {
     counter_running_ = true;
 
-    if (edit_mode == EDIT_MODE_NORMAL) {
+    if (edit_mode == EDIT_MODE_NORMAL
+        && counter_ < buffer_.size()) {
       tap_allocator_.Add(counter_, velocity);
     } else if (edit_mode == EDIT_MODE_OVERDUB) {
       tap_allocator_.Add(counter_, velocity);
