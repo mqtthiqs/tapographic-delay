@@ -117,7 +117,7 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(scale, 0.0f, 1.0f);
   scale = scale*2;
   scale *= scale;
-  SLOPE(scale_slope_, scale, 0.0005f, 0.0005f);
+  SLOPE(scale_slope_, scale, 0.0002f, 0.0002f);
   parameters->scale = scale_slope_; // 0..1..4
 
   float jitter_amount =

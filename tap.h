@@ -41,7 +41,7 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  const uint16_t kMaxBufferSize = 128;
+  const uint16_t kMaxBufferSize = 512;
 
   class Tap
   {
@@ -109,8 +109,8 @@ namespace mtd
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 24.0f, 3.0f);
       }
 
-      float time_start = time_ * params->scale;
-      float time_end = time_ * prev_params->scale;
+      float time_start = time_ * prev_params->scale;
+      float time_end = time_ * params->scale;
 
       /* add random LFO */
       lfo_.set_frequency(params->jitter_frequency * 7.0f * 32.0f
