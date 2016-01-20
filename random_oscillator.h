@@ -37,21 +37,21 @@ using namespace stmlib;
 
 namespace mtd 
 {
+  const float kOscillationMinimumGap = 0.3f;
+
   class RandomOscillator
   {
   public:
 
-    inline float getFloat() {
-      return Random::GetFloat() * 2.0f - 1.0f;
-    }
-
     void Init() {
       value_ = 0.0f;
-      next_value_ = getFloat();
+      next_value_ = Random::GetFloat() * 2.0f - 1.0f;
     }
 
-    inline void set_frequency(float freq) {
-      phase_increment_ = freq / SAMPLE_RATE;
+    inline void set_slope(float slope) {
+      phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
+      if (phase_increment_ > 1.0f)
+        phase_increment_ = 1.0f;
     }
 
     float Next() {
@@ -59,7 +59,11 @@ namespace mtd
       if (phase_ > 1.0f) {
         phase_--;
         value_ = next_value_;
-        next_value_ = getFloat();
+        direction_ = !direction_;
+        float rnd = (1.0f - kOscillationMinimumGap) * Random::GetFloat() + kOscillationMinimumGap;
+        next_value_ = direction_ ?
+          value_ + (1.0f - value_) * rnd :
+          value_ - (1.0f + value_) * rnd;
       }
 
       float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
@@ -71,6 +75,7 @@ namespace mtd
     float phase_increment_;
     float value_;
     float next_value_;
+    bool direction_;
   };
 }
 

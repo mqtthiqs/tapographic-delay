@@ -113,8 +113,7 @@ namespace mtd
       float time_end = time_ * params->scale;
 
       /* add random LFO */
-      lfo_.set_frequency(params->jitter_frequency * 7.0f * 32.0f
-                         * (1.0f + 0.1f * velocity_)); /* small random shift to avoid unison */
+      lfo_.set_slope(params->jitter_frequency / 100.0f);
       float lfo_sample = lfo_.Next();
       time_start += 0.1f * SAMPLE_RATE * previous_lfo_sample_ * prev_params->jitter_amount;
       time_end += 0.1f * SAMPLE_RATE * lfo_sample * params->jitter_amount;
