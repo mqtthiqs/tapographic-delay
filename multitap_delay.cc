@@ -131,7 +131,7 @@ namespace mtd
 
     float buf_l[kBlockSize];
     float buf_r[kBlockSize];
-    std::fill(buf_l, buf_r+kBlockSize, 0.0f);
+    std::fill(buf_l, buf_l+kBlockSize, 0.0f);
     std::fill(buf_r, buf_r+kBlockSize, 0.0f);
 
     for (int i=0; i<kMaxTaps; i++) {
