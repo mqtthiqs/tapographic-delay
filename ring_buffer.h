@@ -30,6 +30,7 @@
 #define MTD_RING_BUFFER_H_
 
 #include "stmlib/stmlib.h"
+#include "stmlib/dsp/dsp.h"
 #include <stm32f4xx.h>
 
 #include <algorithm>
@@ -88,6 +89,15 @@ namespace mtd
         index = cursor_ - pos;
       }
       return buffer_[index];
+    }
+
+    /* Assumes that buffer_size_ is 2^n */
+    T ReadLinear(float pos) {
+      MAKE_INTEGRAL_FRACTIONAL(pos);
+      int32_t x = (cursor_ - pos_integral);
+      int16_t a = buffer_[x & (buffer_size_-1)];
+      int16_t b = buffer_[(x - 1) & (buffer_size_-1)];
+      return a + (b - a) * pos_fractional;
     }
 
     /* Reads the [size] values until [pos] writes ago.
