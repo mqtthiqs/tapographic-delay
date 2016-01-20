@@ -122,32 +122,14 @@ namespace mtd
       if (time_start < 0.0f) time_start = 0.0f;
       if (time_end < 0.0f) time_end = 0.0f;
 
-      /* compute buffer read boundaries */
-      float read_size = kBlockSize + time_start - time_end;
-
-      CONSTRAIN(read_size, -kMaxBufferSize, kMaxBufferSize);
-
-      MAKE_INTEGRAL_FRACTIONAL(time_start);
-      float time = -time_start_fractional; /* why "-"? */
-      float time_increment = read_size / static_cast<float>(kBlockSize);
-
-      if (read_size < 0) {
-        read_size = -read_size;
-        time = read_size;
-      }
-
-      /* +1 for interpolation, +1 for rounding to the next */
-      uint32_t buf_size = static_cast<uint32_t>(read_size) + 2;
-      int16_t buf[kMaxBufferSize];
-
-      buffer_->Read(buf, time_start_integral, buf_size);
+      float time = time_end + kBlockSize;
+      float time_increment = (time_end - time_start - kBlockSize) / static_cast<float>(kBlockSize);
 
       size_t size = kBlockSize;
       while(size--) {
-        MAKE_INTEGRAL_FRACTIONAL(time);
-        int16_t a = buf[time_integral];
-        int16_t b = buf[time_integral + 1];
-        float sample = static_cast<float>(a + (b - a) * time_fractional) / 32768.0f;
+
+        short v = buffer_->ReadLinear(time);
+        float sample = static_cast<float>(v) / 32768.0f;
 
         if (params->velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
