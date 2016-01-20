@@ -80,7 +80,6 @@ extern "C" {
     }
 
     gate.Process(input);
-
     delay.Process(&parameters, input, output);
   }
 }
@@ -108,7 +107,7 @@ void Init() {
   //   Panic();
 
   clock.Init();
-  delay.Init(buffer, SDRAM_SIZE/2, &clock);
+  delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
 
   ui.Start();
   if (!codec1.Start(&FillBuffer)) { while(1); }

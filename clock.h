@@ -27,7 +27,6 @@
 // Main clock
 
 #include "drivers/gate_input.h"
-#include "ring_buffer.h"
 
 #ifndef MTD_CLOCK_H_
 #define MTD_CLOCK_H_

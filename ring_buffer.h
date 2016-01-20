@@ -37,14 +37,13 @@
 
 namespace mtd 
 {
-  template<typename T>
   class RingBuffer
   {
   public:
     RingBuffer() { }
     ~RingBuffer() { }
 
-    void Init(T* buffer, uint32_t buffer_size) {
+    void Init(short* buffer, uint32_t buffer_size) {
       buffer_ = buffer;
       buffer_size_ = buffer_size;
     }
@@ -56,7 +55,7 @@ namespace mtd
     uint32_t size() { return buffer_size_; }
 
     /* Write one value at cursor and increment it */
-    void Write(T value) {
+    void Write(short value) {
       buffer_[cursor_] = value;
       if (cursor_ == buffer_size_) {
         cursor_ = 0;
@@ -66,7 +65,7 @@ namespace mtd
     }
 
     /* Write [size] values at cursor and increment it. */
-    void Write(T *src, size_t size) {
+    void Write(short *src, size_t size) {
       size_t written = size;
       if (cursor_ > buffer_size_ - size) {
         written = buffer_size_ - cursor_;
@@ -81,7 +80,7 @@ namespace mtd
     }
 
     /* Reads the value from [pos] writes ago */
-    T Read(uint32_t pos) {
+    short Read(uint32_t pos) {
       uint32_t index;// = cursor_ - pos;
       if (cursor_ < pos) {
         index = buffer_size_ - pos + cursor_;
@@ -92,17 +91,17 @@ namespace mtd
     }
 
     /* Assumes that buffer_size_ is 2^n */
-    T ReadLinear(float pos) {
+    float ReadLinear(float pos) {
       MAKE_INTEGRAL_FRACTIONAL(pos);
       int32_t x = (cursor_ - pos_integral);
-      int16_t a = buffer_[x & (buffer_size_-1)];
-      int16_t b = buffer_[(x - 1) & (buffer_size_-1)];
-      return a + (b - a) * pos_fractional;
+      float a = buffer_[x & (buffer_size_-1)];
+      float b = buffer_[(x - 1) & (buffer_size_-1)];
+      return (a + (b - a) * pos_fractional) / 32768.0f;
     }
 
     /* Reads the [size] values until [pos] writes ago.
      * assert (pos + size < buffer_size_) */
-    void Read(T* dest, uint32_t pos, size_t size) {
+    void Read(short* dest, uint32_t pos, size_t size) {
       uint32_t index;
       size_t read = size;
       if (cursor_ < pos + size) {
@@ -119,7 +118,7 @@ namespace mtd
 
   private:
 
-    T* buffer_;
+    short* buffer_;
     uint32_t cursor_;
     uint32_t buffer_size_;
 

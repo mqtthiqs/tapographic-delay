@@ -30,7 +30,6 @@
 #define MTD_MULTITAP_DELAY_H_
 
 #include "parameters.h"
-#include "ring_buffer.h"
 #include "clock.h"
 #include "tap_allocator.h"
 
@@ -55,7 +54,7 @@ namespace mtd
   private:
     TapAllocator tap_allocator_;
     Tap taps_[kMaxTaps];
-    RingBuffer<short> buffer_;
+    RingBuffer buffer_;
     int16_t feedback_buffer[kBlockSize];   /* max block size */
 
     Parameters prev_params_;

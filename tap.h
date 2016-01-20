@@ -49,7 +49,7 @@ namespace mtd
     Tap() { }
     ~Tap() { }
 
-    void Init(RingBuffer<short>* buffer) {
+    void Init(RingBuffer* buffer) {
       buffer_ = buffer;
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
@@ -139,8 +139,7 @@ namespace mtd
       size_t size = kBlockSize;
       while(size--) {
 
-        short v = buffer_->ReadLinear(time);
-        float sample = static_cast<float>(v) / 32768.0f;
+        float sample = buffer_->ReadLinear(time);
 
         if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
@@ -165,7 +164,7 @@ namespace mtd
 
   private:
 
-    RingBuffer<short>* buffer_;
+    RingBuffer* buffer_;
     Svf filter_;
 
     float time_;
