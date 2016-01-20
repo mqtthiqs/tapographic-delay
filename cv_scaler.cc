@@ -69,7 +69,8 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
 };
 
 void CvScaler::Init() {
-  fill(&lp_values_[0], &lp_values_[ADC_CHANNEL_LAST], 0.0f);
+  fill(&lp_values_[0], &lp_values_[ADC_CHANNEL_LAST], 0.5f);
+  scale_slope_ = 0.5f;
   adc_.Init();
   gate_input_.Init();
 }
