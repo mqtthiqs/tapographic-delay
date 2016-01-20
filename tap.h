@@ -76,6 +76,17 @@ namespace mtd
       volume_increment_ = -1.0f / length;
     }
 
+    /* Dispatch function */
+    void Process(Parameters* prev_params, Parameters* params, float* output) {
+      if (params->velocity_type == VELOCITY_AMP)
+        Process<VELOCITY_AMP>(prev_params, params, output);
+      else if (params->velocity_type == VELOCITY_LP)
+        Process<VELOCITY_LP>(prev_params, params, output);
+      else if (params->velocity_type == VELOCITY_BP)
+        Process<VELOCITY_BP>(prev_params, params, output);
+    }
+
+    template<VelocityType velocity_type>
     void Process(Parameters* prev_params, Parameters* params, float* output) {
 
       /* compute volume increment */
@@ -103,9 +114,9 @@ namespace mtd
       float volume_increment = (volume_end - volume) / kBlockSize;
 
       /* set filter parameters */
-      if (params->velocity_type == VELOCITY_LP) {
+      if (velocity_type == VELOCITY_LP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.6f);
-      } else if (params->velocity_type == VELOCITY_BP) {
+      } else if (velocity_type == VELOCITY_BP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 24.0f, 3.0f);
       }
 
@@ -131,12 +142,12 @@ namespace mtd
         short v = buffer_->ReadLinear(time);
         float sample = static_cast<float>(v) / 32768.0f;
 
-        if (params->velocity_type == VELOCITY_AMP) {
+        if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
-        } else if (params->velocity_type == VELOCITY_LP) {
+        } else if (velocity_type == VELOCITY_LP) {
           sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
           sample *= (2.0f - velocity_) * velocity_;
-        } else if (params->velocity_type == VELOCITY_BP) {
+        } else if (velocity_type == VELOCITY_BP) {
           sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
         }
 
