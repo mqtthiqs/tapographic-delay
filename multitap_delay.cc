@@ -48,28 +48,35 @@ namespace mtd
     }
 
     tap_allocator_.Init(taps_);
-
-    // // Dummy IR generation
-    // for (size_t i=0; i<kMaxTaps-1; i++) {
-    //   tap_allocator_.Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps,
-    //                      static_cast<float>(i+1) / kMaxTaps);
-    // }
   };
 
-  void MultitapDelay::AddTap(float velocity, EditMode edit_mode) {
+  void MultitapDelay::AddTap(float velocity, EditMode edit_mode, QuantizerMode quantizer_mode) {
 
+    // first tap does not count, it just starts the counter
     if (!counter_running_) {
       counter_running_ = true;
       return;
     }
 
-    if (edit_mode == EDIT_MODE_NORMAL
-        && counter_ < buffer_.size()) {
-      tap_allocator_.Add(counter_, velocity);
+    float time = static_cast<float>(counter_);
+
+    if (repeat_time_) {
+      float repeat = static_cast<float>(repeat_time_);
+      float quantize =
+        quantizer_mode == QUANTIZER_MODE_8 ? 4.0f :
+        quantizer_mode == QUANTIZER_MODE_16 ? 8.0f :
+        repeat;
+      time = round(time / repeat * quantize)
+        * repeat / quantize;
+    }
+
+
+    if (edit_mode == EDIT_MODE_NORMAL && time < buffer_.size()) {
+      tap_allocator_.Add(time, velocity);
     } else if (edit_mode == EDIT_MODE_OVERDUB) {
-      tap_allocator_.Add(counter_, velocity);
+      tap_allocator_.Add(time, velocity);
     } else if (edit_mode == EDIT_MODE_OVERWRITE) {
-      tap_allocator_.Add(counter_, velocity);
+      tap_allocator_.Add(time, velocity);
       tap_allocator_.Remove();
     }
   }
