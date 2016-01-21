@@ -85,13 +85,13 @@ void Ui::Poll() {
     }
   }
 
-  parameters_->edit_mode = static_cast<EditMode>
-    (switches_.pressed(SWITCH_TIME1_1) << 1 |
-     switches_.pressed(SWITCH_TIME1_2));
+  // parameters_->edit_mode = static_cast<EditMode>
+  //   (switches_.pressed(SWITCH_TIME1_1) << 1 |
+  //    switches_.pressed(SWITCH_TIME1_2));
 
-  // parameters_->velocity_type = static_cast<VelocityType>
-  //   (switches_.pressed(SWITCH_TIME2_1) << 1 |
-  //    switches_.pressed(SWITCH_TIME2_2));
+  parameters_->velocity_type = static_cast<VelocityType>
+    (switches_.pressed(SWITCH_TIME2_1) << 1 |
+     switches_.pressed(SWITCH_TIME2_2));
 
   parameters_->quantize = static_cast<QuantizerMode>
     (switches_.pressed(SWITCH_TIME2_1) << 1 |
