@@ -111,7 +111,7 @@ void CvScaler::Read(Parameters* parameters) {
   drywet = 1.0f - drywet;
   drywet = drywet * 1.1f - 0.05f;
   CONSTRAIN(drywet, 0.0f, 1.0f);
-  parameters->drywet = drywet; // 0..1..4
+  parameters->drywet = drywet;
 
   float scale =
     lp_values_[ADC_MIX2_POT];
@@ -125,7 +125,7 @@ void CvScaler::Read(Parameters* parameters) {
     lp_values_[ADC_LEVEL2_POT];
   CONSTRAIN(jitter_amount, 0.0f, 1.0f);
   jitter_amount *= jitter_amount;
-  parameters->jitter_amount = jitter_amount; // 0..1..4
+  parameters->jitter_amount = jitter_amount;
 
   float jitter_frequency =
     lp_values_[ADC_REGEN2_POT];
@@ -136,7 +136,7 @@ void CvScaler::Read(Parameters* parameters) {
   float morph =
     lp_values_[ADC_TIME2_POT];
   CONSTRAIN(morph, 0.0f, 1.0f);
-  parameters->morph = morph; // 0..1..4
+  parameters->morph = morph;
 
   parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
 
