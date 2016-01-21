@@ -90,14 +90,13 @@ namespace mtd
     void Process(Parameters* prev_params, Parameters* params, float* output) {
 
       /* compute volume increment */
-      float volume = volume_;
       float volume_end;
 
       if (queued_ && *busy_voices_ == kMaxTaps) {
-        volume_end = volume;
+        volume_end = volume_;
       } else {
         queued_ = false;
-        volume_end = volume + volume_increment_;
+        volume_end = volume_ + volume_increment_;
 
         if (volume_end < 0.0f) {
           /* end of fade out */
@@ -111,7 +110,7 @@ namespace mtd
         }
       }
 
-      float volume_increment = (volume_end - volume) / kBlockSize;
+      float volume_increment = (volume_end - volume_) / kBlockSize;
 
       /* set filter parameters */
       if (velocity_type == VELOCITY_LP) {
@@ -150,16 +149,14 @@ namespace mtd
           sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
         }
 
-        sample *= volume * volume;
+        sample *= volume_ * volume_;
         *output += sample;
 
         time += time_increment;
-        volume += volume_increment;
+        volume_ += volume_increment;
 
         output++;
       }
-
-      volume_ = volume;
     };
 
   private:
