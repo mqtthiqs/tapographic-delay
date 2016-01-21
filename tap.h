@@ -124,12 +124,15 @@ namespace mtd
       /* add random LFO */
       lfo_.set_slope(params->jitter_frequency / 100.0f);
       float lfo_sample = lfo_.Next();
-      time_start += 0.1f * SAMPLE_RATE * previous_lfo_sample_ * prev_params->jitter_amount;
-      time_end += 0.1f * SAMPLE_RATE * lfo_sample * params->jitter_amount;
+      float amplitude = 0.2f * SAMPLE_RATE;
+      if (amplitude > time_) amplitude = time_;
+      time_start += amplitude * previous_lfo_sample_ * prev_params->jitter_amount;
+      time_end += amplitude * lfo_sample * params->jitter_amount;
       previous_lfo_sample_ = lfo_sample;
 
-      if (time_start < 0.0f) time_start = 0.0f;
-      if (time_end < 0.0f) time_end = 0.0f;
+      /* assert (time_start > 0.0f && time_end > 0.0f); */
+      if (!(time_start > 0.0f && time_end > 0.0f))
+        while(1);
 
       float time = 0.0f;
       float time_increment = (time_end - time_start - kBlockSize) / static_cast<float>(kBlockSize);
