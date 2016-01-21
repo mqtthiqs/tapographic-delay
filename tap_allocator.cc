@@ -54,7 +54,7 @@ namespace mtd
     if (time > max_time_)
       max_time_ = time;
 
-    if (busy_voices_ == kMaxTaps) {
+    if (busy_voices_ > kMaxTaps) {
       int16_t oldest_voice = next_voice_ == 0 ? kMaxTaps - 1 : next_voice_ - 1;
       taps_[oldest_voice].fade_out(fade_time_);
     }

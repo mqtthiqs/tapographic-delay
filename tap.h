@@ -91,8 +91,7 @@ namespace mtd
 
       /* compute volume increment */
       float volume_end;
-
-      if (queued_ && *busy_voices_ == kMaxTaps) {
+      if (queued_ && *busy_voices_ > kMaxTaps) {
         volume_end = volume_;
       } else {
         queued_ = false;
