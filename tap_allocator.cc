@@ -38,6 +38,12 @@ namespace mtd
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].set_busy_voices_counter(&busy_voices_);
     }
+
+    // // Dummy IR generation
+    for (size_t i=0; i<kMaxTaps-1; i++) {
+      Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps + 10000.0f,
+          static_cast<float>(i+1) / kMaxTaps);
+    }
   }
 
   void TapAllocator::Add(float time, float velocity) {
