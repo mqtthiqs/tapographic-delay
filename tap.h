@@ -54,11 +54,11 @@ namespace mtd
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
       volume_ = 0.0f;
-      time_ = 0.0f;
+      time_ = kBlockSize;
       velocity_ = 0.0f;
     };
-
-    void set_time(float time) { time_ = time; }
+    /* minimum time is block size */
+    void set_time(float time) { time_ = time + kBlockSize; }
     void set_velocity(float velocity) { velocity_ = velocity; }
 
     void set_busy_voices_counter(uint8_t *busy_voices) {
