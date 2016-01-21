@@ -131,13 +131,14 @@ namespace mtd
       if (time_start < 0.0f) time_start = 0.0f;
       if (time_end < 0.0f) time_end = 0.0f;
 
-      float time = time_end + kBlockSize;
+      float time = 0.0f;
       float time_increment = (time_end - time_start - kBlockSize) / static_cast<float>(kBlockSize);
 
       size_t size = kBlockSize;
       while(size--) {
 
-        float sample = buffer_->ReadLinear(time);
+        /* doing the addition here avoids rounding errors with large times */
+        float sample = buffer_->ReadLinear(time_start + time);
 
         if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
