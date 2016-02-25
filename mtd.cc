@@ -35,7 +35,6 @@
 #include "ui.h"
 #include "multitap_delay.h"
 #include "clock.h"
-#include "gate.h"
 
 #include <stm32f4xx_conf.h>
 
@@ -50,7 +49,6 @@ CvScaler cv_scaler;
 Ui ui;
 MultitapDelay delay;
 Clock clock;
-Gate gate;
 
 Parameters parameters;
 
@@ -79,7 +77,6 @@ extern "C" {
       clock.RecordLastTap();
     }
 
-    gate.Process(input);
     delay.Process(&parameters, input, output);
   }
 }
