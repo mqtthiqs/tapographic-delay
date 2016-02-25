@@ -33,16 +33,17 @@ namespace mtd
 {
   void TapAllocator::Init(Tap taps[kMaxTaps]) {
     taps_ = taps;
-    fade_time_ = 100.0f;
+    fade_time_ = 1000.0f;
 
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].set_busy_voices_counter(&busy_voices_);
     }
 
-    // // Dummy IR generation
-    for (size_t i=0; i<kMaxTaps-1; i++) {
-      Add(i * i * SAMPLE_RATE * 1.0f / kMaxTaps + 10000.0f,
-          static_cast<float>(i+1) / kMaxTaps);
+    // Dummy IR generation
+    for (size_t i=0; i<kMaxTaps; i++) {
+      float t = static_cast<float>(i) + 1.0f;
+      Add(t * t * SAMPLE_RATE * 0.8f / kMaxTaps + 1000.0f,
+          t / kMaxTaps);
     }
   }
 
