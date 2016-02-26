@@ -24,10 +24,11 @@
 
 # System specifications
 F_CRYSTAL      = 8000000L
-F_CPU          = 72000000L
-SYSCLOCK       = SYSCLK_FREQ_72MHz
+F_CPU          = 180000000L
+SYSCLOCK       = SYSCLK_FREQ_180MHz
 FAMILY         = f4xx
-# USB            = enabled
+MCU            = STM32F427_437xx -DHAS_FMC
+LINKER_SCRIPT  = stm32f427.ld
 
 # Preferred upload command
 UPLOAD_COMMAND  = upload_jtag
