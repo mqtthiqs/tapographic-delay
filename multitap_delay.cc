@@ -81,6 +81,10 @@ namespace mtd
     }
   }
 
+  void MultitapDelay::RemTap() {
+    tap_allocator_.Remove();
+  }
+
   void MultitapDelay::Clear() {
     counter_running_ = false;
     tap_allocator_.Clear();

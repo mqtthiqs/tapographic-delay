@@ -49,6 +49,7 @@ namespace mtd
     void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
     void AddTap(float velocity, EditMode edit_mode, QuantizerMode quantizer_mode_);
+    void RemTap();
     void Clear();
 
   private:

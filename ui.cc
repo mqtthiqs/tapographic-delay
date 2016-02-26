@@ -152,10 +152,12 @@ void Ui::OnSwitchPressed(const Event& e) {
     clock_->Tap();
     break;
   case SWITCH_REV1:
-  case SWITCH_REV2:
     multitap_delay_->AddTap(parameters_->level,
                             parameters_->edit_mode,
                             parameters_->quantize);
+    break;
+  case SWITCH_REV2:
+    multitap_delay_->RemTap();
     break;
   }
 }
