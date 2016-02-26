@@ -44,7 +44,7 @@ namespace mtd
     dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
 
     for (size_t i=0; i<kMaxTaps; i++) {
-      taps_[i].Init(&buffer_);
+      taps_[i].Init();
     }
 
     tap_allocator_.Init(taps_);
@@ -139,9 +139,9 @@ namespace mtd
 
     for (int i=0; i<kMaxTaps; i++) {
       if (i & 1) {
-        taps_[i].Process(&prev_params_, params, buf_l);
+        taps_[i].Process(&prev_params_, params, &buffer_, buf_l);
       } else {
-        taps_[i].Process(&prev_params_, params, buf_r);
+        taps_[i].Process(&prev_params_, params, &buffer_, buf_r);
       }
     }
 

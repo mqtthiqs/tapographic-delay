@@ -47,8 +47,7 @@ namespace mtd
     Tap() { }
     ~Tap() { }
 
-    void Init(RingBuffer* buffer) {
-      buffer_ = buffer;
+    void Init() {
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
       volume_ = 0.0f;
@@ -74,17 +73,17 @@ namespace mtd
     }
 
     /* Dispatch function */
-    void Process(Parameters* prev_params, Parameters* params, float* output) {
+    void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, float* output) {
       if (params->velocity_type == VELOCITY_AMP)
-        Process<VELOCITY_AMP>(prev_params, params, output);
+        Process<VELOCITY_AMP>(prev_params, params, buffer, output);
       else if (params->velocity_type == VELOCITY_LP)
-        Process<VELOCITY_LP>(prev_params, params, output);
+        Process<VELOCITY_LP>(prev_params, params, buffer, output);
       else if (params->velocity_type == VELOCITY_BP)
-        Process<VELOCITY_BP>(prev_params, params, output);
+        Process<VELOCITY_BP>(prev_params, params, buffer, output);
     }
 
     template<VelocityType velocity_type>
-    void Process(Parameters* prev_params, Parameters* params, float* output) {
+      void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, float* output) {
 
       /* compute volume increment */
       float volume_end = volume_ + volume_increment_;
@@ -131,7 +130,7 @@ namespace mtd
       while(size--) {
 
         /* doing the addition here avoids rounding errors with large times */
-        float sample = buffer_->ReadLinear(time_start + time);
+        float sample = buffer->ReadLinear(time_start + time);
 
         if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
@@ -154,7 +153,6 @@ namespace mtd
 
   private:
 
-    RingBuffer* buffer_;        /* TODO erase */
     Svf filter_;
 
     float time_;
