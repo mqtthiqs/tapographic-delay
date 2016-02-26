@@ -64,7 +64,6 @@ namespace mtd
     }
 
     void fade_in(float length) {
-      queued_ = true;
       volume_increment_ = 1.0f / length;
       if (volume_ == 0.0f)
         (*busy_voices_)++;
@@ -88,23 +87,17 @@ namespace mtd
     void Process(Parameters* prev_params, Parameters* params, float* output) {
 
       /* compute volume increment */
-      float volume_end;
-      if (queued_ && *busy_voices_ > kMaxTaps) {
-        volume_end = volume_;
-      } else {
-        queued_ = false;
-        volume_end = volume_ + volume_increment_;
+      float volume_end = volume_ + volume_increment_;
 
-        if (volume_end < 0.0f) {
-          /* end of fade out */
-          (*busy_voices_)--;
-          volume_end = 0.0f;
-          volume_increment_ = 0.0f;
-        } else if (volume_end > 1.0f) {
-          /* end of fade in */
-          volume_end = 1.0f;
-          volume_increment_ = 0.0f;
-        }
+      if (volume_end < 0.0f) {
+        /* end of fade out */
+        (*busy_voices_)--;
+        volume_end = 0.0f;
+        volume_increment_ = 0.0f;
+      } else if (volume_end > 1.0f) {
+        /* end of fade in */
+        volume_end = 1.0f;
+        volume_increment_ = 0.0f;
       }
 
       float volume_increment = (volume_end - volume_) / kBlockSize;
@@ -161,14 +154,13 @@ namespace mtd
 
   private:
 
-    RingBuffer* buffer_;
+    RingBuffer* buffer_;        /* TODO erase */
     Svf filter_;
 
     float time_;
     float velocity_;
 
     float volume_, volume_increment_;
-    bool queued_;
 
     uint8_t* busy_voices_;
 
