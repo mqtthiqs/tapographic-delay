@@ -60,7 +60,7 @@ namespace mtd
       taps_[oldest_voice].fade_out(fade_time_);
     }
 
-    next_voice_ = next_voice_ % kMaxTaps;
+    next_voice_ = (next_voice_ + 1) % kMaxTaps;
   }
 
   void TapAllocator::Remove() {
