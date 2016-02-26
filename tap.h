@@ -53,10 +53,12 @@ namespace mtd
       volume_ = 0.0f;
       time_ = kBlockSize;
       velocity_ = 0.0f;
+      panning_ = 0.5f;
     };
     /* minimum time is block size */
     void set_time(float time) { time_ = time + kBlockSize; }
     void set_velocity(float velocity) { velocity_ = velocity; }
+    void set_panning(float panning) { panning_ = panning; }
 
     void set_busy_voices_counter(uint8_t *busy_voices) {
       busy_voices_ = busy_voices;
@@ -73,7 +75,7 @@ namespace mtd
     }
 
     /* Dispatch function */
-    void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, float* output) {
+    void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, FloatFrame* output) {
       if (params->velocity_type == VELOCITY_AMP)
         Process<VELOCITY_AMP>(prev_params, params, buffer, output);
       else if (params->velocity_type == VELOCITY_LP)
@@ -83,7 +85,8 @@ namespace mtd
     }
 
     template<VelocityType velocity_type>
-      void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, float* output) {
+      void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer,
+                   FloatFrame* output) {
 
       /* compute volume increment */
       float volume_end = volume_ + volume_increment_;
@@ -129,9 +132,11 @@ namespace mtd
       size_t size = kBlockSize;
       while(size--) {
 
-        /* doing the addition here avoids rounding errors with large times */
+        /* read sample from buffer */
+        /* NOTE: doing the addition here avoids rounding errors with large times */
         float sample = buffer->ReadLinear(time_start + time);
 
+        /* apply velocity */
         if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
         } else if (velocity_type == VELOCITY_LP) {
@@ -141,13 +146,17 @@ namespace mtd
           sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
         }
 
+        /* apply envelope */
         sample *= volume_ * volume_;
-        *output += sample;
 
+        /* write to buffer */
+        output->l += sample * panning_;
+        output->r += sample * (1.0f - panning_);
+
+        /* increment stuff */
+        output++;
         time += time_increment;
         volume_ += volume_increment;
-
-        output++;
       }
     };
 
@@ -157,6 +166,7 @@ namespace mtd
 
     float time_;
     float velocity_;
+    float panning_;
 
     float volume_, volume_increment_;
 

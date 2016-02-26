@@ -50,8 +50,10 @@ namespace mtd
     tap_allocator_.Init(taps_);
   };
 
-  void MultitapDelay::AddTap(float velocity, EditMode edit_mode, QuantizerMode quantizer_mode) {
-
+  void MultitapDelay::AddTap(float velocity,
+                             EditMode edit_mode,
+                             QuantizerMode quantizer_mode,
+                             PanningMode panning_mode) {
     // first tap does not count, it just starts the counter
     if (!counter_running_) {
       counter_running_ = true;
@@ -68,15 +70,22 @@ namespace mtd
         repeat;
       time = round(time / repeat * quantize)
         * repeat / quantize;
+    float panning = 0.0f;
+    if (panning_mode == PANNING_MODE_RANDOM) {
+      panning = Random::GetFloat();
+    } else if (panning_mode == PANNING_MODE_ALTERNATE) {
+      static bool pan_state = true;
+      panning = pan_state ? 1.0f : 0.0f;
+      pan_state = !pan_state;
     }
 
 
     if (edit_mode == EDIT_MODE_NORMAL && time < buffer_.size()) {
-      tap_allocator_.Add(time, velocity);
+      tap_allocator_.Add(time, velocity, panning);
     } else if (edit_mode == EDIT_MODE_OVERDUB) {
-      tap_allocator_.Add(time, velocity);
+      tap_allocator_.Add(time, velocity, panning);
     } else if (edit_mode == EDIT_MODE_OVERWRITE) {
-      tap_allocator_.Add(time, velocity);
+      tap_allocator_.Add(time, velocity, panning);
       tap_allocator_.Remove();
     }
   }
@@ -133,22 +142,18 @@ namespace mtd
       buffer_.Write(buf, kBlockSize);
     }
 
-    float buf_l[kBlockSize];
-    float buf_r[kBlockSize];
-    std::fill(buf_l, buf_r+kBlockSize, 0.0f);
+    FloatFrame buf[kBlockSize];
+    FloatFrame empty = {0.0f, 0.0f};
+    std::fill(buf, buf+kBlockSize, empty);
 
     for (int i=0; i<kMaxTaps; i++) {
-      if (i & 1) {
-        taps_[i].Process(&prev_params_, params, &buffer_, buf_l);
-      } else {
-        taps_[i].Process(&prev_params_, params, &buffer_, buf_r);
-      }
+        taps_[i].Process(&prev_params_, params, &buffer_, buf);
     }
 
     /* convert, output and feed back */
     for (size_t i=0; i<kBlockSize; i++) {
-      float sample_l = buf_l[i];
-      float sample_r = buf_r[i];
+      float sample_l = buf[i].l;
+      float sample_r = buf[i].r;
 
       float fb = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(sample_l + sample_r);
 

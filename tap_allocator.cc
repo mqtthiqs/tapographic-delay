@@ -40,34 +40,33 @@ namespace mtd
     }
 
     // Dummy IR generation
-    for (size_t i=0; i<kMaxTaps; i++) {
-      float t = static_cast<float>(i) + 1.0f;
-      Add(t * t * SAMPLE_RATE * 0.8f / kMaxTaps + 1000.0f,
-          t / kMaxTaps);
-    }
+    // for (size_t i=0; i<kMaxTaps; i++) {
+    //   float t = static_cast<float>(i) + 1.0f;
+    //   Add(t * t * SAMPLE_RATE * 0.8f / kMaxTaps + 1000.0f,
+    //       t / kMaxTaps);
+    // }
   }
 
-  void TapAllocator::Add(float time, float velocity) {
-    taps_[next_voice_].fade_in(fade_time_);
-    taps_[next_voice_].set_time(time);
-    taps_[next_voice_].set_velocity(velocity);
+  void TapAllocator::Add(float time, float velocity, float panning) {
 
-    if (time > max_time_)
-      max_time_ = time;
+    if ((next_voice_ + 1) % kMaxTaps != oldest_voice_) {
+      taps_[next_voice_].fade_in(fade_time_);
+      taps_[next_voice_].set_time(time);
+      taps_[next_voice_].set_velocity(velocity);
+      taps_[next_voice_].set_panning(panning);
 
-    if (busy_voices_ > kMaxTaps) {
-      int16_t oldest_voice = next_voice_ == 0 ? kMaxTaps - 1 : next_voice_ - 1;
-      taps_[oldest_voice].fade_out(fade_time_);
+      if (time > max_time_)
+        max_time_ = time;
+
+      next_voice_ = (next_voice_ + 1) % kMaxTaps;
     }
-
-    next_voice_ = (next_voice_ + 1) % kMaxTaps;
   }
 
   void TapAllocator::Remove() {
-    int16_t oldest_voice = next_voice_ - busy_voices_;
-    if (oldest_voice < 0) oldest_voice += kMaxTaps;
-
-    taps_[oldest_voice].fade_out(fade_time_);
+    if (oldest_voice_ != next_voice_) {
+      taps_[oldest_voice_].fade_out(fade_time_);
+      oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
+    }
   }
 
   void TapAllocator::Clear() {
@@ -75,6 +74,6 @@ namespace mtd
       taps_[i].fade_out(fade_time_);
     }
     max_time_ = 0.0f;
-    next_voice_ = 0;
+    next_voice_ = oldest_voice_ = 0;
   }
 }

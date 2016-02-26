@@ -48,7 +48,10 @@ namespace mtd
     void Init(short* buffer, int32_t buffer_size, Clock* clock);
     void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
-    void AddTap(float velocity, EditMode edit_mode, QuantizerMode quantizer_mode_);
+    void AddTap(float velocity,
+                EditMode edit_mode,
+                QuantizerMode quantizer_mode,
+                PanningMode panning_mode);
     void RemTap();
     void Clear();
 

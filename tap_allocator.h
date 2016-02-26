@@ -40,7 +40,7 @@ namespace mtd
     ~TapAllocator() { }
 
     void Init(Tap taps[kMaxTaps]);
-    void Add(float time, float velocity);
+    void Add(float time, float velocity, float panning);
     void Remove();
     void Clear();
 
@@ -56,6 +56,7 @@ namespace mtd
 
     uint8_t busy_voices_;
     uint8_t next_voice_;
+    uint8_t oldest_voice_;
     float fade_time_;
 
     float max_time_;

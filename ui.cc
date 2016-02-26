@@ -85,17 +85,25 @@ void Ui::Poll() {
     }
   }
 
+  /* Switch 1: */
+
   // parameters_->edit_mode = static_cast<EditMode>
   //   (switches_.pressed(SWITCH_TIME1_1) << 1 |
   //    switches_.pressed(SWITCH_TIME1_2));
+
+  parameters_->panning_mode = static_cast<PanningMode>
+    (switches_.pressed(SWITCH_TIME1_1) << 1 |
+     switches_.pressed(SWITCH_TIME1_2));
+
+  /* Switch 2: */
 
   parameters_->velocity_type = static_cast<VelocityType>
     (switches_.pressed(SWITCH_TIME2_1) << 1 |
      switches_.pressed(SWITCH_TIME2_2));
 
-  parameters_->quantize = static_cast<QuantizerMode>
-    (switches_.pressed(SWITCH_TIME2_1) << 1 |
-     switches_.pressed(SWITCH_TIME2_2));
+  // parameters_->quantize = static_cast<QuantizerMode>
+  //   (switches_.pressed(SWITCH_TIME2_1) << 1 |
+  //    switches_.pressed(SWITCH_TIME2_2));
 
   PaintLeds();
 }
@@ -154,7 +162,8 @@ void Ui::OnSwitchPressed(const Event& e) {
   case SWITCH_REV1:
     multitap_delay_->AddTap(parameters_->level,
                             parameters_->edit_mode,
-                            parameters_->quantize);
+                            parameters_->quantize,
+                            parameters_->panning_mode);
     break;
   case SWITCH_REV2:
     multitap_delay_->RemTap();

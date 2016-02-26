@@ -34,7 +34,7 @@
 namespace mtd {
 
 const size_t kBlockSize = 32;
-const uint8_t kMaxTaps = 9;
+const uint8_t kMaxTaps = 8;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -57,6 +57,12 @@ enum QuantizerMode {
   QUANTIZER_MODE_16,
 };
 
+enum PanningMode {
+  PANNING_MODE_LEFT,
+  PANNING_MODE_RANDOM,
+  PANNING_MODE_ALTERNATE,
+};
+
 struct Parameters {
   float time;
   float level;
@@ -72,6 +78,7 @@ struct Parameters {
   bool ping;
   EditMode edit_mode;
   QuantizerMode quantize;
+  PanningMode panning_mode;
   VelocityType velocity_type;
 };
 
