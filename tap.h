@@ -41,8 +41,6 @@ using namespace stmlib;
 
 namespace mtd 
 {
-  const uint16_t kMaxBufferSize = 512;
-
   class Tap
   {
   public:
