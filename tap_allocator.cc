@@ -43,7 +43,7 @@ namespace mtd
     // for (size_t i=0; i<kMaxTaps; i++) {
     //   float t = static_cast<float>(i) + 1.0f;
     //   Add(t * t * SAMPLE_RATE * 0.8f / kMaxTaps + 1000.0f,
-    //       t / kMaxTaps);
+    //       t / kMaxTaps, 0.5f);
     // }
   }
 
