@@ -108,7 +108,7 @@ namespace mtd
       if (velocity_type == VELOCITY_LP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.6f);
       } else if (velocity_type == VELOCITY_BP) {
-        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 24.0f, 3.0f);
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 20.0f, 2.5f);
       }
 
       float time_start = time_ * prev_params->scale;
