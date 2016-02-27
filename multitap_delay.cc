@@ -119,7 +119,7 @@ namespace mtd
       // in the right edit modes, reset counter
       if (params->edit_mode != EDIT_NORMAL &&
           counter_ > repeat_time_) {
-        counter_ = 0;
+        counter_ -= repeat_time_;
       }
     }
 
