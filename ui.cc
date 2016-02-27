@@ -91,7 +91,7 @@ void Ui::Poll() {
   //   (switches_.pressed(SWITCH_TIME1_1) << 1 |
   //    switches_.pressed(SWITCH_TIME1_2));
 
-  parameters_->panning_mode = static_cast<PanningMode>
+  parameters_->panning = static_cast<Panning>
     (switches_.pressed(SWITCH_TIME1_1) << 1 |
      switches_.pressed(SWITCH_TIME1_2));
 
@@ -163,7 +163,7 @@ void Ui::OnSwitchPressed(const Event& e) {
     multitap_delay_->AddTap(parameters_->velocity,
                             parameters_->edit_mode,
                             parameters_->quantize,
-                            parameters_->panning_mode);
+                            parameters_->panning);
     break;
   case SWITCH_REV2:
     multitap_delay_->RemTap();

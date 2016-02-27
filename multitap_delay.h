@@ -50,8 +50,8 @@ namespace mtd
 
     void AddTap(float velocity,
                 EditMode edit_mode,
-                QuantizerMode quantizer_mode,
-                PanningMode panning_mode);
+                Quantize quantize,
+                Panning panning);
     void RemTap();
     void Clear();
 

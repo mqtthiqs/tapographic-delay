@@ -46,21 +46,21 @@ enum VelocityType {
 };
 
 enum EditMode {
-  EDIT_MODE_NORMAL,
-  EDIT_MODE_OVERDUB,
-  EDIT_MODE_OVERWRITE,
+  EDIT_NORMAL,
+  EDIT_OVERDUB,
+  EDIT_OVERWRITE,
 };
 
-enum QuantizerMode {
-  QUANTIZER_MODE_NONE,
-  QUANTIZER_MODE_8,
-  QUANTIZER_MODE_16,
+enum Quantize {
+  QUANTIZE_NONE,
+  QUANTIZE_8,
+  QUANTIZE_16,
 };
 
-enum PanningMode {
-  PANNING_MODE_LEFT,
-  PANNING_MODE_RANDOM,
-  PANNING_MODE_ALTERNATE,
+enum Panning {
+  PANNING_LEFT,
+  PANNING_RANDOM,
+  PANNING_ALTERNATE,
 };
 
 struct Parameters {
@@ -77,8 +77,8 @@ struct Parameters {
 
   bool ping;
   EditMode edit_mode;
-  QuantizerMode quantize;
-  PanningMode panning_mode;
+  Quantize quantize;
+  Panning panning;
   VelocityType velocity_type;
 };
 

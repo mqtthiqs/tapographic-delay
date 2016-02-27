@@ -52,8 +52,8 @@ namespace mtd
 
   void MultitapDelay::AddTap(float velocity,
                              EditMode edit_mode,
-                             QuantizerMode quantizer_mode,
-                             PanningMode panning_mode) {
+                             Quantize quantize,
+                             Panning panning) {
     // first tap does not count, it just starts the counter
     if (!counter_running_) {
       counter_running_ = true;
@@ -64,29 +64,29 @@ namespace mtd
 
     if (repeat_time_) {
       float repeat = static_cast<float>(repeat_time_);
-      float quantize =
-        quantizer_mode == QUANTIZER_MODE_8 ? 4.0f :
-        quantizer_mode == QUANTIZER_MODE_16 ? 8.0f :
+      float q =
+        quantize == QUANTIZE_8 ? 4.0f :
+        quantize == QUANTIZE_16 ? 8.0f :
         repeat;
-      time = round(time / repeat * quantize)
-        * repeat / quantize;
+      time = round(time / repeat * q)
+        * repeat / q;
     }
 
-    float panning = 0.0f;
-    if (panning_mode == PANNING_MODE_RANDOM) {
-      panning = Random::GetFloat();
-    } else if (panning_mode == PANNING_MODE_ALTERNATE) {
+    float pan = 0.0f;
+    if (panning == PANNING_RANDOM) {
+      pan = Random::GetFloat();
+    } else if (panning == PANNING_ALTERNATE) {
       static bool pan_state = true;
-      panning = pan_state ? 1.0f : 0.0f;
+      pan = pan_state ? 1.0f : 0.0f;
       pan_state = !pan_state;
     }
 
-    if (edit_mode == EDIT_MODE_NORMAL && time < buffer_.size()) {
-      tap_allocator_.Add(time, velocity, panning);
-    } else if (edit_mode == EDIT_MODE_OVERDUB) {
-      tap_allocator_.Add(time, velocity, panning);
-    } else if (edit_mode == EDIT_MODE_OVERWRITE) {
-      tap_allocator_.Add(time, velocity, panning);
+    if (edit_mode == EDIT_NORMAL && time < buffer_.size()) {
+      tap_allocator_.Add(time, velocity, pan);
+    } else if (edit_mode == EDIT_OVERDUB) {
+      tap_allocator_.Add(time, velocity, pan);
+    } else if (edit_mode == EDIT_OVERWRITE) {
+      tap_allocator_.Add(time, velocity, pan);
       tap_allocator_.Remove();
     }
   }
@@ -117,7 +117,7 @@ namespace mtd
     if (counter_running_) {
       counter_ += kBlockSize;
       // in the right edit modes, reset counter
-      if (params->edit_mode != EDIT_MODE_NORMAL &&
+      if (params->edit_mode != EDIT_NORMAL &&
           counter_ > repeat_time_) {
         counter_ = 0;
       }
