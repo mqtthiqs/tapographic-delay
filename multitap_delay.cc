@@ -135,9 +135,11 @@ namespace mtd
       }
 
       for (size_t i=0; i<kBlockSize; i++) {
-        int32_t sample = static_cast<int32_t>(input[i].l)
-          + (params->feedback / 2.0f) * feedback_buffer[i]; // TODO: / busy_voices
-        buf[i] += Clip16(sample);
+        int32_t sample =
+            static_cast<int32_t>(buf[i])
+          + static_cast<int32_t>(input[i].l)
+          + (params->feedback / 2.0f) * feedback_buffer[i];
+        buf[i] = Clip16(sample);
       }
       buffer_.Write(buf, kBlockSize);
     }
