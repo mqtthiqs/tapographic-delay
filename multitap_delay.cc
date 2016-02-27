@@ -41,7 +41,7 @@ namespace mtd
 
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init();
-    dc_blocker_.set_f_q<FREQUENCY_FAST>(30.0f / SAMPLE_RATE, 1.0f);
+    dc_blocker_.set_f<FREQUENCY_FAST>(20.0f / SAMPLE_RATE);
 
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].Init();

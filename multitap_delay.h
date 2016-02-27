@@ -62,7 +62,7 @@ namespace mtd
     int16_t feedback_buffer[kBlockSize];   /* max block size */
 
     Parameters prev_params_;
-    Svf dc_blocker_;
+    OnePole dc_blocker_;
 
     Clock* clock_;
 
