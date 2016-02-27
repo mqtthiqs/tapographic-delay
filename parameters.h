@@ -65,7 +65,7 @@ enum PanningMode {
 
 struct Parameters {
   float time;
-  float level;
+  float velocity;
   float feedback;
   float drywet;
   float morph;
