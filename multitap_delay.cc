@@ -70,6 +70,8 @@ namespace mtd
         repeat;
       time = round(time / repeat * quantize)
         * repeat / quantize;
+    }
+
     float panning = 0.0f;
     if (panning_mode == PANNING_MODE_RANDOM) {
       panning = Random::GetFloat();
