@@ -81,7 +81,6 @@ namespace mtd
       pan_state = !pan_state;
     }
 
-
     if (edit_mode == EDIT_MODE_NORMAL && time < buffer_.size()) {
       tap_allocator_.Add(time, velocity, panning);
     } else if (edit_mode == EDIT_MODE_OVERDUB) {

@@ -106,7 +106,7 @@ namespace mtd
 
       /* set filter parameters */
       if (velocity_type == VELOCITY_LP) {
-        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 8.0f, 0.6f);
+        filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ * velocity_ / 8.0f, 0.8f);
       } else if (velocity_type == VELOCITY_BP) {
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 20.0f, 2.5f);
       }
