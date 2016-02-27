@@ -62,6 +62,7 @@ namespace mtd
 
     float time = static_cast<float>(counter_);
 
+    // compute quantization
     if (repeat_time_) {
       float repeat = static_cast<float>(repeat_time_);
       float q =
@@ -72,6 +73,7 @@ namespace mtd
         * repeat / q;
     }
 
+    // compute panning
     float pan = 0.0f;
     if (panning == PANNING_RANDOM) {
       pan = Random::GetFloat();
@@ -81,12 +83,13 @@ namespace mtd
       pan_state = !pan_state;
     }
 
-    if (edit_mode == EDIT_NORMAL && time < buffer_.size()) {
+    // add tap
+    if (time < buffer_.size()) {
       tap_allocator_.Add(time, velocity, pan);
-    } else if (edit_mode == EDIT_OVERDUB) {
-      tap_allocator_.Add(time, velocity, pan);
-    } else if (edit_mode == EDIT_OVERWRITE) {
-      tap_allocator_.Add(time, velocity, pan);
+    }
+
+    // in overwrite mode, remove oldest tap
+    if (edit_mode == EDIT_OVERWRITE) {
       tap_allocator_.Remove();
     }
   }
