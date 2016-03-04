@@ -145,8 +145,8 @@ void Ui::PaintLeds() {
       beat_led_counter_--;
 
     leds_.set(LED_PING, ping_led_counter_);
-    leds_.set(LED_REPEAT1, parameters_->repeat);
-    leds_.set(LED_REPEAT2, beat_led_counter_);
+    leds_.set(LED_REPEAT1, beat_led_counter_);
+    leds_.set(LED_REPEAT2, parameters_->repeat);
   }
   break;
 
@@ -208,13 +208,13 @@ void Ui::OnSwitchPressed(const Event& e) {
   case SWITCH_PING:
     clock_->Tap();
     break;
-  case SWITCH_REV1:
+  case SWITCH_REPEAT1:
     multitap_delay_->AddTap(parameters_->velocity,
                             parameters_->edit_mode,
                             parameters_->quantize,
                             parameters_->panning);
     break;
-  case SWITCH_REV2:
+  case SWITCH_REV1:
     multitap_delay_->RemTap();
     break;
   }
@@ -237,15 +237,14 @@ void Ui::OnSwitchReleased(const Event& e) {
     }
     break;
   case SWITCH_REV1:
-  case SWITCH_REV2:
     if (e.data >= kLongPressDuration) {
       multitap_delay_->Clear();
     }
     break;
-  case SWITCH_REPEAT1:
+  case SWITCH_REPEAT2:
     parameters_->repeat = !parameters_->repeat;
     break;
-  case SWITCH_REPEAT2:
+  case SWITCH_REPEAT1:
     break;
   }
 }
