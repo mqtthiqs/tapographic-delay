@@ -160,8 +160,8 @@ namespace mtd
 
       if (counter_running_
           && taps_[i].active()
-          && taps_[i].time() < counter_
-          && counter_ < taps_[i].time() + 1000) //TODO understand 
+          && taps_[i].time() * params->scale < counter_
+          && counter_ < taps_[i].time() * params->scale + 1000) //TODO understand
         gate = true;
     }
 
