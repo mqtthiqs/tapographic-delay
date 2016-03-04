@@ -104,7 +104,7 @@ namespace mtd
     counter_ = 0;
   }
 
-  void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
+  bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
     // repeat time, in samples
     repeat_time_ = clock_->running() ?
@@ -152,8 +152,17 @@ namespace mtd
     FloatFrame empty = {0.0f, 0.0f};
     std::fill(buf, buf+kBlockSize, empty);
 
+    // gate is high at the beginning of the loop
+    bool gate = counter_running_ && counter_ < kBlockSize+1;
+
     for (int i=0; i<kMaxTaps; i++) {
-        taps_[i].Process(&prev_params_, params, &buffer_, buf);
+      taps_[i].Process(&prev_params_, params, &buffer_, buf);
+
+      if (counter_running_
+          && taps_[i].active()
+          && taps_[i].time() < counter_
+          && counter_ < taps_[i].time() + 1000) //TODO understand 
+        gate = true;
     }
 
     /* convert, output and feed back */
@@ -175,5 +184,7 @@ namespace mtd
     }
 
     prev_params_ = *params;
+
+    return gate;
   };
 }

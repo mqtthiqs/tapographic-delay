@@ -60,6 +60,9 @@ namespace mtd
     void set_velocity(float velocity) { velocity_ = velocity; }
     void set_panning(float panning) { panning_ = panning; }
 
+    float time() { return time_; }
+    bool active() { return volume_ > 0.01f; }
+
     void set_busy_voices_counter(uint8_t *busy_voices) {
       busy_voices_ = busy_voices;
     }

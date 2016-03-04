@@ -46,7 +46,7 @@ namespace mtd
     ~MultitapDelay() { }
 
     void Init(short* buffer, int32_t buffer_size, Clock* clock);
-    void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+    bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
     void AddTap(float velocity,
                 EditMode edit_mode,

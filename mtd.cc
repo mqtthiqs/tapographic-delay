@@ -35,7 +35,6 @@
 #include "ui.h"
 #include "multitap_delay.h"
 #include "clock.h"
-
 #include <stm32f4xx_conf.h>
 
 using namespace mtd;
@@ -77,7 +76,10 @@ extern "C" {
       clock.RecordLastTap();
     }
 
-    delay.Process(&parameters, input, output);
+    bool gate = delay.Process(&parameters, input, output);
+
+    ui.set_beat_led(gate);
+    gate_output.Write(gate);
   }
 }
 

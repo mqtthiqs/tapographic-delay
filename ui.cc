@@ -87,13 +87,15 @@ void Ui::Poll() {
 
   /* Switch 1: */
 
-  // parameters_->edit_mode = static_cast<EditMode>
+  parameters_->edit_mode = static_cast<EditMode>
+    (switches_.pressed(SWITCH_TIME1_1) << 1 |
+     switches_.pressed(SWITCH_TIME1_2));
+
+  // parameters_->panning = static_cast<Panning>
   //   (switches_.pressed(SWITCH_TIME1_1) << 1 |
   //    switches_.pressed(SWITCH_TIME1_2));
 
-  parameters_->panning = static_cast<Panning>
-    (switches_.pressed(SWITCH_TIME1_1) << 1 |
-     switches_.pressed(SWITCH_TIME1_2));
+  parameters_->panning = PANNING_RANDOM;
 
   /* Switch 2: */
 
@@ -125,13 +127,18 @@ void Ui::PaintLeds() {
   case UI_MODE_NORMAL:
   {
     if (clock_->running() && clock_->reset()) {
-      ping_led_counter_ = 20;
+      ping_led_counter_ = 40;
     }
+
     if (ping_led_counter_ > 0)
       ping_led_counter_--;
 
+    if (beat_led_counter_ > 0)
+      beat_led_counter_--;
+
     leds_.set(LED_PING, ping_led_counter_);
     leds_.set(LED_REPEAT1, parameters_->repeat);
+    leds_.set(LED_REPEAT2, beat_led_counter_);
   }
   break;
 

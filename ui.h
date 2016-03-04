@@ -62,6 +62,10 @@ class Ui {
   void Start();
   void Panic();
 
+  void set_beat_led(bool value) {
+    if (value) beat_led_counter_ = 20;
+  }
+
  private:
   void OnSwitchPressed(const stmlib::Event& e);
   void OnSwitchReleased(const stmlib::Event& e);
@@ -78,6 +82,7 @@ class Ui {
   
   Leds leds_;
   uint16_t ping_led_counter_;
+  uint16_t beat_led_counter_;
 
   Switches switches_;
   uint32_t press_time_[kNumSwitches];
