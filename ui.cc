@@ -46,6 +46,7 @@ using namespace stmlib;
   switches_.Init();
   
   mode_ = UI_MODE_SPLASH;
+  ignore_releases_ = 0;
 }
 
 void Ui::Start() {
@@ -85,27 +86,26 @@ void Ui::Poll() {
     }
   }
 
-  /* Switch 1: */
+  if (mode_ == UI_MODE_NORMAL) {
 
-  parameters_->edit_mode = static_cast<EditMode>
-    (switches_.pressed(SWITCH_TIME1_1) << 1 |
-     switches_.pressed(SWITCH_TIME1_2));
+    parameters_->edit_mode = static_cast<EditMode>
+      (switches_.pressed(SWITCH_TIME1_1) << 1 |
+       switches_.pressed(SWITCH_TIME1_2));
 
-  // parameters_->panning = static_cast<Panning>
-  //   (switches_.pressed(SWITCH_TIME1_1) << 1 |
-  //    switches_.pressed(SWITCH_TIME1_2));
+    parameters_->quantize = static_cast<Quantize>
+      (switches_.pressed(SWITCH_TIME2_1) << 1 |
+       switches_.pressed(SWITCH_TIME2_2));
 
-  parameters_->panning = PANNING_RANDOM;
+  } else if (mode_ == UI_MODE_SETTINGS) {
 
-  /* Switch 2: */
+    parameters_->panning = static_cast<Panning>
+      (switches_.pressed(SWITCH_TIME1_1) << 1 |
+       switches_.pressed(SWITCH_TIME1_2));
 
-  parameters_->velocity_type = static_cast<VelocityType>
-    (switches_.pressed(SWITCH_TIME2_1) << 1 |
-     switches_.pressed(SWITCH_TIME2_2));
-
-  // parameters_->quantize = static_cast<QuantizerMode>
-  //   (switches_.pressed(SWITCH_TIME2_1) << 1 |
-  //    switches_.pressed(SWITCH_TIME2_2));
+    parameters_->velocity_type = static_cast<VelocityType>
+      (switches_.pressed(SWITCH_TIME2_1) << 1 |
+       switches_.pressed(SWITCH_TIME2_2));
+  }
 
   PaintLeds();
 }
@@ -142,6 +142,26 @@ void Ui::PaintLeds() {
   }
   break;
 
+  case UI_MODE_SETTINGS:
+  {
+    leds_.set(LED_PING, animation_counter_ & 4);
+
+    bool pan_led =
+      parameters_->panning == 0 ? false :
+      parameters_->panning == 1 ? animation_counter_ & 1 :
+      true;
+
+    bool vel_led =
+      parameters_->velocity_type == 0 ? false :
+      parameters_->velocity_type == 1 ? animation_counter_ & 1 :
+      true;
+
+    leds_.set(LED_REPEAT1, pan_led);
+    leds_.set(LED_REPEAT2, vel_led);
+
+    break;
+  }
+
   case UI_MODE_PANIC:
   {
     for (int i=0; i<kNumLeds; i++){
@@ -162,6 +182,20 @@ void Ui::Panic() {
 }
 
 void Ui::OnSwitchPressed(const Event& e) {
+
+  // double press -> feature switch mode
+  if ((e.control_id == SWITCH_REPEAT1
+       && switches_.pressed(SWITCH_REPEAT2)) ||
+      (e.control_id == SWITCH_REPEAT2
+       && switches_.pressed(SWITCH_REPEAT1))) {
+    if (mode_ == UI_MODE_NORMAL)
+      mode_ = UI_MODE_SETTINGS;
+    else if (mode_ == UI_MODE_SETTINGS)
+      mode_ = UI_MODE_NORMAL;
+
+    ignore_releases_ = 2;
+  }
+
   switch (e.control_id) {
   case SWITCH_PING:
     clock_->Tap();
@@ -179,6 +213,12 @@ void Ui::OnSwitchPressed(const Event& e) {
 }
 
 void Ui::OnSwitchReleased(const Event& e) {
+  // hack for double presses
+  if (ignore_releases_ > 0) {
+    ignore_releases_--;
+    return;
+  }
+
   switch (e.control_id) {
 
   case SWITCH_PING:

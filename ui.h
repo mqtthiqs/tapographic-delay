@@ -44,6 +44,7 @@ enum UiMode {
   UI_MODE_SPLASH,
   UI_MODE_NORMAL,
   UI_MODE_PANIC,
+  UI_MODE_SETTINGS,
   UI_MODE_LAST
 };
 
@@ -89,6 +90,8 @@ class Ui {
   uint32_t long_press_time_[kNumSwitches];
   UiMode mode_;
   uint16_t animation_counter_;
+
+  uint16_t ignore_releases_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
