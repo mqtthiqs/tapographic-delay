@@ -47,6 +47,14 @@ using namespace stmlib;
   
   mode_ = UI_MODE_SPLASH;
   ignore_releases_ = 0;
+
+  // parameters initialization
+  parameters->edit_mode = EDIT_NORMAL;
+  parameters->quantize = QUANTIZE_NONE;
+  parameters->panning = PANNING_RANDOM;
+  parameters->velocity_type = VELOCITY_AMP;
+  parameters->edit_mode = EDIT_NORMAL;
+  parameters->repeat = false;
 }
 
 void Ui::Start() {
