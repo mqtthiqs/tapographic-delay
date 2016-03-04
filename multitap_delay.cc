@@ -37,7 +37,7 @@ namespace mtd
   void MultitapDelay::Init(short* buffer, int32_t buffer_size, Clock* clock) {
     clock_ = clock;
     counter_ = 0;
-    counter_running_ = false;
+    counter_running_ = true;    // TODO temp
 
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init();
