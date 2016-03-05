@@ -26,7 +26,7 @@
 //
 // WM8371 Codec support.
 
-#include "drivers/codec1.h"
+#include "drivers/codec.h"
 
 #define CODEC_I2C                      I2C1
 #define CODEC_I2C_CLK                  RCC_APB1Periph_I2C1
@@ -111,7 +111,7 @@
 namespace mtd {
 
 /* static */
-Codec1* Codec1::instance_;
+Codec* Codec::instance_;
 
 enum CodecRegister {
   CODEC_REG_LEFT_LINE_IN = 0x00,
@@ -175,7 +175,7 @@ enum CodecSettings {
   CODEC_RATE_44K_44K = 0x08 << 2,
 };
 
-bool Codec1::InitializeGPIO() {
+bool Codec::InitializeGPIO() {
   GPIO_InitTypeDef gpio_init;
 
   // Start GPIO peripheral clocks.
@@ -224,7 +224,7 @@ bool Codec1::InitializeGPIO() {
   return true;
 }
 
-bool Codec1::InitializeControlInterface() {
+bool Codec::InitializeControlInterface() {
   I2C_InitTypeDef i2c_init;
 
   // Initialize I2C
@@ -244,7 +244,7 @@ bool Codec1::InitializeControlInterface() {
   return true;
 }
 
-bool Codec1::InitializeAudioInterface(
+bool Codec::InitializeAudioInterface(
     bool mcu_is_master,
     int32_t sample_rate) {
   // Configure PLL and I2S master clock.
@@ -296,7 +296,7 @@ bool Codec1::InitializeAudioInterface(
   return true;
 }
 
-bool Codec1::WriteControlRegister(uint8_t address, uint16_t data) {
+bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
   uint8_t byte_1 = ((address << 1) & 0xfe) | ((data >> 8) & 0x01);
   uint8_t byte_2 = data & 0xff;
   
@@ -321,7 +321,7 @@ bool Codec1::WriteControlRegister(uint8_t address, uint16_t data) {
   return true;  
 }
 
-bool Codec1::InitializeCodec(
+bool Codec::InitializeCodec(
     bool mcu_is_master,
     int32_t sample_rate) {
   bool s = true;  // success;
@@ -391,7 +391,7 @@ bool Codec1::InitializeCodec(
   return s;
 }
 
-bool Codec1::InitializeDMA() {
+bool Codec::InitializeDMA() {
   RCC_AHB1PeriphClockCmd(AUDIO_I2S_DMA_CLOCK, ENABLE);
 
   // DMA setup for TX.
@@ -449,7 +449,7 @@ bool Codec1::InitializeDMA() {
   return true;
 }
 
-bool Codec1::Init(
+bool Codec::Init(
     bool mcu_is_master,
     int32_t sample_rate) {
   instance_ = this;
@@ -465,12 +465,12 @@ bool Codec1::Init(
       InitializeDMA();
 }
 
-bool Codec1::Start(FillBufferCallback callback) {
+bool Codec::Start(FillBufferCallback callback) {
   // Start the codec.
   if (!WriteControlRegister(CODEC_REG_ACTIVE, 0x01)) {
     return false;
   }
-  if (kBlockSize > kMaxCodec1BlockSize) {
+  if (kBlockSize > kMaxCodecBlockSize) {
     return false;
   }
   
@@ -521,20 +521,20 @@ bool Codec1::Start(FillBufferCallback callback) {
   return true;
 }
 
-void Codec1::Stop() {
+void Codec::Stop() {
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
 }
 
-bool Codec1::set_line_input_gain(int32_t channel, int32_t gain) {
+bool Codec::set_line_input_gain(int32_t channel, int32_t gain) {
   return WriteControlRegister(CODEC_REG_LEFT_LINE_IN + channel, gain);
 }
 
-bool Codec1::set_line_input_gain(int32_t gain) {
+bool Codec::set_line_input_gain(int32_t gain) {
   return WriteControlRegister(0, gain) && WriteControlRegister(1, gain);
 }
 
-void Codec1::Fill(size_t offset) {
+void Codec::Fill(size_t offset) {
   if (callback_) {
     offset *= kBlockSize * stride_ * 2;
     short* in = &rx_dma_buffer_[offset];
@@ -565,11 +565,11 @@ extern "C" {
 void DMA1_Stream2_IRQHandler(void) {
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
-    mtd::Codec1::GetInstance()->Fill(1);
+    mtd::Codec::GetInstance()->Fill(1);
   }
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
     AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
-    mtd::Codec1::GetInstance()->Fill(0);
+    mtd::Codec::GetInstance()->Fill(0);
   }
 }
   

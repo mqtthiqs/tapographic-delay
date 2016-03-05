@@ -29,7 +29,7 @@
 #include "stmlib/system/system_clock.h"
 #include "drivers/system.h"
 #include "drivers/gate_output.h"
-#include "drivers/codec1.h"
+#include "drivers/codec.h"
 #include "drivers/sdram.h"
 #include "cv_scaler.h"
 #include "ui.h"
@@ -42,7 +42,7 @@ using namespace stmlib;
 
 System sys;
 GateOutput gate_output;
-Codec1 codec1;
+Codec codec;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
@@ -84,7 +84,7 @@ extern "C" {
 }
 
 void Panic() {
-  codec1.Stop();
+  codec.Stop();
   ui.Panic();
   while(1);
 }
@@ -98,7 +98,7 @@ void Init() {
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
-  if (!codec1.Init(true, 44100)) { while(1); }
+  if (!codec.Init(true, 44100)) { while(1); }
 
   short* buffer = (short*)SDRAM_BASE;
 
@@ -109,7 +109,7 @@ void Init() {
   delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
 
   ui.Start();
-  if (!codec1.Start(&FillBuffer)) { while(1); }
+  if (!codec.Start(&FillBuffer)) { while(1); }
 }
 
 int main(void) {

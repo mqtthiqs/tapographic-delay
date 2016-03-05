@@ -26,8 +26,8 @@
 //
 // WM8371 Codec support.
 
-#ifndef MTD_DRIVERS_CODEC1_H_
-#define MTD_DRIVERS_CODEC1_H_
+#ifndef MTD_DRIVERS_CODEC_H_
+#define MTD_DRIVERS_CODEC_H_
 
 #include <stm32f4xx_conf.h>
 
@@ -36,12 +36,12 @@
 
 namespace mtd {
 
-const size_t kMaxCodec1BlockSize = 32;
+const size_t kMaxCodecBlockSize = 32;
 
-class Codec1 {
+class Codec {
  public:
-  Codec1() { }
-  ~Codec1() { }
+  Codec() { }
+  ~Codec() { }
 
   typedef void (*FillBufferCallback)(ShortFrame* rx, ShortFrame* tx);
   
@@ -62,7 +62,7 @@ class Codec1 {
   bool set_line_input_gain(int32_t channel, int32_t gain);
   bool set_line_input_gain(int32_t gain);
 
-  static Codec1* GetInstance() { return instance_; }
+  static Codec* GetInstance() { return instance_; }
   
  private:
   bool InitializeGPIO();
@@ -74,7 +74,7 @@ class Codec1 {
 
   bool InitializeDMA();
   
-  static Codec1* instance_;
+  static Codec* instance_;
   
   bool mcu_is_master_;
   int32_t sample_rate_;
@@ -85,12 +85,12 @@ class Codec1 {
   DMA_InitTypeDef dma_init_tx_;
   DMA_InitTypeDef dma_init_rx_;
   
-  short tx_dma_buffer_[kMaxCodec1BlockSize * 6 * 2];
-  short rx_dma_buffer_[kMaxCodec1BlockSize * 6 * 2];
+  short tx_dma_buffer_[kMaxCodecBlockSize * 6 * 2];
+  short rx_dma_buffer_[kMaxCodecBlockSize * 6 * 2];
 
-  DISALLOW_COPY_AND_ASSIGN(Codec1);
+  DISALLOW_COPY_AND_ASSIGN(Codec);
 };
 
 }  // namespace mtd
 
-#endif  // MTD_DRIVERS_CODEC1_H_
+#endif  // MTD_DRIVERS_CODEC_H_
