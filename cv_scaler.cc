@@ -141,7 +141,7 @@ void CvScaler::Read(Parameters* parameters) {
   float jitter_frequency =
     lp_values_[ADC_REGEN2_POT];
   CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
-  jitter_frequency *= jitter_frequency;
+  jitter_frequency *= jitter_frequency * jitter_frequency;
   parameters->jitter_frequency = jitter_frequency;
 
   float morph =
