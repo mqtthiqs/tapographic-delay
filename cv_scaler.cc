@@ -113,9 +113,20 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(drywet, 0.0f, 1.0f);
   parameters->drywet = drywet;
 
+  const float kNotchSize = 0.05f;
   float scale =
     lp_values_[ADC_MIX2_POT];
+
+  if (scale < 0.5f - kNotchSize) {
+    scale += kNotchSize;
+  } else if (scale > 0.5f + kNotchSize) {
+    scale -= kNotchSize;
+  } else {
+    scale = 0.5f;
+  }
+
   CONSTRAIN(scale, 0.0f, 1.0f);
+
   scale = scale*2;
   scale *= scale;
   SLOPE(scale_slope_, scale, 0.0002f, 0.0002f);
