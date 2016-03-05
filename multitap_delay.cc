@@ -66,8 +66,8 @@ namespace mtd
     if (repeat_time_) {
       float repeat = static_cast<float>(repeat_time_);
       float q =
-        quantize == QUANTIZE_8 ? 4.0f :
-        quantize == QUANTIZE_16 ? 8.0f :
+        quantize == QUANTIZE_8 ? 8.0f :
+        quantize == QUANTIZE_16 ? 16.0f :
         repeat;
       time = round(time / repeat * q)
         * repeat / q;
