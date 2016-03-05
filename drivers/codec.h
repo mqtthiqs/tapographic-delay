@@ -36,7 +36,7 @@
 
 namespace mtd {
 
-const size_t kMaxCodecBlockSize = 32;
+const size_t kMaxCodecBlockSize = 128;
 
 class Codec {
  public:
