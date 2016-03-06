@@ -83,10 +83,11 @@ extern "C" {
   }
 }
 
-void Panic() {
+bool Panic() {
   codec.Stop();
   ui.Panic();
   while(1);
+  return true;
 }
 
 void Init() {
@@ -98,12 +99,11 @@ void Init() {
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
-  if (!codec.Init(true, 44100)) { while(1); }
+  codec.Init(true, SAMPLE_RATE) || Panic();
 
   short* buffer = (short*)SDRAM_BASE;
 
-  // if (!sdram.Test())
-  //   Panic();
+  // sdram.Test() || Panic();
 
   clock.Init();
   delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
