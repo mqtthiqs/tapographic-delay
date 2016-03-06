@@ -35,15 +35,11 @@ namespace mtd
     taps_ = taps;
     fade_time_ = 1000.0f;
 
-    for (size_t i=0; i<kMaxTaps; i++) {
-      taps_[i].set_busy_voices_counter(&busy_voices_);
-    }
-
     // Dummy IR generation
     for (size_t i=0; i<kMaxTaps; i++) {
       float t = static_cast<float>(i) + 1.0f;
       float pan = Random::GetFloat();
-      Add(t * t * SAMPLE_RATE * 1.1f / kMaxTaps + 1000.0f,
+      Add(t * t * SAMPLE_RATE * 0.9f / kMaxTaps + 1000.0f,
           t / kMaxTaps, pan);
     }
   }

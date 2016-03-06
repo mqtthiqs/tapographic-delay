@@ -63,14 +63,8 @@ namespace mtd
     float time() { return time_; }
     bool active() { return volume_ > 0.01f; }
 
-    void set_busy_voices_counter(uint8_t *busy_voices) {
-      busy_voices_ = busy_voices;
-    }
-
     void fade_in(float length) {
       volume_increment_ = 1.0f / length;
-      if (volume_ == 0.0f)
-        (*busy_voices_)++;
     }
 
     void fade_out(float length) {
@@ -96,7 +90,6 @@ namespace mtd
 
       if (volume_end < 0.0f) {
         /* end of fade out */
-        (*busy_voices_)--;
         volume_end = 0.0f;
         volume_increment_ = 0.0f;
       } else if (volume_end > 1.0f) {
@@ -172,8 +165,6 @@ namespace mtd
     float panning_;
 
     float volume_, volume_increment_;
-
-    uint8_t* busy_voices_;
 
     RandomOscillator lfo_;
     float previous_lfo_sample_;
