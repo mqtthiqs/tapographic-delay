@@ -67,7 +67,15 @@ class Switches {
 
   inline bool pressed(uint8_t index) const {
     return switch_state_[index] == 0x00;
-	}
+  }
+
+  inline uint8_t state1() {
+    return pressed(SWITCH_TIME1_1) << 1 | pressed(SWITCH_TIME1_2);
+  }
+
+  inline uint8_t state2() {
+    return pressed(SWITCH_TIME2_1) << 1 | pressed(SWITCH_TIME2_2);
+  }
 
  private:
   uint8_t switch_state_[kNumSwitches];

@@ -95,24 +95,11 @@ void Ui::Poll() {
   }
 
   if (mode_ == UI_MODE_NORMAL) {
-
-    parameters_->edit_mode = static_cast<EditMode>
-      (switches_.pressed(SWITCH_TIME1_1) << 1 |
-       switches_.pressed(SWITCH_TIME1_2));
-
-    parameters_->quantize = static_cast<Quantize>
-      (switches_.pressed(SWITCH_TIME2_1) << 1 |
-       switches_.pressed(SWITCH_TIME2_2));
-
+    parameters_->edit_mode = static_cast<EditMode>(switches_.state1());
+    parameters_->quantize = static_cast<Quantize>(switches_.state2());
   } else if (mode_ == UI_MODE_SETTINGS) {
-
-    parameters_->panning = static_cast<Panning>
-      (switches_.pressed(SWITCH_TIME1_1) << 1 |
-       switches_.pressed(SWITCH_TIME1_2));
-
-    parameters_->velocity_type = static_cast<VelocityType>
-      (switches_.pressed(SWITCH_TIME2_1) << 1 |
-       switches_.pressed(SWITCH_TIME2_2));
+    parameters_->panning = static_cast<Panning>(switches_.state1());
+    parameters_->velocity_type = static_cast<VelocityType>(switches_.state2());
   }
 
   PaintLeds();
