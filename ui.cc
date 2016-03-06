@@ -200,23 +200,23 @@ void Ui::OnSwitchPressed(const Event& e) {
       mode_ = UI_MODE_SETTINGS;
     else if (mode_ == UI_MODE_SETTINGS)
       mode_ = UI_MODE_NORMAL;
-
     ignore_releases_ = 2;
-  }
-
-  switch (e.control_id) {
-  case SWITCH_PING:
-    clock_->Tap();
-    break;
-  case SWITCH_REPEAT1:
-    multitap_delay_->AddTap(parameters_->velocity,
-                            parameters_->edit_mode,
-                            parameters_->quantize,
-                            parameters_->panning);
-    break;
-  case SWITCH_REV1:
-    multitap_delay_->RemTap();
-    break;
+  } else if (mode_ == UI_MODE_NORMAL) {
+    // normal mode:
+    switch (e.control_id) {
+    case SWITCH_PING:
+      clock_->Tap();
+      break;
+    case SWITCH_REPEAT1:
+      multitap_delay_->AddTap(parameters_->velocity,
+                              parameters_->edit_mode,
+                              parameters_->quantize,
+                              parameters_->panning);
+      break;
+    case SWITCH_REV1:
+      multitap_delay_->RemTap();
+      break;
+    }
   }
 }
 
@@ -227,25 +227,27 @@ void Ui::OnSwitchReleased(const Event& e) {
     return;
   }
 
-  switch (e.control_id) {
-
-  case SWITCH_PING:
-    if (e.data >= kLongPressDuration) {
-      clock_->Stop();
-    } else {
-      clock_->RecordLastTap();
+  // normal mode:
+  if (mode_ == UI_MODE_NORMAL) {
+    switch (e.control_id) {
+    case SWITCH_PING:
+      if (e.data >= kLongPressDuration) {
+        clock_->Stop();
+      } else {
+        clock_->RecordLastTap();
+      }
+      break;
+    case SWITCH_REV1:
+      if (e.data >= kLongPressDuration) {
+        multitap_delay_->Clear();
+      }
+      break;
+    case SWITCH_REPEAT2:
+      parameters_->repeat = !parameters_->repeat;
+      break;
+    case SWITCH_REPEAT1:
+      break;
     }
-    break;
-  case SWITCH_REV1:
-    if (e.data >= kLongPressDuration) {
-      multitap_delay_->Clear();
-    }
-    break;
-  case SWITCH_REPEAT2:
-    parameters_->repeat = !parameters_->repeat;
-    break;
-  case SWITCH_REPEAT1:
-    break;
   }
 }
 
