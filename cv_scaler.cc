@@ -145,9 +145,10 @@ void CvScaler::Read(Parameters* parameters) {
   parameters->jitter_frequency = jitter_frequency;
 
   float morph =
-    lp_values_[ADC_TIME2_POT];
+    lp_values_[ADC_TIME1_POT];
   CONSTRAIN(morph, 0.0f, 1.0f);
-  parameters->morph = morph * 5000.0f;
+  morph *= morph;
+  parameters->morph = morph * 4000.0f;
 
   parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
 
