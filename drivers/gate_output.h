@@ -39,8 +39,18 @@ class GateOutput {
  public:
   GateOutput() { }
   ~GateOutput() { }
-  
-	void Init();
+
+  void Init() {
+		GPIO_InitTypeDef gpio;
+
+		gpio.GPIO_Mode = GPIO_Mode_OUT;
+		gpio.GPIO_Speed = GPIO_Speed_25MHz;
+		gpio.GPIO_OType = GPIO_OType_PP;
+		gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+		gpio.GPIO_Pin = GPIO_Pin_3;
+		GPIO_Init(GPIOE, &gpio);
+	}
 
 	inline void Write(bool clock) {
 		GPIO_WriteBit(GPIOE, GPIO_Pin_3, static_cast<BitAction>(clock));

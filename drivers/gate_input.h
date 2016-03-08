@@ -49,8 +49,44 @@ class GateInput {
   GateInput() { }
   ~GateInput() { }
   
-  void Init();
-	void Read();
+
+  void Init() {
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+
+    GPIO_InitTypeDef gpio_init;
+    gpio_init.GPIO_Mode = GPIO_Mode_IN;
+    gpio_init.GPIO_OType = GPIO_OType_PP;
+    gpio_init.GPIO_Speed = GPIO_Speed_25MHz;
+    gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
+
+    gpio_init.GPIO_Pin = GPIO_Pin_2;
+    GPIO_Init(GPIOE, &gpio_init);
+
+    gpio_init.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_2 | GPIO_Pin_3;
+    GPIO_Init(GPIOD, &gpio_init);
+
+    gpio_init.GPIO_Pin = GPIO_Pin_8;
+    GPIO_Init(GPIOA, &gpio_init);
+
+    for (int i=0; i<GATE_INPUT_LAST; i++) {
+      previous_values_[i] = values_[i] = false;
+    }
+  }
+
+  inline void Read() {
+    for (int i=0; i<GATE_INPUT_LAST; i++) {
+      previous_values_[i] = values_[i];
+    }
+
+    values_[GATE_INPUT_PING] = GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_2);
+    values_[GATE_INPUT_REPEAT1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
+    values_[GATE_INPUT_REPEAT2] = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8);
+    values_[GATE_INPUT_REVERSE1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_2);
+    values_[GATE_INPUT_REVERSE2] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_3);
+  }
+
 	inline bool value(int8_t channel) const { return values_[channel]; }
 
 	inline bool rising_edge(int8_t channel) const {

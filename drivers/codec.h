@@ -58,7 +58,7 @@ class Codec {
   void Stop();
   
   void Fill(size_t offset);
-  
+
   bool set_line_input_gain(int32_t channel, int32_t gain);
   bool set_line_input_gain(int32_t gain);
 

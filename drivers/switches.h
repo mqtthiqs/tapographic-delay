@@ -32,8 +32,11 @@
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
+#include <algorithm>
 
 namespace mtd {
+
+using namespace std;
 
 const uint8_t kNumSwitches = 9;
 
@@ -49,14 +52,57 @@ enum SwitchNames {
 	SWITCH_TIME2_2
 };
 
+struct PinAssign {
+	GPIO_TypeDef* gpio;
+	uint16_t pin;
+};
+
+const PinAssign pins[kNumSwitches] = {
+	{GPIOE, GPIO_Pin_5},
+	{GPIOD, GPIO_Pin_5},
+	{GPIOA, GPIO_Pin_9},
+	{GPIOG, GPIO_Pin_10},
+	{GPIOA, GPIO_Pin_1},
+	{GPIOG, GPIO_Pin_11},
+	{GPIOG, GPIO_Pin_12},
+	{GPIOA, GPIO_Pin_2},
+	{GPIOB, GPIO_Pin_2}
+};
+
 class Switches {
  public:
   Switches() { }
   ~Switches() { }
   
-  void Init();
-  void Debounce();
-  
+
+void Init() {
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+
+	GPIO_InitTypeDef gpio;
+	gpio.GPIO_Mode = GPIO_Mode_IN;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_Speed = GPIO_Speed_25MHz;
+  gpio.GPIO_PuPd = GPIO_PuPd_UP;
+
+	for (uint8_t i=0; i<kNumSwitches; i++) {
+		gpio.GPIO_Pin = pins[i].pin;
+		GPIO_Init(pins[i].gpio, &gpio);
+	}
+
+  fill(&switch_state_[0], &switch_state_[kNumSwitches], 0xff);
+}
+
+void Debounce() {
+	for (uint8_t i=0; i<kNumSwitches; i++) {
+    switch_state_[i] = (switch_state_[i] << 1) | \
+				GPIO_ReadInputDataBit(pins[i].gpio, pins[i].pin);
+	}
+}
+
   inline bool released(uint8_t index) const {
     return switch_state_[index] == 0x7f;
   }
