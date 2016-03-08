@@ -43,7 +43,7 @@ namespace mtd
   {
   public:
 
-    void Init() {
+    inline void Init() {
       value_ = 0.0f;
       next_value_ = Random::GetFloat() * 2.0f - 1.0f;
     }
@@ -54,7 +54,7 @@ namespace mtd
         phase_increment_ = 1.0f;
     }
 
-    float Next() {
+    inline float Next() {
       phase_ += phase_increment_;
       if (phase_ > 1.0f) {
         phase_--;

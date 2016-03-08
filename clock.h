@@ -48,14 +48,16 @@ namespace mtd
     void Start();
     void Stop();
 
-    float phase() { return phase_; }
-    float reset() {
+    inline float phase() { return phase_; }
+
+    inline float reset() {
       bool r = reset_;
       reset_ = false;
       return r;
     }
-    bool running() { return running_; }
-    float period() { return 1.0f / phase_increment_; }
+
+    inline bool running() { return running_; }
+    inline float period() { return 1.0f / phase_increment_; }
 
   private:
     uint32_t counter_;

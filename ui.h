@@ -63,7 +63,7 @@ class Ui {
   void Start();
   void Panic();
 
-  void set_beat_led(bool value) {
+  inline void set_beat_led(bool value) {
     if (value) beat_led_counter_ = 20;
   }
 
@@ -71,7 +71,6 @@ class Ui {
   void OnSwitchPressed(const stmlib::Event& e);
   void OnSwitchReleased(const stmlib::Event& e);
 
-  void SaveState();
   void PaintLeds();
 
   stmlib::EventQueue<16> queue_;

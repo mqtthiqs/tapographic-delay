@@ -52,7 +52,7 @@ using namespace stmlib;
   parameters->edit_mode = EDIT_NORMAL;
   parameters->quantize = QUANTIZE_NONE;
   parameters->panning = PANNING_RANDOM;
-  parameters->velocity_type = VELOCITY_AMP;
+  parameters->velocity_type = VELOCITY_LP;
   parameters->edit_mode = EDIT_NORMAL;
   parameters->repeat = false;
 }
@@ -105,7 +105,7 @@ void Ui::Poll() {
   PaintLeds();
 }
 
-void Ui::PaintLeds() {
+inline void Ui::PaintLeds() {
 
   if ((system_clock.milliseconds() & 63) == 0)
     animation_counter_++;
@@ -176,7 +176,7 @@ void Ui::Panic() {
   mode_ = UI_MODE_PANIC;
 }
 
-void Ui::OnSwitchPressed(const Event& e) {
+inline void Ui::OnSwitchPressed(const Event& e) {
 
   // double press -> feature switch mode
   if ((e.control_id == SWITCH_REPEAT1
@@ -207,7 +207,7 @@ void Ui::OnSwitchPressed(const Event& e) {
   }
 }
 
-void Ui::OnSwitchReleased(const Event& e) {
+inline void Ui::OnSwitchReleased(const Event& e) {
   // hack for double presses
   if (ignore_releases_ > 0) {
     ignore_releases_--;

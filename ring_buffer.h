@@ -55,7 +55,7 @@ namespace mtd
     uint32_t size() { return buffer_size_; }
 
     /* Write one value at cursor and increment it */
-    void Write(short value) {
+    inline void Write(short value) {
       buffer_[cursor_] = value;
       if (cursor_ == buffer_size_) {
         cursor_ = 0;
@@ -65,7 +65,7 @@ namespace mtd
     }
 
     /* Write [size] values at cursor and increment it. */
-    void Write(short *src, size_t size) {
+    inline void Write(short *src, size_t size) {
       size_t written = size;
       if (cursor_ > buffer_size_ - size) {
         written = buffer_size_ - cursor_;
@@ -80,7 +80,7 @@ namespace mtd
     }
 
     /* Reads the value from [pos] writes ago */
-    short Read(uint32_t pos) {
+    inline short Read(uint32_t pos) {
       uint32_t index;// = cursor_ - pos;
       if (cursor_ < pos) {
         index = buffer_size_ - pos + cursor_;
@@ -91,7 +91,7 @@ namespace mtd
     }
 
     /* Assumes that buffer_size_ is 2^n */
-    float ReadLinear(float pos) {
+    inline float ReadLinear(float pos) {
       MAKE_INTEGRAL_FRACTIONAL(pos);
       int32_t x = (cursor_ - pos_integral);
       float a = buffer_[x & (buffer_size_-1)];
@@ -101,7 +101,7 @@ namespace mtd
 
     /* Reads the [size] values until [pos] writes ago.
      * assert (pos + size < buffer_size_) */
-    void Read(short* dest, uint32_t pos, size_t size) {
+    inline void Read(short* dest, uint32_t pos, size_t size) {
       uint32_t index;
       size_t read = size;
       if (cursor_ < pos + size) {

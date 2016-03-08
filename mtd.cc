@@ -26,6 +26,8 @@
 //
 // Multitap delay, main file
 
+#include <stm32f4xx_conf.h>
+
 #include "stmlib/system/system_clock.h"
 #include "drivers/system.h"
 #include "drivers/gate_output.h"
@@ -35,7 +37,6 @@
 #include "ui.h"
 #include "multitap_delay.h"
 #include "clock.h"
-#include <stm32f4xx_conf.h>
 
 using namespace mtd;
 using namespace stmlib;

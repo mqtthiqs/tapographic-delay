@@ -184,7 +184,7 @@ public:
   }
 
 	inline uint16_t value(uint8_t channel) const {
-		return values_[channel] << 4; /* compensate for ADC max of 4096 */
+    return values_[channel] << 4; /* compensate for ADC max of 4096 */
 	}
   inline float float_value(uint8_t channel) const {
 		return static_cast<float>(values_[channel]) / 4096.0f; /* max is 4096 */

@@ -49,7 +49,7 @@ class Gate {
     peak_ = 0.5f;
   }
 
-  void Process(ShortFrame* in_out) {
+  inline void Process(ShortFrame* in_out) {
     size_t size = kBlockSize;
     while (size--) {
       short l = (*in_out).l;
