@@ -132,6 +132,9 @@ namespace mtd
         /* NOTE: doing the addition here avoids rounding errors with large times */
         float sample = buffer->ReadLinear(time_start + time);
 
+        /* apply envelope */
+        sample *= volume_ * volume_;
+
         /* apply velocity */
         if (velocity_type == VELOCITY_AMP) {
           sample *= velocity_ * velocity_;
@@ -141,9 +144,6 @@ namespace mtd
         } else if (velocity_type == VELOCITY_BP) {
           sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
         }
-
-        /* apply envelope */
-        sample *= volume_ * volume_;
 
         /* write to buffer */
         output->l += sample * panning_;
