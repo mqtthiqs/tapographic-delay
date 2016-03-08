@@ -539,14 +539,14 @@ void Codec::Fill(size_t offset) {
     offset *= kBlockSize * stride_ * 2;
     short* in = &rx_dma_buffer_[offset];
     short* out = &tx_dma_buffer_[offset];
-    if (stride_) {
+    if (stride_ > 1) {
       // Undo the padding from the WM8731.
       for (size_t i = 1; i < kBlockSize * 2; ++i) {
         in[i] = in[i * stride_];
       }
     }
     (*callback_)((ShortFrame*)(in), (ShortFrame*)(out));
-    if (stride_) {
+    if (stride_ > 1) {
       // Pad for the WM8731.
       for (size_t i = kBlockSize * 2 - 1; i > 0; --i) {
         out[i * stride_] = out[i];
