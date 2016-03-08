@@ -93,10 +93,18 @@ namespace mtd
     /* Assumes that buffer_size_ is 2^n */
     inline float ReadLinear(float pos) {
       MAKE_INTEGRAL_FRACTIONAL(pos);
-      int32_t x = (cursor_ - pos_integral);
+      int32_t x = cursor_ - pos_integral;
       float a = buffer_[x & (buffer_size_-1)];
       float b = buffer_[(x - 1) & (buffer_size_-1)];
       return (a + (b - a) * pos_fractional) / 32768.0f;
+    }
+
+    /* Assumes that buffer_size_ is 2^n */
+    inline float Read(float pos) {
+      int32_t pos_integral = static_cast<uint32_t>(pos); \
+      int32_t x = cursor_ - pos_integral;
+      float a = buffer_[x & (buffer_size_-1)];
+      return a / 32768.0f;
     }
 
     /* Reads the [size] values until [pos] writes ago.
