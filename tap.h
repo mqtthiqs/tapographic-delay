@@ -158,7 +158,7 @@ namespace mtd
 
   private:
 
-    Svf filter_;
+    NaiveSvf filter_;
 
     float time_;
     float velocity_;

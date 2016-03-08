@@ -56,6 +56,8 @@ namespace mtd
         max_time_ = time;
 
       next_voice_ = (next_voice_ + 1) % kMaxTaps;
+    } else {
+      // TODO: lost
     }
   }
 
