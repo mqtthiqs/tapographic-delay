@@ -26,13 +26,13 @@
 //
 //  A single tap
 
-#include "parameters.h"
-#include "ring_buffer.h"
-#include "random_oscillator.h"
-
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 
+#include "parameters.h"
+#include "ring_buffer.h"
+#include "random_oscillator.h"
+#include "fader.h"
 
 #ifndef MTD_TAP_H_
 #define MTD_TAP_H_
@@ -50,7 +50,6 @@ namespace mtd
     void Init() {
       lfo_.Init();
       previous_lfo_sample_ = 0.0f;
-      volume_ = 0.0f;
       time_ = kBlockSize;
       velocity_ = 0.0f;
       gain_l_ = gain_r_ = 1.0f;
@@ -65,15 +64,9 @@ namespace mtd
     }
 
     float time() { return time_; }
-    bool active() { return volume_ > 0.01f; }
-
-    void fade_in(float length) {
-      volume_increment_ = 1.0f / length;
-    }
-
-    void fade_out(float length) {
-      volume_increment_ = -1.0f / length;
-    }
+    bool active() { return fader_.volume() > 0.01f; }
+    void fade_in(float length) { fader_.fade_in(length); }
+    void fade_out(float length) { fader_.fade_out(length); }
 
     /* Dispatch function */
     void Process(VelocityType velocity_type,
@@ -96,20 +89,9 @@ namespace mtd
                    float scale, float jitter_amount, float jitter_frequency,
                    RingBuffer *buffer, FloatFrame* output) {
 
-      /* compute volume increment */
-      float volume_end = volume_ + volume_increment_;
-
-      if (volume_end < 0.0f) {
-        /* end of fade out */
-        volume_end = 0.0f;
-        volume_increment_ = 0.0f;
-      } else if (volume_end > 1.0f) {
-        /* end of fade in */
-        volume_end = 1.0f;
-        volume_increment_ = 0.0f;
-      }
-
-      const float volume_increment = (volume_end - volume_) / kBlockSize;
+      /* TODO: enable this in the final version to save energy */
+      // if (!active())
+      //  return;
 
       /* set filter parameters */
       if (velocity_type == VELOCITY_LP) {
@@ -137,6 +119,8 @@ namespace mtd
       const float time_increment = (time_end - time_start - kBlockSize)
         / static_cast<float>(kBlockSize);
 
+      fader_.Prepare();
+
       size_t size = kBlockSize;
       while(size--) {
 
@@ -145,7 +129,7 @@ namespace mtd
         float sample = buffer->ReadLinear(time_start + time);
 
         /* apply envelope */
-        sample *= volume_ * volume_;
+        fader_.Process(sample);
 
         /* apply velocity */
         if (velocity_type == VELOCITY_AMP) {
@@ -164,7 +148,6 @@ namespace mtd
         /* increment stuff */
         output++;
         time += time_increment;
-        volume_ += volume_increment;
       }
     };
 
@@ -176,7 +159,7 @@ namespace mtd
     float velocity_;
     float gain_l_, gain_r_;
 
-    float volume_, volume_increment_;
+    Fader fader_;
 
     RandomOscillator lfo_;
     float previous_lfo_sample_;
