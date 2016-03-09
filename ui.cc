@@ -201,9 +201,6 @@ inline void Ui::OnSwitchPressed(const Event& e) {
                               parameters_->quantize,
                               parameters_->panning);
       break;
-    case SWITCH_REV1:
-      multitap_delay_->RemTap();
-      break;
     }
   }
 }
@@ -228,6 +225,8 @@ inline void Ui::OnSwitchReleased(const Event& e) {
     case SWITCH_REV1:
       if (e.data >= kLongPressDuration) {
         multitap_delay_->Clear();
+      } else {
+        multitap_delay_->RemTap();
       }
       break;
     case SWITCH_REPEAT2:
