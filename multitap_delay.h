@@ -64,6 +64,9 @@ namespace mtd
     Parameters prev_params_;
     DCBlocker dc_blocker_;
 
+    bool previous_repeat_;
+    Fader repeat_fader_;
+
     Clock* clock_;
 
     bool counter_running_;

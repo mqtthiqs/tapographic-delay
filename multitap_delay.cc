@@ -41,6 +41,7 @@ namespace mtd
 
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init(1.0f - 20.0f / SAMPLE_RATE);
+    repeat_fader_.Init();
 
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].Init();
@@ -130,22 +131,35 @@ namespace mtd
     tap_allocator_.Poll();
 
     { /* Write into the buffer */
-      int16_t buf[kBlockSize];
+      int16_t buffer[kBlockSize];
 
-      if (params->repeat && repeat_time_) {
-        buffer_.Read(buf, repeat_time_, kBlockSize);
+      buffer_.Read(buffer, repeat_time_, kBlockSize);
+
+      // fade in/out the repeat buffer
+      if (repeat_time_ // only if repeat time > 100
+          && params->repeat
+          && !previous_repeat_) {
+        repeat_fader_.fade_in(params->morph);
+      } else if (!params->repeat
+          && previous_repeat_) {
+        repeat_fader_.fade_out(params->morph);
       } else {
-        std::fill(buf, buf+kBlockSize, 0);
+        repeat_fader_.Prepare();
       }
+
+      previous_repeat_ = params->repeat;
 
       for (size_t i=0; i<kBlockSize; i++) {
+        repeat_fader_.Process(buffer[i]);
         int32_t sample =
-            static_cast<int32_t>(buf[i])
+            static_cast<int32_t>(buffer[i])
           + static_cast<int32_t>(input[i].l)
           + (params->feedback / 2.0f) * feedback_buffer[i];
-        buf[i] = Clip16(sample);
+        // float s = static_cast<float>(sample) / 32768.0f;
+        // buffer[i] = SoftConvert(s * 2);
+        buffer[i] = Clip16(sample);
       }
-      buffer_.Write(buf, kBlockSize);
+      buffer_.Write(buffer, kBlockSize);
     }
 
     FloatFrame buf[kBlockSize];
