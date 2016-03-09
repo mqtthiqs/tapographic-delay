@@ -39,7 +39,7 @@ namespace mtd
     for (size_t i=0; i<kMaxTaps; i++) {
       float t = static_cast<float>(i) + 1.0f;
       float pan = Random::GetFloat();
-      Add(t * t * SAMPLE_RATE * 0.9f / kMaxTaps + 1000.0f,
+      Add(t * t * SAMPLE_RATE * 0.8f / kMaxTaps + 1000.0f,
           t / kMaxTaps, pan);
     }
   }
@@ -57,7 +57,8 @@ namespace mtd
 
       next_voice_ = (next_voice_ + 1) % kMaxTaps;
     } else {
-      // TODO: lost
+      TapParameter p = {time, velocity, panning};
+      queue_.Overwrite(p);
     }
   }
 
@@ -65,6 +66,13 @@ namespace mtd
     if (oldest_voice_ != next_voice_) {
       taps_[oldest_voice_].fade_out(fade_time_);
       oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
+    }
+  }
+
+  void TapAllocator::Poll() {
+    if (queue_.readable()) {
+      TapParameter p = queue_.Read();
+      Add(p.time, p.velocity, p.panning);
     }
   }
 

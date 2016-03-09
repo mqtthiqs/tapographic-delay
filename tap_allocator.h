@@ -30,6 +30,7 @@
 #define MTD_TAP_ALLOCATOR_H_
 
 #include "tap.h"
+#include "stmlib/utils/ring_buffer.h"
 
 namespace mtd 
 {
@@ -43,6 +44,7 @@ namespace mtd
     void Add(float time, float velocity, float panning);
     void Remove();
     void Clear();
+    void Poll();
 
     void set_fade_time(float fade_time) {
       fade_time_ = fade_time;
@@ -58,8 +60,15 @@ namespace mtd
     uint8_t next_voice_;
     uint8_t oldest_voice_;
     float fade_time_;
-
     float max_time_;
+
+    struct TapParameter {
+      float time;
+      float velocity;
+      float panning;
+    };
+
+    stmlib::RingBuffer<TapParameter, 32> queue_;
 
     DISALLOW_COPY_AND_ASSIGN(TapAllocator);
   };

@@ -127,6 +127,7 @@ namespace mtd
 
     // set fade time
     tap_allocator_.set_fade_time(params->morph);
+    tap_allocator_.Poll();
 
     { /* Write into the buffer */
       int16_t buf[kBlockSize];
