@@ -53,12 +53,16 @@ namespace mtd
       volume_ = 0.0f;
       time_ = kBlockSize;
       velocity_ = 0.0f;
-      panning_ = 0.5f;
+      gain_l_ = gain_r_ = 1.0f;
     };
+
     /* minimum time is block size */
-    void set_time(float time) { time_ = time + kBlockSize; }
-    void set_velocity(float velocity) { velocity_ = velocity; }
-    void set_panning(float panning) { panning_ = panning; }
+    inline void set_time(float time) { time_ = time + kBlockSize; }
+    inline void set_velocity(float velocity) { velocity_ = velocity; }
+    inline void set_gains(float gain_l, float gain_r) {
+      gain_l_ = gain_l;
+      gain_r_ = gain_r;
+    }
 
     float time() { return time_; }
     bool active() { return volume_ > 0.01f; }
@@ -153,8 +157,8 @@ namespace mtd
         }
 
         /* write to buffer */
-        output->l += sample * panning_;
-        output->r += sample * (1.0f - panning_);
+        output->l += sample * gain_l_;
+        output->r += sample * gain_r_;
 
         /* increment stuff */
         output++;
@@ -169,7 +173,7 @@ namespace mtd
 
     float time_;
     float velocity_;
-    float panning_;
+    float gain_l_, gain_r_;
 
     float volume_, volume_increment_;
 
