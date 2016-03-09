@@ -50,7 +50,9 @@ namespace mtd
       taps_[next_voice_].fade_in(fade_time_);
       taps_[next_voice_].set_time(time);
       taps_[next_voice_].set_velocity(velocity);
-      taps_[next_voice_].set_gains(panning, 1.0f - panning);
+      float gain_l = panning;
+      float gain_r = 1.0f - panning;
+      taps_[next_voice_].set_gains(gain_l, gain_r);
 
       if (time > max_time_)
         max_time_ = time;

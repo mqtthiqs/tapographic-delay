@@ -72,4 +72,4 @@ class Gate {
 
 }
 
-#endif  // WARPS_DSP_LIMITER_H_
+#endif

@@ -117,5 +117,7 @@ int main(void) {
   Init();
   while(1) {
     ui.DoEvents();
+    /* TODO: enable this in the final version to save energy */
+    // __WFI();
   }
 }
