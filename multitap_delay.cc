@@ -40,7 +40,7 @@ namespace mtd
     counter_running_ = true;    // TODO temp
 
     buffer_.Init(buffer, buffer_size);
-    dc_blocker_.Init(1.0f - 10.0f / SAMPLE_RATE);
+    dc_blocker_.Init(1.0f - 20.0f / SAMPLE_RATE);
 
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].Init();
