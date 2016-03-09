@@ -147,8 +147,11 @@ void CvScaler::Read(Parameters* parameters) {
   float morph =
     lp_values_[ADC_TIME1_POT];
   CONSTRAIN(morph, 0.0f, 1.0f);
+  morph += 0.1f;
+  morph /= 1.1f;
   morph *= morph;
-  parameters->morph = morph * 4000.0f;
+  morph *= morph;
+  parameters->morph = morph * 500000.0f;
 
   parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
 
