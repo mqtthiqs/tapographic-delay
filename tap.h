@@ -109,7 +109,7 @@ namespace mtd
         volume_increment_ = 0.0f;
       }
 
-      float volume_increment = (volume_end - volume_) / kBlockSize;
+      const float volume_increment = (volume_end - volume_) / kBlockSize;
 
       /* set filter parameters */
       if (velocity_type == VELOCITY_LP) {
@@ -118,12 +118,12 @@ namespace mtd
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 20.0f, 2.5f);
       }
 
-      float time_start = time_ * prev_scale;
-      float time_end = time_ * scale;
-
-      /* add random LFO */
+      /* compute random LFO */
       lfo_.set_slope(jitter_frequency / 20.0f);
       float lfo_sample = lfo_.Next();
+
+      float time_start = time_ * prev_scale;
+      float time_end = time_ * scale;
 
       float amplitude = 0.2f * SAMPLE_RATE;
       if (amplitude > time_end) amplitude = time_end;
@@ -134,7 +134,8 @@ namespace mtd
       /* assert (time_start > 0.0f && time_end > 0.0f); */
 
       float time = 0.0f;
-      float time_increment = (time_end - time_start - kBlockSize) / static_cast<float>(kBlockSize);
+      const float time_increment = (time_end - time_start - kBlockSize)
+        / static_cast<float>(kBlockSize);
 
       size_t size = kBlockSize;
       while(size--) {
