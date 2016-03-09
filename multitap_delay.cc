@@ -184,8 +184,8 @@ namespace mtd
 
       feedback_buffer[i] = Clip16(static_cast<int32_t>(32768.0f * fb));
 
-      output[i].l = Clip16(static_cast<int32_t>(32768.0f * sample_l));
-      output[i].r = Clip16(static_cast<int32_t>(32768.0f * sample_r));
+      output[i].l = SoftConvert(sample_l);
+      output[i].r = SoftConvert(sample_r);
     }
 
     prev_params_ = *params;
