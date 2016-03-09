@@ -53,7 +53,7 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
   // ADC_MIX1_POT,
   { false, 0.01f },
   // ADC_MIX2_POT,
-  { false, 0.001f },
+  { false, 0.002f },
   // ADC_TIME1_CV,
   { false, 0.05f },
   // ADC_TIME2_CV,
@@ -70,7 +70,7 @@ const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
 
 void CvScaler::Init() {
   fill(&lp_values_[0], &lp_values_[ADC_CHANNEL_LAST], 0.5f);
-  scale_slope_ = 0.5f;
+  scale_slope_ = 1.0f;
   adc_.Init();
   gate_input_.Init();
 }
@@ -113,7 +113,7 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(drywet, 0.0f, 1.0f);
   parameters->drywet = drywet;
 
-  const float kNotchSize = 0.05f;
+  const float kNotchSize = 0.06f;
   float scale =
     lp_values_[ADC_MIX2_POT];
 
@@ -129,7 +129,7 @@ void CvScaler::Read(Parameters* parameters) {
 
   scale = scale*2;
   scale *= scale;
-  SLOPE(scale_slope_, scale, 0.0002f, 0.0002f);
+  SLOPE(scale_slope_, scale, 0.0003f, 0.0003f);
   parameters->scale = scale_slope_; // 0..1..4
 
   float jitter_amount =

@@ -49,6 +49,7 @@ using namespace stmlib;
   ignore_releases_ = 0;
 
   // parameters initialization
+  parameters->scale = 1.0f; //center to avoid slope on startup
   parameters->edit_mode = EDIT_NORMAL;
   parameters->quantize = QUANTIZE_NONE;
   parameters->panning = PANNING_RANDOM;
