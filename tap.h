@@ -72,18 +72,25 @@ namespace mtd
     }
 
     /* Dispatch function */
-    void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer, FloatFrame* output) {
-      if (params->velocity_type == VELOCITY_AMP)
-        Process<VELOCITY_AMP>(prev_params, params, buffer, output);
-      else if (params->velocity_type == VELOCITY_LP)
-        Process<VELOCITY_LP>(prev_params, params, buffer, output);
-      else if (params->velocity_type == VELOCITY_BP)
-        Process<VELOCITY_BP>(prev_params, params, buffer, output);
+    void Process(VelocityType velocity_type,
+                 float prev_scale, float prev_jitter_amount,
+                 float scale, float jitter_amount, float jitter_frequency,
+                 RingBuffer *buffer, FloatFrame* output) {
+      if (velocity_type == VELOCITY_AMP)
+        Process<VELOCITY_AMP>(prev_scale, prev_jitter_amount, scale,
+                              jitter_amount, jitter_frequency, buffer, output);
+      else if (velocity_type == VELOCITY_LP)
+        Process<VELOCITY_LP>(prev_scale, prev_jitter_amount, scale,
+                              jitter_amount, jitter_frequency, buffer, output);
+      else if (velocity_type == VELOCITY_BP)
+        Process<VELOCITY_BP>(prev_scale, prev_jitter_amount, scale,
+                              jitter_amount, jitter_frequency, buffer, output);
     }
 
     template<VelocityType velocity_type>
-      void Process(Parameters* prev_params, Parameters* params, RingBuffer *buffer,
-                   FloatFrame* output) {
+      void Process(float prev_scale, float prev_jitter_amount,
+                   float scale, float jitter_amount, float jitter_frequency,
+                   RingBuffer *buffer, FloatFrame* output) {
 
       /* compute volume increment */
       float volume_end = volume_ + volume_increment_;
@@ -107,17 +114,17 @@ namespace mtd
         filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 20.0f, 2.5f);
       }
 
-      float time_start = time_ * prev_params->scale;
-      float time_end = time_ * params->scale;
+      float time_start = time_ * prev_scale;
+      float time_end = time_ * scale;
 
       /* add random LFO */
-      lfo_.set_slope(params->jitter_frequency / 20.0f);
+      lfo_.set_slope(jitter_frequency / 20.0f);
       float lfo_sample = lfo_.Next();
 
       float amplitude = 0.2f * SAMPLE_RATE;
       if (amplitude > time_end) amplitude = time_end;
-      time_start += amplitude * previous_lfo_sample_ * prev_params->jitter_amount;
-      time_end += amplitude * lfo_sample * params->jitter_amount;
+      time_start += amplitude * previous_lfo_sample_ * prev_jitter_amount;
+      time_end += amplitude * lfo_sample * jitter_amount;
       previous_lfo_sample_ = lfo_sample;
 
       /* assert (time_start > 0.0f && time_end > 0.0f); */

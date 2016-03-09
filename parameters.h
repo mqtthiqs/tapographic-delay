@@ -69,9 +69,9 @@ struct Parameters {
   float feedback;
   float drywet;
   float morph;
+  float scale;
   float jitter_amount;
   float jitter_frequency;
-  float scale;
 
   bool repeat;
 

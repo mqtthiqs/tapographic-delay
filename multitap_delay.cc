@@ -156,7 +156,10 @@ namespace mtd
     bool gate = counter_running_ && counter_ < kBlockSize+1;
 
     for (int i=0; i<kMaxTaps; i++) {
-      taps_[i].Process(&prev_params_, params, &buffer_, buf);
+      taps_[i].Process(params->velocity_type,
+                       prev_params_.scale, prev_params_.jitter_amount,
+                       params->scale, params->jitter_amount, params->jitter_frequency,
+                       &buffer_, buf);
 
       if (counter_running_
           && taps_[i].active()
