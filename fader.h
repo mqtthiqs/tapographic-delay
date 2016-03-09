@@ -71,6 +71,11 @@ class Fader {
     volume_ += volume_increment_;
   }
 
+  inline void Process(short &sample) {
+    sample = sample * (volume_ * volume_);
+    volume_ += volume_increment_;
+  }
+
  private:
   float volume_;
   float volume_increment_;
