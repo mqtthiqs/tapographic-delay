@@ -40,8 +40,7 @@ namespace mtd
     counter_running_ = true;    // TODO temp
 
     buffer_.Init(buffer, buffer_size);
-    dc_blocker_.Init();
-    dc_blocker_.set_f<FREQUENCY_FAST>(20.0f / SAMPLE_RATE);
+    dc_blocker_.Init(1.0f - 10.0f / SAMPLE_RATE);
 
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].Init();
@@ -170,7 +169,8 @@ namespace mtd
       float sample_l = buf[i].l;
       float sample_r = buf[i].r;
 
-      float fb = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(sample_l + sample_r);
+      float fb = sample_l + sample_r;
+      dc_blocker_.Process(&fb, 1);
 
       // add dry signal
       float dry = static_cast<float>(input[i].l) / 32768.0f;
