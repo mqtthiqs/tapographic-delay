@@ -53,7 +53,7 @@ using namespace stmlib;
   parameters->edit_mode = EDIT_NORMAL;
   parameters->quantize = QUANTIZE_NONE;
   parameters->panning = PANNING_RANDOM;
-  parameters->velocity_type = VELOCITY_LP;
+  parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
   parameters->repeat = false;
 }
