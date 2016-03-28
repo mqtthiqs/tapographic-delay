@@ -31,7 +31,6 @@
 
 #include "stmlib/stmlib.h"
 #include "stmlib/dsp/dsp.h"
-#include <stm32f4xx.h>
 
 #include <algorithm>
 

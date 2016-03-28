@@ -28,8 +28,6 @@
 
 #include "clock.h"
 
-#include "drivers/gate_input.h"
-
 namespace mtd 
 {
   void Clock::Init() {
