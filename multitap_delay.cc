@@ -154,7 +154,7 @@ namespace mtd
         int32_t sample =
             static_cast<int32_t>(buffer[i])
           + static_cast<int32_t>(input[i].l)
-          + (params->feedback / 2.0f) * feedback_buffer[i];
+          + params->feedback * feedback_buffer[i];
         // float s = static_cast<float>(sample) / 32768.0f;
         // buffer[i] = SoftConvert(s * 2);
         buffer[i] = Clip16(sample);
@@ -196,7 +196,8 @@ namespace mtd
       sample_l += (dry - sample_l) * params->drywet;
       sample_r += (dry - sample_r) * params->drywet;
 
-      feedback_buffer[i] = Clip16(static_cast<int32_t>(32768.0f * fb));
+      // write to feedback buffer in Q1.15 to leave headroom
+      feedback_buffer[i] = Clip16(static_cast<int32_t>(16384.0f * fb));
 
       output[i].l = SoftConvert(sample_l);
       output[i].r = SoftConvert(sample_r);
