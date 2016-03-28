@@ -64,7 +64,6 @@ enum Panning {
 };
 
 struct Parameters {
-  float time;
   float velocity;
   float feedback;
   float drywet;
@@ -74,8 +73,8 @@ struct Parameters {
   float jitter_frequency;
 
   bool repeat;
-
   bool ping;
+
   EditMode edit_mode;
   Quantize quantize;
   Panning panning;

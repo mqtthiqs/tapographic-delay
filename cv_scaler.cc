@@ -88,11 +88,11 @@ void CvScaler::Read(Parameters* parameters) {
         (value - lp_values_[i]);
   }
 
-  float time =
-    lp_values_[ADC_TIME1_POT] +
-    lp_values_[ADC_TIME1_CV];
-  CONSTRAIN(time, 0.0f, 1.0f);
-  parameters->time = time;
+  // float time =
+  //   lp_values_[ADC_TIME1_POT] +
+  //   lp_values_[ADC_TIME1_CV];
+  // CONSTRAIN(time, 0.0f, 1.0f);
+  // parameters->time = time;
 
   float velocity =
     lp_values_[ADC_LEVEL1_POT] +
