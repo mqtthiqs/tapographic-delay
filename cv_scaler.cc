@@ -154,7 +154,7 @@ void CvScaler::Read(Parameters* parameters) {
   parameters->morph = morph * 500000.0f;
 
   parameters->ping = gate_input_.rising_edge(GATE_INPUT_PING);
-
+  
   gate_input_.Read();
   adc_.Convert();
 }

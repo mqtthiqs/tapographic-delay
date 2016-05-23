@@ -152,8 +152,8 @@ public:
     ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 4, ADC_SampleTime_480Cycles); // level2_pot
     ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 5, ADC_SampleTime_480Cycles); // regen1_pot
     ADC_RegularChannelConfig(ADC1, ADC_Channel_12, 6, ADC_SampleTime_480Cycles); // regen2_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_13, 7, ADC_SampleTime_480Cycles); // mix1_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_14, 8, ADC_SampleTime_480Cycles); // mix2_pot
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_14, 7, ADC_SampleTime_480Cycles); // mix1_pot
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_13, 8, ADC_SampleTime_480Cycles); // mix2_pot
 
     // ADC3 channel configuration (CVs)
     ADC_RegularChannelConfig(ADC3, ADC_Channel_5, 1, ADC_SampleTime_480Cycles); //PF7

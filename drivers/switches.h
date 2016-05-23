@@ -59,7 +59,7 @@ struct PinAssign {
 
 const PinAssign pins[kNumSwitches] = {
 	{GPIOE, GPIO_Pin_5},
-	{GPIOD, GPIO_Pin_5},
+	{GPIOC, GPIO_Pin_13},
 	{GPIOA, GPIO_Pin_9},
 	{GPIOG, GPIO_Pin_10},
 	{GPIOA, GPIO_Pin_1},
@@ -78,6 +78,7 @@ class Switches {
 void Init() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);

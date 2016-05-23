@@ -35,7 +35,7 @@
 
 namespace mtd {
 
-const uint8_t kNumLeds = 5;
+const uint8_t kNumLeds = 7;
 
 enum LedNames {
 	LED_PING,
@@ -43,6 +43,8 @@ enum LedNames {
 	LED_REPEAT2,
 	LED_CH1,
 	LED_CH2,
+	LED_REV1,
+	LED_REV2,
 };
 
 class Leds {
@@ -63,12 +65,12 @@ class Leds {
     GPIO_Init(GPIOE, &gpio);
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-    gpio.GPIO_Pin = GPIO_Pin_4; // inf1
+    gpio.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_2; // inf1, rev2
     GPIO_Init(GPIOD, &gpio);
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12; // inf2,
-    // ch1, ch2
+    gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 |
+      GPIO_Pin_12 | GPIO_Pin_15; // inf2, ch1, ch2, rev1
     GPIO_Init(GPIOA, &gpio);
 
     for (int i=0; i<kNumLeds; i++)
@@ -82,6 +84,8 @@ class Leds {
     GPIO_WriteBit(GPIOA, GPIO_Pin_10, static_cast<BitAction>(values_[2])); // inf2
     GPIO_WriteBit(GPIOA, GPIO_Pin_11, static_cast<BitAction>(values_[3])); // ch1
     GPIO_WriteBit(GPIOA, GPIO_Pin_12, static_cast<BitAction>(values_[4])); // ch2
+    GPIO_WriteBit(GPIOA, GPIO_Pin_15, static_cast<BitAction>(values_[5])); // rev1
+    GPIO_WriteBit(GPIOD, GPIO_Pin_2, static_cast<BitAction>(values_[6])); // rev2
   }
 
   void set(uint8_t channel, bool value) {

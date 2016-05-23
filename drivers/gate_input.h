@@ -51,7 +51,7 @@ class GateInput {
   
 
   void Init() {
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 
@@ -64,11 +64,11 @@ class GateInput {
     gpio_init.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOE, &gpio_init);
 
-    gpio_init.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_2 | GPIO_Pin_3;
+    gpio_init.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_11 | GPIO_Pin_3;
     GPIO_Init(GPIOD, &gpio_init);
 
-    gpio_init.GPIO_Pin = GPIO_Pin_8;
-    GPIO_Init(GPIOA, &gpio_init);
+    gpio_init.GPIO_Pin = GPIO_Pin_6;
+    GPIO_Init(GPIOG, &gpio_init);
 
     for (int i=0; i<GATE_INPUT_LAST; i++) {
       previous_values_[i] = values_[i] = false;
@@ -81,9 +81,9 @@ class GateInput {
     }
 
     values_[GATE_INPUT_PING] = GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_2);
-    values_[GATE_INPUT_REPEAT1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
-    values_[GATE_INPUT_REPEAT2] = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8);
-    values_[GATE_INPUT_REVERSE1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_2);
+    values_[GATE_INPUT_REPEAT1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
+    values_[GATE_INPUT_REPEAT2] = GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_6);
+    values_[GATE_INPUT_REVERSE1] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_11);
     values_[GATE_INPUT_REVERSE2] = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_3);
   }
 
