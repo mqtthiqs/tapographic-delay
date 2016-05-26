@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,14 +19,18 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
 //
-// WM8371 Codec support.
+// CS4271 Codec support.
 
 #include "drivers/codec.h"
+
+#define CODEC_RESET_RCC RCC_AHB1Periph_GPIOB
+#define CODEC_RESET_PIN GPIO_Pin_4
+#define CODEC_RESET_GPIO GPIOB
 
 #define CODEC_I2C                      I2C1
 #define CODEC_I2C_CLK                  RCC_APB1Periph_I2C1
@@ -39,7 +43,7 @@
 #define CODEC_I2C_SDA_PINSRC           GPIO_PinSource9
 #define CODEC_TIMEOUT                  ((uint32_t)0x1000)
 #define CODEC_LONG_TIMEOUT             ((uint32_t)(300 * CODEC_TIMEOUT))
-#define CODEC_I2C_SPEED                100000
+#define CODEC_I2C_SPEED                50000
 
 #define CODEC_I2S                      SPI3
 #define CODEC_I2S_EXT                  I2S3ext
@@ -47,19 +51,19 @@
 #define CODEC_I2S_ADDRESS              0x40003C0C
 #define CODEC_I2S_EXT_ADDRESS          0x4000400C
 #define CODEC_I2S_GPIO_AF              GPIO_AF_SPI3
-#define CODEC_I2Sext_GPIO_AF           GPIO_AF_I2S3ext
+#define CODEC_I2Sext_GPIO_AF           GPIO_AF_I2S3ext // DAN: ((uint8_t)0x05)
 #define CODEC_I2S_IRQ                  SPI3_IRQn
 #define CODEC_I2S_EXT_IRQ              SPI3_IRQn
 #define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC)
-#define CODEC_I2S_WS_PIN               GPIO_Pin_15
-#define CODEC_I2S_WS_PINSRC            GPIO_PinSource15
+#define CODEC_I2S_WS_PIN               GPIO_Pin_4
+#define CODEC_I2S_WS_PINSRC            GPIO_PinSource4
 #define CODEC_I2S_WS_GPIO              GPIOA
-#define CODEC_I2S_SCK_PIN              GPIO_Pin_3
-#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource3
-#define CODEC_I2S_SCK_GPIO             GPIOB
-#define CODEC_I2S_SDI_PIN              GPIO_Pin_4
-#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource4
-#define CODEC_I2S_SDI_GPIO             GPIOB
+#define CODEC_I2S_SCK_PIN              GPIO_Pin_10
+#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource10
+#define CODEC_I2S_SCK_GPIO             GPIOC
+#define CODEC_I2S_SDI_PIN              GPIO_Pin_11
+#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource11
+#define CODEC_I2S_SDI_GPIO             GPIOC
 #define CODEC_I2S_SDO_PIN              GPIO_Pin_12
 #define CODEC_I2S_SDO_PINSRC           GPIO_PinSource12
 #define CODEC_I2S_SDO_GPIO             GPIOC
@@ -93,10 +97,11 @@
 #define AUDIO_I2S_EXT_DMA_ISR          LISR
 #define AUDIO_I2S_EXT_DMA_IFCR         LIFCR
 
-#define W8731_ADDR_0 0x1A
-#define W8731_ADDR_1 0x1B
-#define W8731_NUM_REGS 10
-#define CODEC_ADDRESS           (W8731_ADDR_0 << 1)
+/* we only initialize the first 6 registers, the 7th is for
+   pre/post-init and the 8th is read-only */
+#define CS4271_NUM_REGS 6
+#define CS4271_ADDR_0 0b0010000
+#define CODEC_ADDRESS           (CS4271_ADDR_0<<1)
 
 #define WAIT_LONG(x) { \
   uint32_t timeout = CODEC_LONG_TIMEOUT; \
@@ -110,70 +115,76 @@
 
 namespace mtd {
 
-/* static */
 Codec* Codec::instance_;
 
-enum CodecRegister {
-  CODEC_REG_LEFT_LINE_IN = 0x00,
-  CODEC_REG_RIGHT_LINE_IN = 0x01,
-  CODEC_REG_LEFT_HEADPHONES_OUT = 0x02,
-  CODEC_REG_RIGHT_HEADPHONES_OUT = 0x03,
-  CODEC_REG_ANALOGUE_ROUTING = 0x04,
-  CODEC_REG_DIGITAL_ROUTING = 0x05,
-  CODEC_REG_POWER_MANAGEMENT = 0x06,
-  CODEC_REG_DIGITAL_FORMAT = 0x07,
-  CODEC_REG_SAMPLE_RATE = 0x08,
-  CODEC_REG_ACTIVE = 0x09,
-  CODEC_REG_RESET = 0x0f,
-};
+#define CS4271_REG_MODECTRL1	1
+#define CS4271_REG_DACCTRL		2
+#define CS4271_REG_DACMIX		3
+#define CS4271_REG_DACAVOL		4
+#define CS4271_REG_DACBVOL		5
+#define CS4271_REG_ADCCTRL		6
+#define CS4271_REG_MODECTRL2	7
+#define CS4271_REG_CHIPID		8	/*Read-only*/
 
-enum CodecSettings {
-  CODEC_INPUT_0_DB = 0x17,
-  CODEC_INPUT_UPDATE_BOTH = 0x40,
-  CODEC_HEADPHONES_MUTE = 0x00,
-  CODEC_MIC_BOOST = 0x1,
-  CODEC_MIC_MUTE = 0x2,
-  CODEC_ADC_MIC = 0x4,
-  CODEC_ADC_LINE = 0x0,
-  CODEC_OUTPUT_DAC_ENABLE = 0x10,
-  CODEC_OUTPUT_MONITOR = 0x20,
-  CODEC_DEEMPHASIS_NONE = 0x00,
-  CODEC_DEEMPHASIS_32K = 0x01,
-  CODEC_DEEMPHASIS_44K = 0x02,
-  CODEC_DEEMPHASIS_48K = 0x03,
-  CODEC_SOFT_MUTE = 0x01,
-  CODEC_ADC_HPF = 0x00,
-  
-  CODEC_POWER_DOWN_LINE_IN = 0x01,
-  CODEC_POWER_DOWN_MIC = 0x02,
-  CODEC_POWER_DOWN_ADC = 0x04,
-  CODEC_POWER_DOWN_DAC = 0x08,
-  CODEC_POWER_DOWN_LINE_OUT = 0x10,
-  CODEC_POWER_DOWN_OSCILLATOR = 0x20,
-  CODEC_POWER_DOWN_CLOCK_OUTPUT = 0x40,
-  CODEC_POWER_DOWN_EVERYTHING = 0x80,
-  
-  CODEC_PROTOCOL_MASK_MSB_FIRST = 0x00,
-  CODEC_PROTOCOL_MASK_LSB_FIRST = 0x01,
-  CODEC_PROTOCOL_MASK_PHILIPS = 0x02,
-  CODEC_PROTOCOL_MASK_DSP = 0x03,
-  
-  CODEC_FORMAT_MASK_16_BIT = 0x00 << 2,
-  CODEC_FORMAT_MASK_20_BIT = 0x01 << 2,
-  CODEC_FORMAT_MASK_24_BIT = 0x02 << 2,
-  CODEC_FORMAT_MASK_32_BIT = 0x03 << 2,
-  
-  CODEC_FORMAT_LR_SWAP = 0x20,
-  CODEC_FORMAT_MASTER = 0x40,
-  CODEC_FORMAT_SLAVE = 0x00,
-  CODEC_FORMAT_INVERT_CLOCK = 0x80,
-  
-  CODEC_RATE_48K_48K = 0x00 << 2,
-  CODEC_RATE_8K_8K = 0x03 << 2,
-  CODEC_RATE_96K_96K = 0x07 << 2,
-  CODEC_RATE_32K_32K = 0x06 << 2,
-  CODEC_RATE_44K_44K = 0x08 << 2,
-};
+//Reg 1 (MODECTRL1):
+#define SINGLE_SPEED		(0b00<<6)		/* 4-50kHz */
+#define DOUBLE_SPEED		(0b10<<6)		/* 50-100kHz */
+#define QUAD_SPEED			(0b11<<6)		/* 100-200kHz */
+#define	RATIO0				(0b00<<4)		/* See table page 28 and 29 of datasheet */
+#define	RATIO1				(0b01<<4)
+#define	RATIO2				(0b10<<4)
+#define	RATIO3				(0b11<<4)
+#define	MASTER				(1<<3)
+#define	SLAVE				(0<<3)
+#define	DIF_LEFTJUST_24b	(0b000)
+#define	DIF_I2S_24b			(0b001)
+#define	DIF_RIGHTJUST_16b	(0b010)
+#define	DIF_RIGHTJUST_24b	(0b011)
+#define	DIF_RIGHTJUST_20b	(0b100)
+#define	DIF_RIGHTJUST_18b	(0b101)
+
+//Reg 2 (DACCTRL)
+#define AUTOMUTE 		(1<<7)
+#define SLOW_FILT_SEL	(1<<6)
+#define FAST_FILT_SEL	(0<<6)
+#define DEEMPH_OFF		(0<<4)
+#define DEEMPH_44		(1<<4)
+#define DEEMPH_48		(2<<4)
+#define DEEMPH_32		(3<<4)
+#define	SOFT_RAMPUP		(1<<3) /*An un-mute will be performed after executing a filter mode change, after a MCLK/LRCK ratio change or error, and after changing the Functional Mode.*/
+#define	SOFT_RAMPDOWN	(1<<2) /*A mute will be performed prior to executing a filter mode change.*/
+#define INVERT_SIGA_POL	(1<<1) /*When set, this bit activates an inversion of the signal polarity for the appropriate channel*/
+#define INVERT_SIGB_POL	(1<<0)
+
+//Reg 3 (DACMIX)
+#define BEQA			(1<<6) /*If set, ignore AOUTB volume setting, and instead make channel B's volume equal channel A's volume as set by AOUTA */
+#define SOFTRAMP		(1<<5) /*Allows level changes, both muting and attenuation, to be implemented by incrementally ramping, in 1/8 dB steps, from the current level to the new level at a rate of 1 dB per 8 left/right clock periods */
+#define	ZEROCROSS		(1<<4) /*Dictates that signal level changes, either by attenuation changes or muting, will occur on a signal zero crossing to minimize audible artifacts*/
+#define ATAPI_aLbR		(0b1001) /*channel A==>Left, channel B==>Right*/
+
+//Reg 4: DACAVOL
+//Reg 5: DACBVOL
+
+//Reg 6 (ADCCTRL)
+#define DITHER16		(1<<5) /*activates the Dither for 16-Bit Data feature*/
+#define ADC_DIF_I2S		(1<<4) /*I2S, up to 24-bit data*/
+#define ADC_DIF_LJUST	(0<<4) /*Left Justified, up to 24-bit data (default)*/
+#define MUTEA			(1<<3)
+#define MUTEB			(1<<2)
+#define HPFDisableA		(1<<1)
+#define HPFDisableB		(1<<0)
+
+
+//Reg 7 (MODECTRL2)
+#define PDN		(1<<0)		/* Power Down Enable */
+#define CPEN	(1<<1)		/* Control Port Enable */
+#define FREEZE	(1<<2)		/* Freezes effects of register changes */
+#define MUTECAB	(1<<3)		/* Internal AND gate on AMUTEC and BMUTEC */
+#define LOOP	(1<<4)		/* Digital loopback (ADC->DAC) */
+
+//Reg 8 (CHIPID) (Read-only)
+#define PART_mask	(0b11110000)
+#define REV_mask	(0b00001111)
 
 bool Codec::InitializeGPIO() {
   GPIO_InitTypeDef gpio_init;
@@ -182,7 +193,7 @@ bool Codec::InitializeGPIO() {
   RCC_AHB1PeriphClockCmd(CODEC_I2C_GPIO_CLOCK | CODEC_I2S_GPIO_CLOCK, ENABLE);
 
   // Initialize I2C pins
-  gpio_init.GPIO_Pin = CODEC_I2C_SCL_PIN | CODEC_I2C_SDA_PIN; 
+  gpio_init.GPIO_Pin = CODEC_I2C_SCL_PIN | CODEC_I2C_SDA_PIN;
   gpio_init.GPIO_Mode = GPIO_Mode_AF;
   gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
   gpio_init.GPIO_OType = GPIO_OType_OD;
@@ -192,13 +203,12 @@ bool Codec::InitializeGPIO() {
   // Connect pins to I2C peripheral
   GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SCL_PINSRC, CODEC_I2C_GPIO_AF);
   GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SDA_PINSRC, CODEC_I2C_GPIO_AF);
-  
+
   // Initialize I2S pins
   gpio_init.GPIO_Mode = GPIO_Mode_AF;
   gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
   gpio_init.GPIO_OType = GPIO_OType_PP;
   gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
 
   gpio_init.GPIO_Pin = CODEC_I2S_SCK_PIN;
   GPIO_Init(CODEC_I2S_SCK_GPIO, &gpio_init);
@@ -212,15 +222,29 @@ bool Codec::InitializeGPIO() {
   gpio_init.GPIO_Pin = CODEC_I2S_WS_PIN;
   GPIO_Init(CODEC_I2S_WS_GPIO, &gpio_init);
 
-  gpio_init.GPIO_Pin = CODEC_I2S_MCK_PIN; 
+  gpio_init.GPIO_Pin = CODEC_I2S_MCK_PIN;
   GPIO_Init(CODEC_I2S_MCK_GPIO, &gpio_init);
-  
+
   // Connect pins to I2S peripheral.
   GPIO_PinAFConfig(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PINSRC, CODEC_I2S_GPIO_AF);
   GPIO_PinAFConfig(CODEC_I2S_SCK_GPIO, CODEC_I2S_SCK_PINSRC, CODEC_I2S_GPIO_AF);
   GPIO_PinAFConfig(CODEC_I2S_SDO_GPIO, CODEC_I2S_SDO_PINSRC, CODEC_I2S_GPIO_AF);
   GPIO_PinAFConfig(CODEC_I2S_SDI_GPIO, CODEC_I2S_SDI_PINSRC, CODEC_I2Sext_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_MCK_GPIO, CODEC_I2S_MCK_PINSRC, CODEC_I2S_GPIO_AF); 
+  GPIO_PinAFConfig(CODEC_I2S_MCK_GPIO, CODEC_I2S_MCK_PINSRC, CODEC_I2S_GPIO_AF);
+
+  // Initialize Reset Pin
+  RCC_AHB1PeriphClockCmd(CODEC_RESET_RCC, ENABLE);
+
+  gpio_init.GPIO_Mode = GPIO_Mode_OUT;
+  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
+  gpio_init.GPIO_OType = GPIO_OType_PP;
+  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+  gpio_init.GPIO_Pin = CODEC_RESET_PIN;
+  GPIO_Init(CODEC_RESET_GPIO, &gpio_init);
+  // set reset pin low
+  GPIO_ResetBits(CODEC_RESET_GPIO, CODEC_RESET_PIN);
+
   return true;
 }
 
@@ -237,25 +261,22 @@ bool Codec::InitializeControlInterface() {
   i2c_init.I2C_Ack = I2C_Ack_Enable;
   i2c_init.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
   i2c_init.I2C_ClockSpeed = CODEC_I2C_SPEED;
-  
+
   I2C_Init(CODEC_I2C, &i2c_init);
-  I2C_Cmd(CODEC_I2C, ENABLE);  
-  
+  I2C_Cmd(CODEC_I2C, ENABLE);
+
   return true;
 }
 
-bool Codec::InitializeAudioInterface(
-    bool mcu_is_master,
-    int32_t sample_rate) {
+bool Codec::InitializeAudioInterface(int32_t sample_rate) {
   // Configure PLL and I2S master clock.
   RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
-  
+
   // The following values have been computed for a 8Mhz external crystal!
   RCC_PLLI2SCmd(DISABLE);
   if (sample_rate == 48000) {
     // 47.992kHz
-    RCC_PLLI2SConfig(258, 3, 0); // TODO added last argument, no idea
-                                  // what it does...
+    RCC_PLLI2SConfig(258, 3, 0);
   } else if (sample_rate == 44100) {
     // 44.11kHz
     RCC_PLLI2SConfig(271, 6, 0);
@@ -276,32 +297,30 @@ bool Codec::InitializeAudioInterface(
 
   // Initialize I2S
   I2S_InitTypeDef i2s_init;
-  
+
   SPI_I2S_DeInit(CODEC_I2S);
   i2s_init.I2S_AudioFreq = sample_rate;
   i2s_init.I2S_Standard = I2S_Standard_Phillips;
-  i2s_init.I2S_DataFormat = I2S_DataFormat_16b;
-  i2s_init.I2S_CPOL = I2S_CPOL_Low;
-  i2s_init.I2S_Mode = mcu_is_master ? I2S_Mode_MasterTx : I2S_Mode_SlaveTx;
-  i2s_init.I2S_MCLKOutput = mcu_is_master
-      ? I2S_MCLKOutput_Enable
-      : I2S_MCLKOutput_Disable;
+  i2s_init.I2S_DataFormat = I2S_DataFormat_24b;
+  i2s_init.I2S_CPOL = I2S_CPOL_High;
+  i2s_init.I2S_Mode = I2S_Mode_MasterTx;
+  i2s_init.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
 
   // Initialize the I2S main channel for TX
   I2S_Init(CODEC_I2S, &i2s_init);
-  
+
   // Initialize the I2S extended channel for RX
   I2S_FullDuplexConfig(CODEC_I2S_EXT, &i2s_init);
-  
+
   return true;
 }
 
 bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
   uint8_t byte_1 = ((address << 1) & 0xfe) | ((data >> 8) & 0x01);
   uint8_t byte_2 = data & 0xff;
-  
+
   WAIT_LONG(I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BUSY));
-  
+
   I2C_GenerateSTART(CODEC_I2C, ENABLE);
   WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_MODE_SELECT));
 
@@ -316,78 +335,39 @@ bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
 
   WAIT_LONG(!I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BTF));
 
-  I2C_GenerateSTOP(CODEC_I2C, ENABLE);  
+  I2C_GenerateSTOP(CODEC_I2C, ENABLE);
 
-  return true;  
+  return true;
 }
 
-bool Codec::InitializeCodec(
-    bool mcu_is_master,
-    int32_t sample_rate) {
+bool Codec::InitializeCodec(int32_t sample_rate) {
   bool s = true;  // success;
-  s = s && WriteControlRegister(CODEC_REG_RESET, 0);
-  // Configure L&R inputs
-  s = s && WriteControlRegister(CODEC_REG_LEFT_LINE_IN, CODEC_INPUT_0_DB);
-  s = s && WriteControlRegister(CODEC_REG_RIGHT_LINE_IN, CODEC_INPUT_0_DB);
-  
-  // Configure L&R headphone outputs
-  s = s && WriteControlRegister(CODEC_REG_LEFT_HEADPHONES_OUT, CODEC_HEADPHONES_MUTE);
-  s = s && WriteControlRegister(CODEC_REG_RIGHT_HEADPHONES_OUT, CODEC_HEADPHONES_MUTE);
 
-  // Configure analog routing
-  s = s && WriteControlRegister(
-			CODEC_REG_ANALOGUE_ROUTING,
-			CODEC_MIC_MUTE | CODEC_ADC_LINE | CODEC_OUTPUT_DAC_ENABLE);
+  // enable codec by putting reset pin high
+  GPIO_SetBits(CODEC_RESET_GPIO, CODEC_RESET_PIN);
+  for (register unsigned int i = 0; i < 100000; i++)
+    __asm__ __volatile__ ("nop\n\t":::"memory");
 
-  // Configure digital routing
-	s = s && WriteControlRegister(CODEC_REG_DIGITAL_ROUTING, CODEC_DEEMPHASIS_NONE);
+  //Control Port Enable and Power Down Enable
+  s = s && WriteControlRegister(CS4271_REG_MODECTRL2, CPEN | PDN);
 
-  // Configure power management
-  uint8_t power_down_reg = CODEC_POWER_DOWN_MIC | CODEC_POWER_DOWN_CLOCK_OUTPUT;
-  if (mcu_is_master) {
-    power_down_reg |= CODEC_POWER_DOWN_OSCILLATOR;
-  }
-    
-  s = s && WriteControlRegister(CODEC_REG_POWER_MANAGEMENT, power_down_reg);
-  
-  uint8_t format_byte = CODEC_PROTOCOL_MASK_PHILIPS | CODEC_FORMAT_MASK_16_BIT;
-  format_byte |= mcu_is_master ? CODEC_FORMAT_SLAVE : CODEC_FORMAT_MASTER;
+  // s = s && WriteControlRegister(CS4271_REG_MODECTRL1,
+  //                               SINGLE_SPEED | RATIO0 | MASTER |
+  //                               DIF_I2S_24b); // TODO or SLAVE?
 
-  s = s && WriteControlRegister(CODEC_REG_DIGITAL_FORMAT, format_byte);
-  
-  uint8_t rate_byte = 0;
-  if (mcu_is_master) {
-    // According to the WM8731 datasheet, the 32kHz and 96kHz modes require the
-    // master clock to be at 12.288 MHz (384 fs / 128 fs). The STM32F4 I2S clock
-    // is always at 256 fs. So the 32kHz and 96kHz modes are achieved by
-    // pretending that we are doing 48kHz, but with a slower or faster master
-    // clock.
-    rate_byte = sample_rate == 44100 ? CODEC_RATE_44K_44K : CODEC_RATE_48K_48K;
-  } else {
-    switch (sample_rate) {
-      case 8000:
-        rate_byte = CODEC_RATE_8K_8K;
-        break;
-      case 32000:
-        rate_byte = CODEC_RATE_32K_32K;
-        break;
-      case 44100:
-        rate_byte = CODEC_RATE_44K_44K;
-        break;
-      case 96000:
-        rate_byte = CODEC_RATE_96K_96K;
-        break;
-      case 48000:
-      default:
-        rate_byte = CODEC_RATE_48K_48K;
-        break;
-    }
-  }
-  s = s && WriteControlRegister(CODEC_REG_SAMPLE_RATE, rate_byte);
+  // s = s && WriteControlRegister(CS4271_REG_DACCTRL,
+  //                               FAST_FILT_SEL | DEEMPH_OFF | SOFT_RAMPUP | SOFT_RAMPDOWN);
 
-  // For now codec is not active.
-  s = s && WriteControlRegister(CODEC_REG_ACTIVE, 0x00);
-  
+  // s = s && WriteControlRegister(CS4271_REG_DACMIX, ATAPI_aLbR);
+
+  // s = s && WriteControlRegister(CS4271_REG_DACAVOL, 0);
+  // s = s && WriteControlRegister(CS4271_REG_DACBVOL, 0);
+
+  // s = s && WriteControlRegister(CS4271_REG_ADCCTRL,
+  //                               ADC_DIF_I2S | HPFDisableA | HPFDisableB);
+
+  // s = s && WriteControlRegister(CS4271_REG_MODECTRL2, CPEN);
+
   return s;
 }
 
@@ -419,7 +399,7 @@ bool Codec::InitializeDMA() {
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
   DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
 
-  dma_init_rx_.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;  
+  dma_init_rx_.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;
   dma_init_rx_.DMA_PeripheralBaseAddr = AUDIO_I2S_EXT_DMA_DREG;
   dma_init_rx_.DMA_Memory0BaseAddr = (uint32_t)0;
   dma_init_rx_.DMA_DIR = DMA_DIR_PeripheralToMemory;
@@ -427,60 +407,47 @@ bool Codec::InitializeDMA() {
   dma_init_rx_.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
   dma_init_rx_.DMA_MemoryInc = DMA_MemoryInc_Enable;
   dma_init_rx_.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  dma_init_rx_.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord; 
+  dma_init_rx_.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
   dma_init_rx_.DMA_Mode = DMA_Mode_Circular;
   dma_init_rx_.DMA_Priority = DMA_Priority_High;
-  dma_init_rx_.DMA_FIFOMode = DMA_FIFOMode_Disable;         
+  dma_init_rx_.DMA_FIFOMode = DMA_FIFOMode_Disable;
   dma_init_rx_.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
   dma_init_rx_.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  dma_init_rx_.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;  
-  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);  
+  dma_init_rx_.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);
 
   // Enable the interrupts.
   DMA_ITConfig(AUDIO_I2S_EXT_DMA_STREAM, DMA_IT_TC | DMA_IT_HT, ENABLE);
-    
+
   // Enable the IRQ.
   NVIC_EnableIRQ(AUDIO_I2S_EXT_DMA_IRQ);
 
   // Start DMA from/to codec.
   SPI_I2S_DMACmd(CODEC_I2S, SPI_I2S_DMAReq_Tx, ENABLE);
   SPI_I2S_DMACmd(CODEC_I2S_EXT, SPI_I2S_DMAReq_Rx, ENABLE);
-  
+
   return true;
 }
 
-bool Codec::Init(
-    bool mcu_is_master,
-    int32_t sample_rate) {
+bool Codec::Init(int32_t sample_rate) {
   instance_ = this;
-  callback_ = NULL;
-  
+
   sample_rate_ = sample_rate;
-  mcu_is_master_ = mcu_is_master;
 
   return InitializeGPIO() && \
       InitializeControlInterface() && \
-      InitializeAudioInterface(mcu_is_master, sample_rate) && \
-      InitializeCodec(mcu_is_master, sample_rate) && \
+      InitializeAudioInterface(sample_rate) && \
+      InitializeCodec(sample_rate) && \
       InitializeDMA();
 }
 
 bool Codec::Start(FillBufferCallback callback) {
-  // Start the codec.
-  if (!WriteControlRegister(CODEC_REG_ACTIVE, 0x01)) {
-    return false;
-  }
   if (kBlockSize > kMaxCodecBlockSize) {
     return false;
   }
-  
-  if (!mcu_is_master_) {
-    while(GPIO_ReadInputDataBit(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PIN));
-    while(!GPIO_ReadInputDataBit(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PIN));
-  }
-  
+
   callback_ = callback;
-  
+
   // Enable the I2S TX and RX peripherals.
   if ((CODEC_I2S->I2SCFGR & 0x0400) == 0){
     I2S_Cmd(CODEC_I2S, ENABLE);
@@ -488,36 +455,18 @@ bool Codec::Start(FillBufferCallback callback) {
   if ((CODEC_I2S_EXT->I2SCFGR & 0x0400) == 0){
     I2S_Cmd(CODEC_I2S_EXT, ENABLE);
   }
-  
+
   dma_init_tx_.DMA_Memory0BaseAddr = (uint32_t)(tx_dma_buffer_);
   dma_init_rx_.DMA_Memory0BaseAddr = (uint32_t)(rx_dma_buffer_);
 
-  size_t stride = 1;
-  if (!mcu_is_master_) {
-    // When the WM8731 is the master, the data is sent with padding.
-    switch (sample_rate_) {
-      case 32000:
-        stride = 3;
-        break;
-      case 48000:
-        stride = 2;
-        break;
-      case 96000:
-        stride = 4;
-        break;
-    }
-  }
+  dma_init_tx_.DMA_BufferSize = 2 * kBlockSize * 2;
+  dma_init_rx_.DMA_BufferSize = 2 * kBlockSize * 2;
 
-  stride_ = stride;
-
-  dma_init_tx_.DMA_BufferSize = 2 * stride * kBlockSize * 2;
-  dma_init_rx_.DMA_BufferSize = 2 * stride * kBlockSize * 2;
-  
   DMA_Init(AUDIO_I2S_DMA_STREAM, &dma_init_tx_);
   DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
-  
+
   return true;
 }
 
@@ -526,33 +475,11 @@ void Codec::Stop() {
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
 }
 
-bool Codec::set_line_input_gain(int32_t channel, int32_t gain) {
-  return WriteControlRegister(CODEC_REG_LEFT_LINE_IN + channel, gain);
-}
-
-bool Codec::set_line_input_gain(int32_t gain) {
-  return WriteControlRegister(0, gain) && WriteControlRegister(1, gain);
-}
-
 void Codec::Fill(size_t offset) {
-  if (callback_) {
-    offset *= kBlockSize * stride_ * 2;
-    short* in = &rx_dma_buffer_[offset];
-    short* out = &tx_dma_buffer_[offset];
-    if (stride_ > 1) {
-      // Undo the padding from the WM8731.
-      for (size_t i = 1; i < kBlockSize * 2; ++i) {
-        in[i] = in[i * stride_];
-      }
-    }
-    (*callback_)((ShortFrame*)(in), (ShortFrame*)(out));
-    if (stride_ > 1) {
-      // Pad for the WM8731.
-      for (size_t i = kBlockSize * 2 - 1; i > 0; --i) {
-        out[i * stride_] = out[i];
-      }
-    }
-  }
+  offset *= kBlockSize * 2;
+  short* in = &rx_dma_buffer_[offset];
+  short* out = &tx_dma_buffer_[offset];
+  (*callback_)((ShortFrame*)(in), (ShortFrame*)(out));
 }
 
 }  // namespace mtd
@@ -560,7 +487,7 @@ void Codec::Fill(size_t offset) {
 extern "C" {
 // Do not call into the firmware library to save on calls/jumps.
 // if (DMA_GetFlagStatus(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC) != RESET) {
-//  DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC);  
+//  DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC);
 
 void DMA1_Stream2_IRQHandler(void) {
   if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
@@ -572,5 +499,5 @@ void DMA1_Stream2_IRQHandler(void) {
     mtd::Codec::GetInstance()->Fill(0);
   }
 }
-  
+
 }
