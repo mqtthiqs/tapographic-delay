@@ -36,8 +36,10 @@ namespace mtd
 {
   void MultitapDelay::Init(short* buffer, int32_t buffer_size, Clock* clock) {
     clock_ = clock;
+    
     counter_ = 0;
     counter_running_ = true;    // TODO temp
+    dry_fader_.fade_in(100); // TODO temp
 
     buffer_.Init(buffer, buffer_size);
     dc_blocker_.Init(1.0f - 20.0f / SAMPLE_RATE);
@@ -46,7 +48,6 @@ namespace mtd
     for (size_t i=0; i<kMaxTaps; i++) {
       taps_[i].Init();
     }
-
     tap_allocator_.Init(taps_);
   };
 
@@ -183,16 +184,20 @@ namespace mtd
       }
     }
 
+    dry_fader_.Prepare();
+
     /* convert, output and feed back */
     for (size_t i=0; i<kBlockSize; i++) {
       float sample_l = buf[i].l;
       float sample_r = buf[i].r;
-
+      
+      
       float fb = sample_l + sample_r;
       dc_blocker_.Process(&fb, 1);
 
       // add dry signal
       float dry = static_cast<float>(input[i].l) / 32768.0f;
+      dry_fader_.Process(dry);
       sample_l += (dry - sample_l) * params->drywet;
       sample_r += (dry - sample_r) * params->drywet;
 

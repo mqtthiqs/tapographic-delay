@@ -66,6 +66,7 @@ namespace mtd
 
     bool previous_repeat_;
     Fader repeat_fader_;
+    Fader dry_fader_;
 
     Clock* clock_;
 
