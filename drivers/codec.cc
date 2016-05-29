@@ -1,121 +1,35 @@
-// Copyright 2014 Olivier Gillet.
-//
-// Author: Olivier Gillet (ol.gillet@gmail.com)
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-// See http://creativecommons.org/licenses/MIT/ for more information.
-//
-// -----------------------------------------------------------------------------
-//
-// CS4271 Codec support.
 
-#include "drivers/codec.h"
+#include "codec.h"
 
-#define CODEC_RESET_RCC RCC_AHB1Periph_GPIOB
-#define CODEC_RESET_PIN GPIO_Pin_4
-#define CODEC_RESET_GPIO GPIOB
+#define DELAY_MS(x)                             \
+do {							\
+  register unsigned int i;				\
+  for (i = 0; i < (25000*x); ++i)				\
+    __asm__ __volatile__ ("nop\n\t":::"memory");	\
+} while (0)
 
-#define CODEC_I2C                      I2C1
-#define CODEC_I2C_CLK                  RCC_APB1Periph_I2C1
-#define CODEC_I2C_GPIO_CLOCK           RCC_AHB1Periph_GPIOB
-#define CODEC_I2C_GPIO_AF              GPIO_AF_I2C1
-#define CODEC_I2C_GPIO                 GPIOB
-#define CODEC_I2C_SCL_PIN              GPIO_Pin_8
-#define CODEC_I2C_SDA_PIN              GPIO_Pin_9
-#define CODEC_I2C_SCL_PINSRC           GPIO_PinSource8
-#define CODEC_I2C_SDA_PINSRC           GPIO_PinSource9
-#define CODEC_TIMEOUT                  ((uint32_t)0x1000)
-#define CODEC_LONG_TIMEOUT             ((uint32_t)(300 * CODEC_TIMEOUT))
-#define CODEC_I2C_SPEED                50000
+#define ASSERT(x)                               \
+  { if (!(x)) return false; }                   \
 
-#define CODEC_I2S                      SPI3
-#define CODEC_I2S_EXT                  I2S3ext
-#define CODEC_I2S_CLK                  RCC_APB1Periph_SPI3
-#define CODEC_I2S_ADDRESS              0x40003C0C
-#define CODEC_I2S_EXT_ADDRESS          0x4000400C
-#define CODEC_I2S_GPIO_AF              GPIO_AF_SPI3
-#define CODEC_I2Sext_GPIO_AF           GPIO_AF_I2S3ext // DAN: ((uint8_t)0x05)
-#define CODEC_I2S_IRQ                  SPI3_IRQn
-#define CODEC_I2S_EXT_IRQ              SPI3_IRQn
-#define CODEC_I2S_GPIO_CLOCK           (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC)
-#define CODEC_I2S_WS_PIN               GPIO_Pin_4
-#define CODEC_I2S_WS_PINSRC            GPIO_PinSource4
-#define CODEC_I2S_WS_GPIO              GPIOA
-#define CODEC_I2S_SCK_PIN              GPIO_Pin_10
-#define CODEC_I2S_SCK_PINSRC           GPIO_PinSource10
-#define CODEC_I2S_SCK_GPIO             GPIOC
-#define CODEC_I2S_SDI_PIN              GPIO_Pin_11
-#define CODEC_I2S_SDI_PINSRC           GPIO_PinSource11
-#define CODEC_I2S_SDI_GPIO             GPIOC
-#define CODEC_I2S_SDO_PIN              GPIO_Pin_12
-#define CODEC_I2S_SDO_PINSRC           GPIO_PinSource12
-#define CODEC_I2S_SDO_GPIO             GPIOC
-#define CODEC_I2S_MCK_PIN              GPIO_Pin_7
-#define CODEC_I2S_MCK_PINSRC           GPIO_PinSource7
-#define CODEC_I2S_MCK_GPIO             GPIOC
-#define AUDIO_I2S_IRQHandler           SPI3_IRQHandler
+#define WAIT(x)                                 \
+  { int timeout = CODEC_TIMEOUT;                \
+    while (x)                                   \
+      if (timeout-- == 0) return false;         \
+  }                                             \
 
-#define AUDIO_DMA_PERIPH_DATA_SIZE     DMA_PeripheralDataSize_HalfWord
-#define AUDIO_DMA_MEM_DATA_SIZE        DMA_MemoryDataSize_HalfWord
-#define AUDIO_I2S_DMA_CLOCK            RCC_AHB1Periph_DMA1
-#define AUDIO_I2S_DMA_STREAM           DMA1_Stream5
-#define AUDIO_I2S_DMA_DREG             CODEC_I2S_ADDRESS
-#define AUDIO_I2S_DMA_CHANNEL          DMA_Channel_0
-#define AUDIO_I2S_DMA_IRQ              DMA1_Stream5_IRQn
-#define AUDIO_I2S_DMA_FLAG_TC          DMA_FLAG_TCIF0
-#define AUDIO_I2S_DMA_FLAG_HT          DMA_FLAG_HTIF0
-#define AUDIO_I2S_DMA_FLAG_FE          DMA_FLAG_FEIF0
-#define AUDIO_I2S_DMA_FLAG_TE          DMA_FLAG_TEIF0
-#define AUDIO_I2S_DMA_FLAG_DME         DMA_FLAG_DMEIF0
-#define AUDIO_I2S_EXT_DMA_STREAM       DMA1_Stream2
-#define AUDIO_I2S_EXT_DMA_DREG         CODEC_I2S_EXT_ADDRESS
-#define AUDIO_I2S_EXT_DMA_CHANNEL      DMA_Channel_2
-#define AUDIO_I2S_EXT_DMA_IRQ          DMA1_Stream2_IRQn
-#define AUDIO_I2S_EXT_DMA_FLAG_TC      DMA_FLAG_TCIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_HT      DMA_FLAG_HTIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_FE      DMA_FLAG_FEIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_TE      DMA_FLAG_TEIF2
-#define AUDIO_I2S_EXT_DMA_FLAG_DME     DMA_FLAG_DMEIF2
-#define AUDIO_I2S_EXT_DMA_REG          DMA1
-#define AUDIO_I2S_EXT_DMA_ISR          LISR
-#define AUDIO_I2S_EXT_DMA_IFCR         LIFCR
+#define WAIT_LONG(x)                            \
+  { int timeout = CODEC_LONG_TIMEOUT;           \
+    while (x)                                   \
+      if (timeout-- == 0) return false;         \
+  }                                             \
 
-/* we only initialize the first 6 registers, the 7th is for
-   pre/post-init and the 8th is read-only */
-#define CS4271_NUM_REGS 6
+#define CODEC_IS_SLAVE 0
+#define CODEC_IS_MASTER 1
+
 #define CS4271_ADDR_0 0b0010000
 #define CODEC_ADDRESS           (CS4271_ADDR_0<<1)
 
-#define WAIT_LONG(x) { \
-  uint32_t timeout = CODEC_LONG_TIMEOUT; \
-  while (x) { if ((timeout--) == 0) return false; } \
-}
-
-#define WAIT(x) { \
-  uint32_t timeout = CODEC_TIMEOUT; \
-  while (x) { if ((timeout--) == 0) return false; } \
-}
-
-namespace mtd {
-
-Codec* Codec::instance_;
+#define CS4271_NUM_REGS 6	/* we only initialize the first 6 registers, the 7th is for pre/post-init and the 8th is read-only */
 
 #define CS4271_REG_MODECTRL1	1
 #define CS4271_REG_DACCTRL		2
@@ -174,330 +88,319 @@ Codec* Codec::instance_;
 #define HPFDisableA		(1<<1)
 #define HPFDisableB		(1<<0)
 
-
 //Reg 7 (MODECTRL2)
 #define PDN		(1<<0)		/* Power Down Enable */
 #define CPEN	(1<<1)		/* Control Port Enable */
 #define FREEZE	(1<<2)		/* Freezes effects of register changes */
 #define MUTECAB	(1<<3)		/* Internal AND gate on AMUTEC and BMUTEC */
-#define LOOP	(1<<4)		/* Digital loopback (ADC->DAC) */
+#define LOOP	(1<<4)		/* Digital loopback (ADC->DAC) */  
 
-//Reg 8 (CHIPID) (Read-only)
-#define PART_mask	(0b11110000)
-#define REV_mask	(0b00001111)
+FillBufferCallback callback;
 
-bool Codec::InitializeGPIO() {
-  GPIO_InitTypeDef gpio_init;
+void InitGPIO(void)
+{
+	/* Enable I2S and I2C GPIO clocks */
+	RCC_AHB1PeriphClockCmd(CODEC_I2C_GPIO_CLOCK | CODEC_I2S_GPIO_CLOCK, ENABLE);
 
-  // Start GPIO peripheral clocks.
-  RCC_AHB1PeriphClockCmd(CODEC_I2C_GPIO_CLOCK | CODEC_I2S_GPIO_CLOCK, ENABLE);
+  GPIO_InitTypeDef gpio;
 
-  // Initialize I2C pins
-  gpio_init.GPIO_Pin = CODEC_I2C_SCL_PIN | CODEC_I2C_SDA_PIN;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-  gpio_init.GPIO_OType = GPIO_OType_OD;
-  gpio_init.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-  GPIO_Init(CODEC_I2C_GPIO, &gpio_init);
+	/* I2C SCL and SDA pins configuration */
+	gpio.GPIO_Mode = GPIO_Mode_AF;
+	gpio.GPIO_Speed = GPIO_Speed_50MHz;
+	gpio.GPIO_OType = GPIO_OType_OD;
+	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 
-  // Connect pins to I2C peripheral
-  GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SCL_PINSRC, CODEC_I2C_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SDA_PINSRC, CODEC_I2C_GPIO_AF);
+	gpio.GPIO_Pin = CODEC_I2C_SCL_PIN | CODEC_I2C_SDA_PIN;
+  GPIO_Init(CODEC_I2C_GPIO, &gpio);
 
-  // Initialize I2S pins
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	/* Connect pins to I2C peripheral */
+	GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SCL_PINSRC, CODEC_I2C_GPIO_AF);
+	GPIO_PinAFConfig(CODEC_I2C_GPIO, CODEC_I2C_SDA_PINSRC, CODEC_I2C_GPIO_AF);
 
-  gpio_init.GPIO_Pin = CODEC_I2S_SCK_PIN;
-  GPIO_Init(CODEC_I2S_SCK_GPIO, &gpio_init);
+	/* I2S output pins configuration: WS, SCK SD0 SDI MCK pins */
+	gpio.GPIO_Mode = GPIO_Mode_AF;
+	gpio.GPIO_Speed = GPIO_Speed_100MHz;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-  gpio_init.GPIO_Pin = CODEC_I2S_SDO_PIN;
-  GPIO_Init(CODEC_I2S_SDO_GPIO, &gpio_init);
+	gpio.GPIO_Pin = CODEC_I2S_WS_PIN;	GPIO_Init(CODEC_I2S_GPIO_WS, &gpio);
+	gpio.GPIO_Pin = CODEC_I2S_SDI_PIN;	GPIO_Init(CODEC_I2S_GPIO_SDI, &gpio);
+	gpio.GPIO_Pin = CODEC_I2S_SCK_PIN;	GPIO_Init(CODEC_I2S_GPIO_SCK, &gpio);
+	gpio.GPIO_Pin = CODEC_I2S_SDO_PIN;	GPIO_Init(CODEC_I2S_GPIO_SDO, &gpio);
 
-  gpio_init.GPIO_Pin = CODEC_I2S_SDI_PIN;
-  GPIO_Init(CODEC_I2S_SDI_GPIO, &gpio_init);
+	GPIO_PinAFConfig(CODEC_I2S_GPIO_WS, CODEC_I2S_WS_PINSRC, CODEC_I2S_GPIO_AF);
+	GPIO_PinAFConfig(CODEC_I2S_GPIO_SCK, CODEC_I2S_SCK_PINSRC, CODEC_I2S_GPIO_AF);
+	GPIO_PinAFConfig(CODEC_I2S_GPIO_SDO, CODEC_I2S_SDO_PINSRC, CODEC_I2S_GPIO_AF);
+	GPIO_PinAFConfig(CODEC_I2S_GPIO_SDI, CODEC_I2S_SDI_PINSRC, CODEC_I2Sext_GPIO_AF);
 
-  gpio_init.GPIO_Pin = CODEC_I2S_WS_PIN;
-  GPIO_Init(CODEC_I2S_WS_GPIO, &gpio_init);
+  gpio.GPIO_Mode = GPIO_Mode_AF;
+  gpio.GPIO_Speed = GPIO_Speed_100MHz;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-  gpio_init.GPIO_Pin = CODEC_I2S_MCK_PIN;
-  GPIO_Init(CODEC_I2S_MCK_GPIO, &gpio_init);
-
-  // Connect pins to I2S peripheral.
-  GPIO_PinAFConfig(CODEC_I2S_WS_GPIO, CODEC_I2S_WS_PINSRC, CODEC_I2S_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_SCK_GPIO, CODEC_I2S_SCK_PINSRC, CODEC_I2S_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_SDO_GPIO, CODEC_I2S_SDO_PINSRC, CODEC_I2S_GPIO_AF);
-  GPIO_PinAFConfig(CODEC_I2S_SDI_GPIO, CODEC_I2S_SDI_PINSRC, CODEC_I2Sext_GPIO_AF);
+  gpio.GPIO_Pin = CODEC_I2S_MCK_PIN; GPIO_Init(CODEC_I2S_MCK_GPIO, &gpio);
   GPIO_PinAFConfig(CODEC_I2S_MCK_GPIO, CODEC_I2S_MCK_PINSRC, CODEC_I2S_GPIO_AF);
 
-  // Initialize Reset Pin
-  RCC_AHB1PeriphClockCmd(CODEC_RESET_RCC, ENABLE);
+  // Reset pin
+	RCC_AHB1PeriphClockCmd(CODEC_RESET_RCC, ENABLE);
 
-  gpio_init.GPIO_Mode = GPIO_Mode_OUT;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	gpio.GPIO_Mode = GPIO_Mode_OUT;
+	gpio.GPIO_Speed = GPIO_Speed_2MHz;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-  gpio_init.GPIO_Pin = CODEC_RESET_PIN;
-  GPIO_Init(CODEC_RESET_GPIO, &gpio_init);
-  // set reset pin low
-  GPIO_ResetBits(CODEC_RESET_GPIO, CODEC_RESET_PIN);
-
-  return true;
+	gpio.GPIO_Pin = CODEC_RESET_pin; GPIO_Init(CODEC_RESET_GPIO, &gpio);
+	CODEC_RESET_LOW;
 }
 
-bool Codec::InitializeControlInterface() {
-  I2C_InitTypeDef i2c_init;
+bool WriteRegister(uint8_t RegisterAddr, uint8_t RegisterValue)
+{
+	uint8_t Byte1 = RegisterAddr;
+	uint8_t Byte2 = RegisterValue;
+	
+	/*!< While the bus is busy */
+	WAIT_LONG(I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BUSY));
 
-  // Initialize I2C
-  RCC_APB1PeriphClockCmd(CODEC_I2C_CLK, ENABLE);
+	/* Start the config sequence */
+	I2C_GenerateSTART(CODEC_I2C, ENABLE);
 
-  I2C_DeInit(CODEC_I2C);
-  i2c_init.I2C_Mode = I2C_Mode_I2C;
-  i2c_init.I2C_DutyCycle = I2C_DutyCycle_2;
-  i2c_init.I2C_OwnAddress1 = 0x33;
-  i2c_init.I2C_Ack = I2C_Ack_Enable;
-  i2c_init.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-  i2c_init.I2C_ClockSpeed = CODEC_I2C_SPEED;
+	/* Test on EV5 and clear it */
+	WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_MODE_SELECT));
 
-  I2C_Init(CODEC_I2C, &i2c_init);
-  I2C_Cmd(CODEC_I2C, ENABLE);
+	/* Transmit the slave address and enable writing operation */
+	I2C_Send7bitAddress(CODEC_I2C, CODEC_ADDRESS, I2C_Direction_Transmitter);
 
-  return true;
+	/* Test on EV6 and clear it */
+	WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+
+	/* Transmit the first address for write operation */
+	I2C_SendData(CODEC_I2C, Byte1);
+
+	/* Test on EV8 and clear it */
+	WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTING));
+
+	/* Prepare the register value to be sent */
+	I2C_SendData(CODEC_I2C, Byte2);
+
+	/*!< Wait till all data have been physically transferred on the bus */
+	WAIT_LONG(!I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BTF));
+
+	/* End the configuration sequence */
+	I2C_GenerateSTOP(CODEC_I2C, ENABLE);
+
+	return true;
 }
 
-bool Codec::InitializeAudioInterface(int32_t sample_rate) {
-  // Configure PLL and I2S master clock.
+bool InitControlInterface(void)
+{
+  // Enable I2C
+	I2C_InitTypeDef I2C_InitStructure;
+
+	RCC_APB1PeriphClockCmd(CODEC_I2C_CLK, ENABLE);
+
+	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+	I2C_InitStructure.I2C_OwnAddress1 = 0x33;
+	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+	I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
+  
+	I2C_DeInit(CODEC_I2C);
+	I2C_Init(CODEC_I2C, &I2C_InitStructure);
+	I2C_Cmd(CODEC_I2C, ENABLE);
+
+  // Set codec pin
+	CODEC_RESET_HIGH;
+	DELAY_MS(2);
+
+  // Set codec registers
+  //Control Port Enable and Power Down Enable  
+	ASSERT(WriteRegister(CS4271_REG_MODECTRL2, CPEN | PDN));
+
+  ASSERT(WriteRegister(CS4271_REG_MODECTRL1, SINGLE_SPEED | RATIO0 | SLAVE | DIF_I2S_24b));
+	ASSERT(WriteRegister(CS4271_REG_DACCTRL, FAST_FILT_SEL | DEEMPH_OFF));
+	ASSERT(WriteRegister(CS4271_REG_DACMIX, ATAPI_aLbR));
+	ASSERT(WriteRegister(CS4271_REG_DACAVOL, 0));
+	ASSERT(WriteRegister(CS4271_REG_DACBVOL, 0));
+	ASSERT(WriteRegister(CS4271_REG_ADCCTRL, ADC_DIF_I2S));
+
+  //Power Down disable
+	ASSERT(WriteRegister(CS4271_REG_MODECTRL2, CPEN))
+
+	return true;
+}
+
+void InitAudioInterface(uint32_t sample_rate)
+{
+	I2S_InitTypeDef I2S_InitStructure;
+
+	// Enable the CODEC_I2S peripheral clock
+	RCC_APB1PeriphClockCmd(CODEC_I2S_CLK, ENABLE);
+
+	// CODEC_I2S peripheral configuration for master TX
+	SPI_I2S_DeInit(CODEC_I2S);
+	I2S_InitStructure.I2S_AudioFreq = sample_rate;
+	I2S_InitStructure.I2S_Standard = I2S_Standard_Phillips;
+	I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_24b;
+	I2S_InitStructure.I2S_CPOL = I2S_CPOL_High;
+  I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
+  I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
+
+	// Initialize the I2S main channel for TX
+	I2S_Init(CODEC_I2S, &I2S_InitStructure);
+
+	// Initialize the I2S extended channel for RX
+	I2S_FullDuplexConfig(CODEC_I2S_EXT, &I2S_InitStructure);
+
+  I2S_Cmd(CODEC_I2S, ENABLE);
+	I2S_Cmd(CODEC_I2S_EXT, ENABLE);
+
   RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
-
-  // The following values have been computed for a 8Mhz external crystal!
-  RCC_PLLI2SCmd(DISABLE);
-  if (sample_rate == 48000) {
-    // 47.992kHz
-    RCC_PLLI2SConfig(258, 3, 0);
-  } else if (sample_rate == 44100) {
-    // 44.11kHz
-    RCC_PLLI2SConfig(271, 6, 0);
-  } else if (sample_rate == 32000) {
-    // 32.003kHz
-    RCC_PLLI2SConfig(426, 4, 0);
-  } else if (sample_rate == 96000) {
-    // 95.95 kHz
-    RCC_PLLI2SConfig(393, 4, 0);
-  } else {
-    // Unsupported sample rate!
-    return false;
-  }
-  RCC_PLLI2SCmd(ENABLE);
-  WAIT(RCC_GetFlagStatus(RCC_FLAG_PLLI2SRDY) == RESET);
-
-  RCC_APB1PeriphClockCmd(CODEC_I2S_CLK, ENABLE);
-
-  // Initialize I2S
-  I2S_InitTypeDef i2s_init;
-
-  SPI_I2S_DeInit(CODEC_I2S);
-  i2s_init.I2S_AudioFreq = sample_rate;
-  i2s_init.I2S_Standard = I2S_Standard_Phillips;
-  i2s_init.I2S_DataFormat = I2S_DataFormat_24b;
-  i2s_init.I2S_CPOL = I2S_CPOL_High;
-  i2s_init.I2S_Mode = I2S_Mode_MasterTx;
-  i2s_init.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
-
-  // Initialize the I2S main channel for TX
-  I2S_Init(CODEC_I2S, &i2s_init);
-
-  // Initialize the I2S extended channel for RX
-  I2S_FullDuplexConfig(CODEC_I2S_EXT, &i2s_init);
-
-  return true;
+	RCC_PLLI2SCmd(ENABLE);
 }
 
-bool Codec::WriteControlRegister(uint8_t address, uint16_t data) {
-  uint8_t byte_1 = ((address << 1) & 0xfe) | ((data >> 8) & 0x01);
-  uint8_t byte_2 = data & 0xff;
+NVIC_InitTypeDef nvic_i2s3ext, NVIC_InitStructure;
 
-  WAIT_LONG(I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BUSY));
+volatile int16_t tx_buffer[CODEC_BUFFER_SIZE * 2 * 2];
+volatile int16_t rx_buffer[CODEC_BUFFER_SIZE * 2 * 2];
 
-  I2C_GenerateSTART(CODEC_I2C, ENABLE);
-  WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_MODE_SELECT));
-
-  I2C_Send7bitAddress(CODEC_I2C, CODEC_ADDRESS, I2C_Direction_Transmitter);
-  WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-
-  I2C_SendData(CODEC_I2C, byte_1);
-  WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTING));
-
-  I2C_SendData(CODEC_I2C, byte_2);
-  WAIT(!I2C_CheckEvent(CODEC_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTING));
-
-  WAIT_LONG(!I2C_GetFlagStatus(CODEC_I2C, I2C_FLAG_BTF));
-
-  I2C_GenerateSTOP(CODEC_I2C, ENABLE);
-
-  return true;
-}
-
-bool Codec::InitializeCodec(int32_t sample_rate) {
-  bool s = true;  // success;
-
-  // enable codec by putting reset pin high
-  GPIO_SetBits(CODEC_RESET_GPIO, CODEC_RESET_PIN);
-  for (register unsigned int i = 0; i < 100000; i++)
-    __asm__ __volatile__ ("nop\n\t":::"memory");
-
-  //Control Port Enable and Power Down Enable
-  s = s && WriteControlRegister(CS4271_REG_MODECTRL2, CPEN | PDN);
-
-  // s = s && WriteControlRegister(CS4271_REG_MODECTRL1,
-  //                               SINGLE_SPEED | RATIO0 | MASTER |
-  //                               DIF_I2S_24b); // TODO or SLAVE?
-
-  // s = s && WriteControlRegister(CS4271_REG_DACCTRL,
-  //                               FAST_FILT_SEL | DEEMPH_OFF | SOFT_RAMPUP | SOFT_RAMPDOWN);
-
-  // s = s && WriteControlRegister(CS4271_REG_DACMIX, ATAPI_aLbR);
-
-  // s = s && WriteControlRegister(CS4271_REG_DACAVOL, 0);
-  // s = s && WriteControlRegister(CS4271_REG_DACBVOL, 0);
-
-  // s = s && WriteControlRegister(CS4271_REG_ADCCTRL,
-  //                               ADC_DIF_I2S | HPFDisableA | HPFDisableB);
-
-  // s = s && WriteControlRegister(CS4271_REG_MODECTRL2, CPEN);
-
-  return s;
-}
-
-bool Codec::InitializeDMA() {
+void InitAudioDMA(void) {
   RCC_AHB1PeriphClockCmd(AUDIO_I2S_DMA_CLOCK, ENABLE);
 
-  // DMA setup for TX.
+  // DeInit both DMA
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
-  DMA_DeInit(AUDIO_I2S_DMA_STREAM);
-
-  dma_init_tx_.DMA_Channel = AUDIO_I2S_DMA_CHANNEL;
-  dma_init_tx_.DMA_PeripheralBaseAddr = AUDIO_I2S_DMA_DREG;
-  dma_init_tx_.DMA_Memory0BaseAddr = (uint32_t)0;
-  dma_init_tx_.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-  dma_init_tx_.DMA_BufferSize = (uint32_t)0xFFFE;
-  dma_init_tx_.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-  dma_init_tx_.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  dma_init_tx_.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  dma_init_tx_.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-  dma_init_tx_.DMA_Mode = DMA_Mode_Circular;
-  dma_init_tx_.DMA_Priority = DMA_Priority_High;
-  dma_init_tx_.DMA_FIFOMode = DMA_FIFOMode_Disable;
-  dma_init_tx_.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
-  dma_init_tx_.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  dma_init_tx_.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-  DMA_Init(AUDIO_I2S_DMA_STREAM, &dma_init_tx_);
-
-  // DMA setup for RX.
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
-  DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
+	DMA_DeInit(AUDIO_I2S_DMA_STREAM);
+	DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
 
-  dma_init_rx_.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;
-  dma_init_rx_.DMA_PeripheralBaseAddr = AUDIO_I2S_EXT_DMA_DREG;
-  dma_init_rx_.DMA_Memory0BaseAddr = (uint32_t)0;
-  dma_init_rx_.DMA_DIR = DMA_DIR_PeripheralToMemory;
-  dma_init_rx_.DMA_BufferSize = (uint32_t)0xFFFE;
-  dma_init_rx_.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-  dma_init_rx_.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  dma_init_rx_.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  dma_init_rx_.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-  dma_init_rx_.DMA_Mode = DMA_Mode_Circular;
-  dma_init_rx_.DMA_Priority = DMA_Priority_High;
-  dma_init_rx_.DMA_FIFOMode = DMA_FIFOMode_Disable;
-  dma_init_rx_.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
-  dma_init_rx_.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  dma_init_rx_.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);
+  // Setup RX/TX DMA
+  DMA_InitTypeDef dma_tx;
+  
+	dma_tx.DMA_Channel = AUDIO_I2S_DMA_CHANNEL;
+	dma_tx.DMA_PeripheralBaseAddr = AUDIO_I2S_DMA_DREG;
+	dma_tx.DMA_Memory0BaseAddr = (uint32_t)&tx_buffer;
+	dma_tx.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+	dma_tx.DMA_BufferSize = CODEC_BUFFER_SIZE * 2 * 2;
+	dma_tx.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	dma_tx.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	dma_tx.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+	dma_tx.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	dma_tx.DMA_Mode = DMA_Mode_Circular;
+	dma_tx.DMA_Priority = DMA_Priority_High;
+	dma_tx.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	dma_tx.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
+	dma_tx.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	dma_tx.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  
+	DMA_Init(AUDIO_I2S_DMA_STREAM, &dma_tx);
+  
+  DMA_InitTypeDef dma_rx;
+
+	dma_rx.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;
+	dma_rx.DMA_PeripheralBaseAddr = AUDIO_I2S_EXT_DMA_DREG;
+	dma_rx.DMA_Memory0BaseAddr = (uint32_t)&rx_buffer;
+	dma_rx.DMA_DIR = DMA_DIR_PeripheralToMemory;
+	dma_rx.DMA_BufferSize = CODEC_BUFFER_SIZE * 2 * 2;
+	dma_rx.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	dma_rx.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	dma_rx.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+	dma_rx.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	dma_rx.DMA_Mode = DMA_Mode_Circular;
+	dma_rx.DMA_Priority = DMA_Priority_High;
+	dma_rx.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	dma_rx.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
+	dma_rx.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	dma_rx.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+
+  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_rx);
 
   // Enable the interrupts.
   DMA_ITConfig(AUDIO_I2S_EXT_DMA_STREAM, DMA_IT_TC | DMA_IT_HT, ENABLE);
-
-  // Enable the IRQ.
-  NVIC_EnableIRQ(AUDIO_I2S_EXT_DMA_IRQ);
+  NVIC_EnableIRQ(AUDIO_I2S_EXT_DMA_IRQ);  
 
   // Start DMA from/to codec.
   SPI_I2S_DMACmd(CODEC_I2S, SPI_I2S_DMAReq_Tx, ENABLE);
   SPI_I2S_DMACmd(CODEC_I2S_EXT, SPI_I2S_DMAReq_Rx, ENABLE);
 
-  return true;
-}
-
-bool Codec::Init(int32_t sample_rate) {
-  instance_ = this;
-
-  sample_rate_ = sample_rate;
-
-  return InitializeGPIO() && \
-      InitializeControlInterface() && \
-      InitializeAudioInterface(sample_rate) && \
-      InitializeCodec(sample_rate) && \
-      InitializeDMA();
-}
-
-bool Codec::Start(FillBufferCallback callback) {
-  if (kBlockSize > kMaxCodecBlockSize) {
-    return false;
-  }
-
-  callback_ = callback;
-
-  // Enable the I2S TX and RX peripherals.
-  if ((CODEC_I2S->I2SCFGR & 0x0400) == 0){
-    I2S_Cmd(CODEC_I2S, ENABLE);
-  }
-  if ((CODEC_I2S_EXT->I2SCFGR & 0x0400) == 0){
-    I2S_Cmd(CODEC_I2S_EXT, ENABLE);
-  }
-
-  dma_init_tx_.DMA_Memory0BaseAddr = (uint32_t)(tx_dma_buffer_);
-  dma_init_rx_.DMA_Memory0BaseAddr = (uint32_t)(rx_dma_buffer_);
-
-  dma_init_tx_.DMA_BufferSize = 2 * kBlockSize * 2;
-  dma_init_rx_.DMA_BufferSize = 2 * kBlockSize * 2;
-
-  DMA_Init(AUDIO_I2S_DMA_STREAM, &dma_init_tx_);
-  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &dma_init_rx_);
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
-
-  return true;
 }
 
-void Codec::Stop() {
+bool Init(int32_t sample_rate, FillBufferCallback cb) {
+  callback = cb;
+  InitGPIO();
+	InitAudioInterface(I2S_AudioFreq_48k);
+	InitAudioDMA();
+	ASSERT(InitControlInterface());
+
+  return true;
+};
+
+void Start() {
+  DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);
+  DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
+}
+
+void Stop() {
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
 }
 
-void Codec::Fill(size_t offset) {
-  offset *= kBlockSize * 2;
-  short* in = &rx_dma_buffer_[offset];
-  short* out = &tx_dma_buffer_[offset];
-  (*callback_)((ShortFrame*)(in), (ShortFrame*)(out));
-}
+void Fill(int32_t offset) {
+  offset *= CODEC_BUFFER_SIZE * 2;
+  // volatile short* in = &rx_buffer[offset];
+  volatile short* out = &tx_buffer[offset];
+  // (*callback)((Frame*)(in), (Frame*)(out));
 
-}  // namespace mtd
-
-extern "C" {
-// Do not call into the firmware library to save on calls/jumps.
-// if (DMA_GetFlagStatus(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC) != RESET) {
-//  DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC);
-
-void DMA1_Stream2_IRQHandler(void) {
-  if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
-    AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
-    mtd::Codec::GetInstance()->Fill(1);
-  }
-  if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
-    AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
-    mtd::Codec::GetInstance()->Fill(0);
+  static int16_t x=0;
+  for (int i=0; i<CODEC_BUFFER_SIZE; i++, x++) {
+    out[i] = x;
+    // tx_buffer[i+1] = x;
+    // tx_buffer[i+2] = y;
+    // tx_buffer[i+3] = y;
   }
 }
 
+void DeInit() 
+{
+  GPIO_InitTypeDef gpio;
+  
+	RCC_AHB1PeriphClockCmd(CODEC_RESET_RCC, ENABLE);
+  
+	gpio.GPIO_Mode = GPIO_Mode_OUT;
+	gpio.GPIO_Speed = GPIO_Speed_2MHz;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  
+	gpio.GPIO_Pin = CODEC_RESET_pin; GPIO_Init(CODEC_RESET_GPIO, &gpio);
+  
+	CODEC_RESET_LOW;
+
+  // i2s
+  RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
+	RCC_PLLI2SCmd(DISABLE);
+  
+  RCC_AHB1PeriphClockCmd(AUDIO_I2S_DMA_CLOCK, DISABLE);
+
+	DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
+	DMA_DeInit(AUDIO_I2S_DMA_STREAM);
+
+	DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
+	DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
+
+  DELAY_MS(2);
+}
+
+extern "C" 
+{
+  void DMA1_Stream2_IRQHandler(void) {  
+    if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
+      AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
+      Fill(1);
+    }
+    if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
+      AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
+      Fill(0);
+    }
+  }
 }

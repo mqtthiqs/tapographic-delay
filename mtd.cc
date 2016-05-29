@@ -43,7 +43,7 @@ using namespace stmlib;
 
 System sys;
 GateOutput gate_output;
-Codec codec;
+// Codec codec;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
@@ -51,6 +51,13 @@ MultitapDelay delay;
 Clock clock;
 
 Parameters parameters;
+
+bool Panic() {
+  Stop();
+  ui.Panic();
+  while(1);
+  return true;
+}
 
 extern "C" {
   void NMI_Handler() { }
@@ -68,8 +75,8 @@ extern "C" {
     ui.Poll();
     system_clock.Tick();  // increment global ms counter.
   }
-
-  void FillBuffer(ShortFrame* input, ShortFrame* output) {
+  
+  void FillBuffer(Frame* input, Frame* output) {
     clock.Tick();
     cv_scaler.Read(&parameters);
     if (parameters.ping) {
@@ -77,18 +84,18 @@ extern "C" {
       clock.RecordLastTap();
     }
 
-    bool gate = delay.Process(&parameters, input, output);
+    int x = 0;
+    for (size_t i=0; i<CODEC_BUFFER_SIZE; i++) {
+      output->l = x;
+      output->r = x;
+      x += 421;
+    }
+    
+    // bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
 
-    ui.set_beat_led(gate);
-    gate_output.Write(gate);
+    // ui.set_beat_led(gate);
+    // gate_output.Write(gate);
   }
-}
-
-bool Panic() {
-  codec.Stop();
-  ui.Panic();
-  while(1);
-  return true;
 }
 
 void Init() {
@@ -100,7 +107,9 @@ void Init() {
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
-  codec.Init(SAMPLE_RATE) || Panic();
+  Init(I2S_AudioFreq_48k, FillBuffer) || Panic(); 
+
+  // codec.Init(SAMPLE_RATE) || Panic();
 
   short* buffer = (short*)SDRAM_BASE;
 
@@ -110,7 +119,7 @@ void Init() {
   delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
 
   ui.Start();
-  codec.Start(&FillBuffer) || Panic();
+  // codec.Start(&FillBuffer) || Panic();
 }
 
 int main(void) {
