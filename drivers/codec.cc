@@ -241,8 +241,8 @@ void InitAudioInterface(uint32_t sample_rate)
 	SPI_I2S_DeInit(CODEC_I2S);
 	I2S_InitStructure.I2S_AudioFreq = sample_rate;
 	I2S_InitStructure.I2S_Standard = I2S_Standard_Phillips;
-	I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_24b;
-	I2S_InitStructure.I2S_CPOL = I2S_CPOL_High;
+	I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_16b;
+	I2S_InitStructure.I2S_CPOL = I2S_CPOL_Low;
   I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
   I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
 
@@ -336,11 +336,6 @@ bool Init(int32_t sample_rate, FillBufferCallback cb) {
   return true;
 };
 
-void Start() {
-  DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);
-  DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
-}
-
 void Stop() {
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
@@ -348,47 +343,9 @@ void Stop() {
 
 void Fill(int32_t offset) {
   offset *= CODEC_BUFFER_SIZE * 2;
-  // volatile short* in = &rx_buffer[offset];
+  volatile short* in = &rx_buffer[offset];
   volatile short* out = &tx_buffer[offset];
-  // (*callback)((Frame*)(in), (Frame*)(out));
-
-  static int16_t x=0;
-  for (int i=0; i<CODEC_BUFFER_SIZE; i++, x++) {
-    out[i] = x;
-    // tx_buffer[i+1] = x;
-    // tx_buffer[i+2] = y;
-    // tx_buffer[i+3] = y;
-  }
-}
-
-void DeInit() 
-{
-  GPIO_InitTypeDef gpio;
-  
-	RCC_AHB1PeriphClockCmd(CODEC_RESET_RCC, ENABLE);
-  
-	gpio.GPIO_Mode = GPIO_Mode_OUT;
-	gpio.GPIO_Speed = GPIO_Speed_2MHz;
-	gpio.GPIO_OType = GPIO_OType_PP;
-	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  
-	gpio.GPIO_Pin = CODEC_RESET_pin; GPIO_Init(CODEC_RESET_GPIO, &gpio);
-  
-	CODEC_RESET_LOW;
-
-  // i2s
-  RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
-	RCC_PLLI2SCmd(DISABLE);
-  
-  RCC_AHB1PeriphClockCmd(AUDIO_I2S_DMA_CLOCK, DISABLE);
-
-	DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
-	DMA_DeInit(AUDIO_I2S_DMA_STREAM);
-
-	DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
-	DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
-
-  DELAY_MS(2);
+  (*callback)((Frame*)(in), (Frame*)(out));
 }
 
 extern "C" 

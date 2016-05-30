@@ -110,9 +110,6 @@
 typedef void (*FillBufferCallback)(Frame* rx, Frame* tx);
 
 bool Init(int32_t sample_rate, FillBufferCallback cb);
-void DeInit();
-
-void Start();
 void Stop();
 
 #endif
