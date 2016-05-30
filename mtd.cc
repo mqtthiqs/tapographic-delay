@@ -82,19 +82,12 @@ extern "C" {
     if (parameters.ping) {
       clock.Tap();
       clock.RecordLastTap();
-    }
-
-    int x = 0;
-    for (size_t i=0; i<CODEC_BUFFER_SIZE; i++) {
-      output->l = x;
-      output->r = x;
-      x += 421;
-    }
+    }    
     
-    // bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
+    bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
 
-    // ui.set_beat_led(gate);
-    // gate_output.Write(gate);
+    ui.set_beat_led(gate);
+    gate_output.Write(gate);
   }
 }
 
@@ -107,7 +100,7 @@ void Init() {
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
-  Init(I2S_AudioFreq_48k, FillBuffer) || Panic(); 
+  Init(SAMPLE_RATE, FillBuffer) || Panic(); 
 
   // codec.Init(SAMPLE_RATE) || Panic();
 
