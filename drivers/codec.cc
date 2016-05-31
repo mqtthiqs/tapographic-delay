@@ -259,8 +259,6 @@ void InitAudioInterface(uint32_t sample_rate)
 	RCC_PLLI2SCmd(ENABLE);
 }
 
-NVIC_InitTypeDef nvic_i2s3ext, NVIC_InitStructure;
-
 volatile int16_t tx_buffer[CODEC_BUFFER_SIZE * 2 * 2];
 volatile int16_t rx_buffer[CODEC_BUFFER_SIZE * 2 * 2];
 

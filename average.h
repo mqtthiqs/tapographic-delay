@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2016 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech <matthias.puech@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,48 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Calibration settings.
+// Moving average filter
 
-#ifndef MTD_CV_SCALER_H_
-#define MTD_CV_SCALER_H_
+#ifndef MTD_AVERAGE_H_
+#define MTD_AVERAGE_H_
+
+#include <algorithm>
 
 #include "stmlib/stmlib.h"
-#include "average.h"
-
-#include "drivers/adc.h"
-#include "drivers/gate_input.h"
-#include "parameters.h"
 
 namespace mtd {
 
-struct CvTransformation {
-  bool flip;
-  float filter_coefficient;
-};
-
-class CvScaler {
- public:
-  CvScaler() { }
-  ~CvScaler() { }
+  /* SIZE must be a power of 2 */
+  template<int SIZE>
+    class Average {
+  public:
+    Average() { }
+    ~Average() { }
   
-  void Init();
-  void Read(Parameters* parameters);
+    void Init() {
+      last = 0.0f;
+      cursor = 0;
+      std::fill(history, history+SIZE, 0.0f);
+    }
+  
+    void Process(float x) {
+      last += x - history[(cursor+1) % SIZE];
+      history[cursor++ % SIZE] = x;
+    }
 
- private:
+    float value() {
+      return last / (SIZE-1);      
+    }
+    
+    
+  private:
+    float last;
+    float history[SIZE];
+    size_t cursor;    
 
-  Adc adc_;
-  GateInput gate_input_;
-
-  Average<256> average_[ADC_CHANNEL_LAST];
-  float scale_lp_;
-
-  DISALLOW_COPY_AND_ASSIGN(CvScaler);
-};
+    DISALLOW_COPY_AND_ASSIGN(Average);
+  };
 
 }  // namespace mtd
 
-#endif  // MTD_CV_SCALER_H_
+#endif  // MTD_AVERAGE_H_

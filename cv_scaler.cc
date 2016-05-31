@@ -37,86 +37,46 @@ namespace mtd {
 
 using namespace std;
 
-const CvTransformation transformations_[ADC_CHANNEL_LAST] = {
-	// ADC_TIME1_POT,
-  { false, 0.01f },
-  // ADC_TIME2_POT,
-  { false, 0.01f },
-  // ADC_LEVEL1_POT,
-  { false, 0.01f },
-  // ADC_LEVEL2_POT,
-  { false, 0.01f },
-  // ADC_REGEN1_POT,
-  { false, 0.01f },
-  // ADC_REGEN2_POT,
-  { false, 0.01f },
-  // ADC_MIX1_POT,
-  { false, 0.01f },
-  // ADC_MIX2_POT,
-  { false, 0.002f },
-  // ADC_TIME1_CV,
-  { false, 0.05f },
-  // ADC_TIME2_CV,
-  { false, 0.05f },
-  // ADC_LEVEL1_CV,
-  { false, 0.05f },
-  // ADC_LEVEL2_CV,
-  { false, 0.05f },
-  // ADC_REGEN1_CV,
-  { false, 0.05f },
-  // ADC_REGEN2_CV,
-  { false, 0.05f },
-};
-
 void CvScaler::Init() {
-  fill(&lp_values_[0], &lp_values_[ADC_CHANNEL_LAST], 0.5f);
-  scale_slope_ = 1.0f;
   adc_.Init();
   gate_input_.Init();
+  for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
+    average_[i].Init();
+  }
 }
 
 void CvScaler::Read(Parameters* parameters) {
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
-    const CvTransformation& transformation = transformations_[i];
-    
     float value = adc_.float_value(i);
-    if (transformation.flip) {
-      value = 1.0f - value;
-    }
-
-    lp_values_[i] += transformation.filter_coefficient * \
-        (value - lp_values_[i]);
+    average_[i].Process(value);
   }
 
   // float time =
-  //   lp_values_[ADC_TIME1_POT] +
-  //   lp_values_[ADC_TIME1_CV];
+  //   average_[ADC_TIME1_POT] +
+  //   average_[ADC_TIME1_CV];
   // CONSTRAIN(time, 0.0f, 1.0f);
   // parameters->time = time;
 
   float velocity =
-    lp_values_[ADC_LEVEL1_POT] +
-    lp_values_[ADC_LEVEL1_CV];
+    average_[ADC_LEVEL1_POT].value() +
+    average_[ADC_LEVEL1_CV].value();
   CONSTRAIN(velocity, 0.0f, 1.0f);
   parameters->velocity = velocity;
 
   float feedback =
-    lp_values_[ADC_REGEN1_POT] +
-    lp_values_[ADC_REGEN1_CV];
+    average_[ADC_REGEN1_POT].value() +
+    average_[ADC_REGEN1_CV].value();
   CONSTRAIN(feedback, 0.0f, 1.0f);
   parameters->feedback = feedback;
 
-  float drywet =
-    lp_values_[ADC_MIX1_POT];
+  float drywet = average_[ADC_MIX1_POT].value();
   drywet = 1.0f - drywet;
   drywet = drywet * 1.1f - 0.05f;
   CONSTRAIN(drywet, 0.0f, 1.0f);
   parameters->drywet = drywet;
 
   const float kNotchSize = 0.06f;
-  float scale =
-    lp_values_[ADC_MIX2_POT];
-
+  float scale = average_[ADC_MIX2_POT].value();
   if (scale < 0.5f - kNotchSize) {
     scale += kNotchSize;
   } else if (scale > 0.5f + kNotchSize) {
@@ -129,23 +89,25 @@ void CvScaler::Read(Parameters* parameters) {
 
   scale = scale*2;
   scale *= scale;
-  SLOPE(scale_slope_, scale, 0.0003f, 0.0003f);
-  parameters->scale = scale_slope_; // 0..1..4
+
+  ONE_POLE(scale_lp_, scale, 0.01f);
+
+  parameters->scale = scale_lp_; // 0..1..4
 
   float jitter_amount =
-    lp_values_[ADC_LEVEL2_POT];
+    average_[ADC_LEVEL2_POT].value();
   CONSTRAIN(jitter_amount, 0.0f, 1.0f);
   jitter_amount *= jitter_amount;
   parameters->jitter_amount = jitter_amount;
 
   float jitter_frequency =
-    lp_values_[ADC_REGEN2_POT];
+    average_[ADC_REGEN2_POT].value();
   CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
   jitter_frequency *= jitter_frequency * jitter_frequency;
   parameters->jitter_frequency = jitter_frequency;
 
   float morph =
-    lp_values_[ADC_TIME1_POT];
+    average_[ADC_TIME1_POT].value();
   CONSTRAIN(morph, 0.0f, 1.0f);
   morph += 0.1f;
   morph /= 1.1f;
