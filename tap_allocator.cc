@@ -39,8 +39,8 @@ namespace mtd
     for (size_t i=0; i<kMaxTaps; i++) {
       float t = static_cast<float>(i) + 1.0f;
       float pan = i&1;//Random::GetFloat();
-      Add(t * t * SAMPLE_RATE * 0.2f / kMaxTaps + 1000.0f,
-          (t+3) / (kMaxTaps+3), pan);
+      Add(t * t * t * SAMPLE_RATE * 0.005f / kMaxTaps + 500.0f,
+          (t+1) / (kMaxTaps+1), pan);
     }
   }
 
