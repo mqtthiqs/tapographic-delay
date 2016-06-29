@@ -106,6 +106,7 @@ void Init() {
 
   short* buffer = (short*)SDRAM_BASE;
 
+  // sdram.Clear();
   // sdram.Test() || Panic();
 
   clock.Init();
