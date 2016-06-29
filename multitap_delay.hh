@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2015 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech (matthias.puech@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,73 +24,55 @@
 //
 // -----------------------------------------------------------------------------
 //
-// User interface
+// Multitap delay
 
-#ifndef UI_H_
-#define UI_H_
+#ifndef MULTITAP_DELAY_H_
+#define MULTITAP_DELAY_H_
 
-#include "stmlib/stmlib.h"
-#include "stmlib/ui/event_queue.h"
+#include "parameters.hh"
+#include "clock.hh"
+#include "tap_allocator.hh"
 
-#include "drivers/leds.h"
-#include "drivers/switches.h"
-#include "parameters.h"
-#include "clock.h"
-#include "multitap_delay.h"
+#include "stmlib/dsp/filter.h"
 
-enum UiMode {
-  UI_MODE_SPLASH,
-  UI_MODE_NORMAL,
-  UI_MODE_PANIC,
-  UI_MODE_SETTINGS,
-  UI_MODE_LAST
-};
+using namespace stmlib;
 
-class CvScaler;
-class Meter;
-class Settings;
-
-class Ui {
+class MultitapDelay
+{
  public:
-  Ui() { }
-  ~Ui() { }
-  
-  void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters);
-  void Poll();
-  void DoEvents();
-  void Start();
-  void Panic();
+  MultitapDelay() { }
+  ~MultitapDelay() { }
 
-  inline void set_beat_led(bool value) {
-    if (value) beat_led_counter_ = 20;
-  }
+  void Init(short* buffer, int32_t buffer_size, Clock* clock);
+  bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+
+  void AddTap(float velocity,
+              EditMode edit_mode,
+              Quantize quantize,
+              Panning panning);
+  void RemTap();
+  void Clear();
 
  private:
-  void OnSwitchPressed(const stmlib::Event& e);
-  void OnSwitchReleased(const stmlib::Event& e);
+  TapAllocator tap_allocator_;
+  Tap taps_[kMaxTaps];
+  AudioBuffer buffer_;
+  int16_t feedback_buffer[kBlockSize];   /* max block size */
 
-  void PaintLeds();
+  Parameters prev_params_;
+  DCBlocker dc_blocker_;
 
-  stmlib::EventQueue<16> queue_;
+  bool previous_repeat_;
+  Fader repeat_fader_;
+  Fader dry_fader_;
 
-  CvScaler* cv_scaler_;
   Clock* clock_;
-  MultitapDelay* multitap_delay_;
-  Parameters* parameters_;
-  
-  Leds leds_;
-  uint16_t ping_led_counter_;
-  uint16_t beat_led_counter_;
 
-  Switches switches_;
-  uint32_t press_time_[kNumSwitches];
-  uint32_t long_press_time_[kNumSwitches];
-  UiMode mode_;
-  uint16_t animation_counter_;
+  bool counter_running_;
+  uint32_t counter_;
+  uint32_t repeat_time_;
 
-  uint16_t ignore_releases_;
-
-  DISALLOW_COPY_AND_ASSIGN(Ui);
+  DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
 };
 
 #endif

@@ -26,7 +26,7 @@
 //
 // Tap allocator
 
-#include "tap_allocator.h"
+#include "tap_allocator.hh"
 
 void TapAllocator::Init(Tap taps[kMaxTaps]) {
   taps_ = taps;

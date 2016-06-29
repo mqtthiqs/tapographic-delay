@@ -28,7 +28,7 @@
 //
 // System level initialization.
 
-#include "drivers/system.h"
+#include "drivers/system.hh"
 
 #include <stm32f4xx_conf.h>
 

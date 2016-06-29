@@ -24,56 +24,51 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Smoothed random oscillator
+// Tap allocator
 
-#include "resources.h"
-#include "stmlib/utils/random.h"
-#include "stmlib/dsp/dsp.h"
+#ifndef TAP_ALLOCATOR_H_
+#define TAP_ALLOCATOR_H_
 
-#ifndef RANDOM_OSCILLATOR_H_
-#define RANDOM_OSCILLATOR_H_
+#include "tap.hh"
+#include "stmlib/utils/ring_buffer.h"
 
-using namespace stmlib;
-
-const float kOscillationMinimumGap = 0.3f;
-
-class RandomOscillator
+class TapAllocator
 {
  public:
+  TapAllocator() { }
+  ~TapAllocator() { }
 
-  inline void Init() {
-    value_ = 0.0f;
-    next_value_ = Random::GetFloat() * 2.0f - 1.0f;
+  void Init(Tap taps[kMaxTaps]);
+  void Add(float time, float velocity, float panning);
+  void Remove();
+  void Clear();
+  void Poll();
+
+  void set_fade_time(float fade_time) {
+    fade_time_ = fade_time;
   }
 
-  inline void set_slope(float slope) {
-    phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
-    if (phase_increment_ > 1.0f)
-      phase_increment_ = 1.0f;
-  }
-
-  inline float Next() {
-    phase_ += phase_increment_;
-    if (phase_ > 1.0f) {
-      phase_--;
-      value_ = next_value_;
-      direction_ = !direction_;
-      float rnd = (1.0f - kOscillationMinimumGap) * Random::GetFloat() + kOscillationMinimumGap;
-      next_value_ = direction_ ?
-        value_ + (1.0f - value_) * rnd :
-        value_ - (1.0f + value_) * rnd;
-    }
-
-    float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
-    return value_ + (next_value_ - value_) * sin;
-  }
+  float max_time() { return max_time_; }
+  uint8_t busy_voices() { return busy_voices_; }
 
  private:
-  float phase_;
-  float phase_increment_;
-  float value_;
-  float next_value_;
-  bool direction_;
+  Tap* taps_;
+
+  uint8_t busy_voices_;
+  uint8_t next_voice_;
+  uint8_t oldest_voice_;
+  float fade_time_;
+  float max_time_;
+
+  struct TapParameter {
+    float time;
+    float velocity;
+    float panning;
+  };
+
+  stmlib::RingBuffer<TapParameter, 32> queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };
 
 #endif

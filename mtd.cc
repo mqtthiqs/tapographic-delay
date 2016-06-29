@@ -29,14 +29,14 @@
 #include <stm32f4xx_conf.h>
 
 #include "stmlib/system/system_clock.h"
-#include "drivers/system.h"
-#include "drivers/gate_output.h"
-#include "drivers/codec.h"
-#include "drivers/sdram.h"
-#include "cv_scaler.h"
-#include "ui.h"
-#include "multitap_delay.h"
-#include "clock.h"
+#include "drivers/system.hh"
+#include "drivers/gate_output.hh"
+#include "drivers/codec.hh"
+#include "drivers/sdram.hh"
+#include "cv_scaler.hh"
+#include "ui.hh"
+#include "multitap_delay.hh"
+#include "clock.hh"
 
 using namespace stmlib;
 

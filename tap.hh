@@ -29,10 +29,10 @@
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 
-#include "parameters.h"
-#include "audio_buffer.h"
-#include "random_oscillator.h"
-#include "fader.h"
+#include "parameters.hh"
+#include "audio_buffer.hh"
+#include "random_oscillator.hh"
+#include "fader.hh"
 
 #ifndef TAP_H_
 #define TAP_H_

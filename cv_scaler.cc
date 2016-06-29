@@ -26,7 +26,7 @@
 //
 // Calibration settings.
 
-#include "cv_scaler.h"
+#include "cv_scaler.hh"
 
 #include <algorithm>
 #include <cmath>

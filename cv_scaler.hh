@@ -30,11 +30,11 @@
 #define CV_SCALER_H_
 
 #include "stmlib/stmlib.h"
-#include "average.h"
+#include "average.hh"
 
-#include "drivers/adc.h"
-#include "drivers/gate_input.h"
-#include "parameters.h"
+#include "drivers/adc.hh"
+#include "drivers/gate_input.hh"
+#include "parameters.hh"
 
 class CvScaler {
  public:

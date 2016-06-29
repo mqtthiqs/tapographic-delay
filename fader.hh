@@ -24,51 +24,61 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Tap allocator
+// Fade signal in/out
 
-#ifndef TAP_ALLOCATOR_H_
-#define TAP_ALLOCATOR_H_
 
-#include "tap.h"
-#include "stmlib/utils/ring_buffer.h"
+#ifndef FADER_H_
+#define FADER_H_
 
-class TapAllocator
-{
+#include "stmlib/dsp/dsp.h"
+
+#include "parameters.hh"
+
+class Fader {
  public:
-  TapAllocator() { }
-  ~TapAllocator() { }
+  Fader() { }
+  ~Fader() { }
 
-  void Init(Tap taps[kMaxTaps]);
-  void Add(float time, float velocity, float panning);
-  void Remove();
-  void Clear();
-  void Poll();
-
-  void set_fade_time(float fade_time) {
-    fade_time_ = fade_time;
+  void Init() {
+    envelope_ = 0.0f;
+    envelope_increment_ = 0.0f;
   }
 
-  float max_time() { return max_time_; }
-  uint8_t busy_voices() { return busy_voices_; }
+  inline float volume() { return envelope_; }
+
+  inline void fade_in(float length) {
+    envelope_increment_ = 1.0f / length;
+  }
+
+  inline void fade_out(float length) {
+    envelope_increment_ = -1.0f / length;
+  }
+
+  inline void Prepare() {
+    if (envelope_ < 0.0f) {
+      envelope_ = 0.0f;
+      envelope_increment_ = 0.0f;
+    } else if (envelope_ > 1.0f) {
+      envelope_ = 1.0f;
+      envelope_increment_ = 0.0f;
+    }
+  }
+
+  inline void Process(float &sample) {
+    sample *= envelope_ * envelope_;
+    envelope_ += envelope_increment_;
+  }
+
+  inline void Process(short &sample) {
+    sample = sample * (envelope_ * envelope_);
+    envelope_ += envelope_increment_;
+  }
 
  private:
-  Tap* taps_;
+  float envelope_;
+  float envelope_increment_;
 
-  uint8_t busy_voices_;
-  uint8_t next_voice_;
-  uint8_t oldest_voice_;
-  float fade_time_;
-  float max_time_;
-
-  struct TapParameter {
-    float time;
-    float velocity;
-    float panning;
-  };
-
-  stmlib::RingBuffer<TapParameter, 32> queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(TapAllocator);
+  DISALLOW_COPY_AND_ASSIGN(Fader);
 };
 
 #endif

@@ -24,61 +24,57 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Fade signal in/out
+// Smoothed random oscillator
 
-
-#ifndef FADER_H_
-#define FADER_H_
-
+#include "stmlib/utils/random.h"
 #include "stmlib/dsp/dsp.h"
 
-#include "parameters.h"
+#include "resources.h"
 
-class Fader {
+#ifndef RANDOM_OSCILLATOR_H_
+#define RANDOM_OSCILLATOR_H_
+
+using namespace stmlib;
+
+const float kOscillationMinimumGap = 0.3f;
+
+class RandomOscillator
+{
  public:
-  Fader() { }
-  ~Fader() { }
 
-  void Init() {
-    envelope_ = 0.0f;
-    envelope_increment_ = 0.0f;
+  inline void Init() {
+    value_ = 0.0f;
+    next_value_ = Random::GetFloat() * 2.0f - 1.0f;
   }
 
-  inline float volume() { return envelope_; }
-
-  inline void fade_in(float length) {
-    envelope_increment_ = 1.0f / length;
+  inline void set_slope(float slope) {
+    phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
+    if (phase_increment_ > 1.0f)
+      phase_increment_ = 1.0f;
   }
 
-  inline void fade_out(float length) {
-    envelope_increment_ = -1.0f / length;
-  }
-
-  inline void Prepare() {
-    if (envelope_ < 0.0f) {
-      envelope_ = 0.0f;
-      envelope_increment_ = 0.0f;
-    } else if (envelope_ > 1.0f) {
-      envelope_ = 1.0f;
-      envelope_increment_ = 0.0f;
+  inline float Next() {
+    phase_ += phase_increment_;
+    if (phase_ > 1.0f) {
+      phase_--;
+      value_ = next_value_;
+      direction_ = !direction_;
+      float rnd = (1.0f - kOscillationMinimumGap) * Random::GetFloat() + kOscillationMinimumGap;
+      next_value_ = direction_ ?
+        value_ + (1.0f - value_) * rnd :
+        value_ - (1.0f + value_) * rnd;
     }
-  }
 
-  inline void Process(float &sample) {
-    sample *= envelope_ * envelope_;
-    envelope_ += envelope_increment_;
-  }
-
-  inline void Process(short &sample) {
-    sample = sample * (envelope_ * envelope_);
-    envelope_ += envelope_increment_;
+    float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
+    return value_ + (next_value_ - value_) * sin;
   }
 
  private:
-  float envelope_;
-  float envelope_increment_;
-
-  DISALLOW_COPY_AND_ASSIGN(Fader);
+  float phase_;
+  float phase_increment_;
+  float value_;
+  float next_value_;
+  bool direction_;
 };
 
 #endif

@@ -26,9 +26,9 @@
 //
 // Multitap delay
 
-#include "multitap_delay.h"
 #include "stmlib/dsp/dsp.h"
-#include "resources.h"
+
+#include "multitap_delay.hh"
 
 using namespace stmlib;
 

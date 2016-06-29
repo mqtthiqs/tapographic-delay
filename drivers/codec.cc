@@ -1,5 +1,5 @@
 
-#include "codec.h"
+#include "codec.hh"
 
 #define DELAY_MS(x)                             \
 do {							\

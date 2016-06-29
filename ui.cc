@@ -26,8 +26,8 @@
 //
 // User interface.
 
-#include "cv_scaler.h"
-#include "ui.h"
+#include "cv_scaler.hh"
+#include "ui.hh"
 
 const int32_t kLongPressDuration = 1000;
 const int32_t kVeryLongPressDuration = 2500;

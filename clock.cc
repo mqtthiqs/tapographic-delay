@@ -26,7 +26,7 @@
 //
 // Main clock
 
-#include "clock.h"
+#include "clock.hh"
 
 void Clock::Init() {
   phase_ = 0.0f;
