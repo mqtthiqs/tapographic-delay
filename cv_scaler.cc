@@ -90,7 +90,9 @@ void CvScaler::Read(Parameters* parameters) {
   scale = scale*2;
   scale *= scale;
 
-  ONE_POLE(scale_lp_, scale, 0.01f);
+  average_scale_.Process(scale);
+  float scale_av = average_scale_.value();
+  ONE_POLE(scale_lp_, scale_av, 0.002f);
 
   parameters->scale = scale_lp_; // 0..1..4
 

@@ -56,7 +56,8 @@ class CvScaler {
   Adc adc_;
   GateInput gate_input_;
 
-  Average<256> average_[ADC_CHANNEL_LAST];
+  Average<32> average_[ADC_CHANNEL_LAST];
+  Average<512> average_scale_;
   float scale_lp_;
 
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
