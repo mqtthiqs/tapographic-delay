@@ -26,46 +26,42 @@
 //
 // Moving average filter
 
-#ifndef MTD_AVERAGE_H_
-#define MTD_AVERAGE_H_
+#ifndef AVERAGE_H_
+#define AVERAGE_H_
 
 #include <algorithm>
 
 #include "stmlib/stmlib.h"
 
-namespace mtd {
-
-  /* SIZE must be a power of 2 */
-  template<int SIZE>
-    class Average {
-  public:
-    Average() { }
-    ~Average() { }
+/* SIZE must be a power of 2 */
+template<int SIZE>
+class Average {
+ public:
+  Average() { }
+  ~Average() { }
   
-    void Init() {
-      last = 0.0f;
-      cursor = 0;
-      std::fill(history, history+SIZE, 0.0f);
-    }
+  void Init() {
+    last = 0.0f;
+    cursor = 0;
+    std::fill(history, history+SIZE, 0.0f);
+  }
   
-    void Process(float x) {
-      last += x - history[(cursor+1) % SIZE];
-      history[cursor++ % SIZE] = x;
-    }
+  void Process(float x) {
+    last += x - history[(cursor+1) % SIZE];
+    history[cursor++ % SIZE] = x;
+  }
 
-    float value() {
-      return last / (SIZE-1);      
-    }
+  float value() {
+    return last / (SIZE-1);      
+  }
     
     
-  private:
-    float last;
-    float history[SIZE];
-    size_t cursor;    
+ private:
+  float last;
+  float history[SIZE];
+  size_t cursor;    
 
-    DISALLOW_COPY_AND_ASSIGN(Average);
-  };
+  DISALLOW_COPY_AND_ASSIGN(Average);
+};
 
-}  // namespace mtd
-
-#endif  // MTD_AVERAGE_H_
+#endif

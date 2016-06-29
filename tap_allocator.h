@@ -26,52 +26,49 @@
 //
 // Tap allocator
 
-#ifndef MTD_TAP_ALLOCATOR_H_
-#define MTD_TAP_ALLOCATOR_H_
+#ifndef TAP_ALLOCATOR_H_
+#define TAP_ALLOCATOR_H_
 
 #include "tap.h"
 #include "stmlib/utils/ring_buffer.h"
 
-namespace mtd 
+class TapAllocator
 {
-  class TapAllocator
-  {
-  public:
-    TapAllocator() { }
-    ~TapAllocator() { }
+ public:
+  TapAllocator() { }
+  ~TapAllocator() { }
 
-    void Init(Tap taps[kMaxTaps]);
-    void Add(float time, float velocity, float panning);
-    void Remove();
-    void Clear();
-    void Poll();
+  void Init(Tap taps[kMaxTaps]);
+  void Add(float time, float velocity, float panning);
+  void Remove();
+  void Clear();
+  void Poll();
 
-    void set_fade_time(float fade_time) {
-      fade_time_ = fade_time;
-    }
+  void set_fade_time(float fade_time) {
+    fade_time_ = fade_time;
+  }
 
-    float max_time() { return max_time_; }
-    uint8_t busy_voices() { return busy_voices_; }
+  float max_time() { return max_time_; }
+  uint8_t busy_voices() { return busy_voices_; }
 
-  private:
-    Tap* taps_;
+ private:
+  Tap* taps_;
 
-    uint8_t busy_voices_;
-    uint8_t next_voice_;
-    uint8_t oldest_voice_;
-    float fade_time_;
-    float max_time_;
+  uint8_t busy_voices_;
+  uint8_t next_voice_;
+  uint8_t oldest_voice_;
+  float fade_time_;
+  float max_time_;
 
-    struct TapParameter {
-      float time;
-      float velocity;
-      float panning;
-    };
-
-    stmlib::RingBuffer<TapParameter, 32> queue_;
-
-    DISALLOW_COPY_AND_ASSIGN(TapAllocator);
+  struct TapParameter {
+    float time;
+    float velocity;
+    float panning;
   };
-}
+
+  stmlib::RingBuffer<TapParameter, 32> queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(TapAllocator);
+};
 
 #endif

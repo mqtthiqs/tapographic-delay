@@ -26,14 +26,12 @@
 //
 // Driver for the end of cycles output pins.
 
-#ifndef MTD_DRIVERS_GATE_OUTPUT_H_
-#define MTD_DRIVERS_GATE_OUTPUT_H_
+#ifndef GATE_OUTPUT_H_
+#define GATE_OUTPUT_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
-
-namespace mtd {
 
 class GateOutput {
  public:
@@ -59,7 +57,5 @@ class GateOutput {
  private:
   DISALLOW_COPY_AND_ASSIGN(GateOutput);
 };
-
-}  // namespace mtd
 
 #endif  // MTD_DRIVERS_GATE_OUTPUT_H_

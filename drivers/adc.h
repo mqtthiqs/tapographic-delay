@@ -26,14 +26,12 @@
 //
 // Driver for ADC.
 
-#ifndef MTD_DRIVERS_ADC_H_
-#define MTD_DRIVERS_ADC_H_
+#ifndef ADC_H_
+#define ADC_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
-
-namespace mtd {
 
 enum AdcChannel {
 	ADC_TIME1_POT,
@@ -196,6 +194,4 @@ public:
   DISALLOW_COPY_AND_ASSIGN(Adc);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_DRIVERS_ADC_H_
+#endif

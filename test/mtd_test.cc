@@ -35,8 +35,6 @@
 #include "multitap_delay.h"
 #include "parameters.h"
 
-using namespace mtd;
-
 void write_wav_header(FILE* fp, int num_samples, int num_channels) {
   uint32_t l;
   uint16_t s;

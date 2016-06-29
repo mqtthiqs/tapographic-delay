@@ -28,14 +28,12 @@
 //
 // Dynamic Gate
 
-#ifndef MTD_GATE_H_
-#define MTD_GATE_H_
+#ifndef GATE_H_
+#define GATE_H_
 
 #include "stmlib/dsp/dsp.h"
 
 #include "parameters.h"
-
-namespace mtd {
 
 const float kThresholdLow = 0.002f * 32768.0f;
 const float kThresholdHigh = 0.05f * 32768.0f;
@@ -69,7 +67,5 @@ class Gate {
 
   DISALLOW_COPY_AND_ASSIGN(Gate);
 };
-
-}
 
 #endif

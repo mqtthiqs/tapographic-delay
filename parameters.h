@@ -26,12 +26,10 @@
 //
 // Parameters.
 
-#ifndef MTD_PARAMETERS_H_
-#define MTD_PARAMETERS_H_
+#ifndef PARAMETERS_H_
+#define PARAMETERS_H_
 
 #include "stmlib/stmlib.h"
-
-namespace mtd {
 
 const size_t kBlockSize = 128;
 const uint8_t kMaxTaps = 32;
@@ -80,7 +78,5 @@ struct Parameters {
   Panning panning;
   VelocityType velocity_type;
 };
-
-}  // namespace mtd
 
 #endif  // MTD_DSP_PARAMETERS_H_

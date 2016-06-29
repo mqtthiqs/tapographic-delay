@@ -33,8 +33,6 @@
 
 #include "stmlib/dsp/dsp.h"
 
-namespace mtd {
-
 using namespace std;
 
 void CvScaler::Init() {
@@ -122,5 +120,3 @@ void CvScaler::Read(Parameters* parameters) {
   gate_input_.Read();
   adc_.Convert();
 }
-
-}  // namespace mtd

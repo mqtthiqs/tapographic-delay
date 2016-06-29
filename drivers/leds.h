@@ -26,14 +26,12 @@
 //
 // Driver for the status LEDs.
 
-#ifndef MTD_DRIVERS_LEDS_H_
-#define MTD_DRIVERS_LEDS_H_
+#ifndef LEDS_H_
+#define LEDS_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
-
-namespace mtd {
 
 const uint8_t kNumLeds = 7;
 
@@ -98,6 +96,4 @@ class Leds {
   DISALLOW_COPY_AND_ASSIGN(Leds);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_DRIVERS_LEDS_H_
+#endif

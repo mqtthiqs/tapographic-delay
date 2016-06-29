@@ -30,53 +30,50 @@
 #include "stmlib/utils/random.h"
 #include "stmlib/dsp/dsp.h"
 
-#ifndef MTD_RANDOM_OSCILLATOR_H_
-#define MTD_RANDOM_OSCILLATOR_H_
+#ifndef RANDOM_OSCILLATOR_H_
+#define RANDOM_OSCILLATOR_H_
 
 using namespace stmlib;
 
-namespace mtd 
+const float kOscillationMinimumGap = 0.3f;
+
+class RandomOscillator
 {
-  const float kOscillationMinimumGap = 0.3f;
+ public:
 
-  class RandomOscillator
-  {
-  public:
+  inline void Init() {
+    value_ = 0.0f;
+    next_value_ = Random::GetFloat() * 2.0f - 1.0f;
+  }
 
-    inline void Init() {
-      value_ = 0.0f;
-      next_value_ = Random::GetFloat() * 2.0f - 1.0f;
+  inline void set_slope(float slope) {
+    phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
+    if (phase_increment_ > 1.0f)
+      phase_increment_ = 1.0f;
+  }
+
+  inline float Next() {
+    phase_ += phase_increment_;
+    if (phase_ > 1.0f) {
+      phase_--;
+      value_ = next_value_;
+      direction_ = !direction_;
+      float rnd = (1.0f - kOscillationMinimumGap) * Random::GetFloat() + kOscillationMinimumGap;
+      next_value_ = direction_ ?
+        value_ + (1.0f - value_) * rnd :
+        value_ - (1.0f + value_) * rnd;
     }
 
-    inline void set_slope(float slope) {
-      phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
-      if (phase_increment_ > 1.0f)
-        phase_increment_ = 1.0f;
-    }
+    float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
+    return value_ + (next_value_ - value_) * sin;
+  }
 
-    inline float Next() {
-      phase_ += phase_increment_;
-      if (phase_ > 1.0f) {
-        phase_--;
-        value_ = next_value_;
-        direction_ = !direction_;
-        float rnd = (1.0f - kOscillationMinimumGap) * Random::GetFloat() + kOscillationMinimumGap;
-        next_value_ = direction_ ?
-          value_ + (1.0f - value_) * rnd :
-          value_ - (1.0f + value_) * rnd;
-      }
-
-      float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
-      return value_ + (next_value_ - value_) * sin;
-    }
-
-  private:
-    float phase_;
-    float phase_increment_;
-    float value_;
-    float next_value_;
-    bool direction_;
-  };
-}
+ private:
+  float phase_;
+  float phase_increment_;
+  float value_;
+  float next_value_;
+  bool direction_;
+};
 
 #endif

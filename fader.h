@@ -27,14 +27,12 @@
 // Fade signal in/out
 
 
-#ifndef MTD_FADER_H_
-#define MTD_FADER_H_
+#ifndef FADER_H_
+#define FADER_H_
 
 #include "stmlib/dsp/dsp.h"
 
 #include "parameters.h"
-
-namespace mtd {
 
 class Fader {
  public:
@@ -82,7 +80,5 @@ class Fader {
 
   DISALLOW_COPY_AND_ASSIGN(Fader);
 };
-
-}
 
 #endif

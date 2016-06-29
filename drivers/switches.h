@@ -26,15 +26,13 @@
 //
 // Driver for the front panel switches.
 
-#ifndef MTD_DRIVERS_SWITCHES_H_
-#define MTD_DRIVERS_SWITCHES_H_
+#ifndef SWITCHES_H_
+#define SWITCHES_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
 #include <algorithm>
-
-namespace mtd {
 
 using namespace std;
 
@@ -130,6 +128,4 @@ void Debounce() {
   DISALLOW_COPY_AND_ASSIGN(Switches);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_DRIVERS_SWITCHES_H_
+#endif

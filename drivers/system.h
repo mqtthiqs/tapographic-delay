@@ -28,12 +28,10 @@
 //
 // System-level initialization.
 
-#ifndef MTD_DRIVERS_SYSTEM_H_
-#define MTD_DRIVERS_SYSTEM_H_
+#ifndef SYSTEM_H_
+#define SYSTEM_H_
 
 #include "stmlib/stmlib.h"
-
-namespace mtd {
 
 class System {
  public:
@@ -47,6 +45,4 @@ class System {
   DISALLOW_COPY_AND_ASSIGN(System);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_DRIVERS_SYSTEM_H_
+#endif

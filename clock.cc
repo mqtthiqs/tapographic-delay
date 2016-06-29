@@ -28,68 +28,65 @@
 
 #include "clock.h"
 
-namespace mtd 
-{
-  void Clock::Init() {
-    phase_ = 0.0f;
-    phase_increment_ = 0.0f;
-    counter_ = 0;
-    running_ = false;
-    for (int i=0; i<kHistorySize; i++)
-      history_[i] = 0;
+void Clock::Init() {
+  phase_ = 0.0f;
+  phase_increment_ = 0.0f;
+  counter_ = 0;
+  running_ = false;
+  for (int i=0; i<kHistorySize; i++)
+    history_[i] = 0;
+  history_cursor_ = 0;
+}
+
+void Clock::Tick() {
+  if (running_) {
+    phase_ += phase_increment_;
+    if (phase_ > 1.0f) {
+      phase_--;
+      reset_ = true;
+    }
+    counter_++;
+  }
+}
+
+void Clock::Start() {
+  phase_ = 0.0f;
+  running_ = true;
+  reset_ = true;
+}
+
+void Clock::Stop() {
+  running_ = false;
+  counter_ = 0;
+  phase_increment_ = 0.0f;
+  for (int i=0; i<kHistorySize; i++)
+    history_[i] = 0;
+}
+
+void Clock::Tap() {
+  last_tap_ = counter_;
+  counter_ = 0;
+  Start();
+}
+
+void Clock::RecordLastTap() {
+  history_[history_cursor_++] = last_tap_;
+
+  if (history_cursor_ == kHistorySize)
     history_cursor_ = 0;
-  }
 
-  void Clock::Tick() {
-    if (running_) {
-      phase_ += phase_increment_;
-      if (phase_ > 1.0f) {
-        phase_--;
-        reset_ = true;
-      }
-      counter_++;
+  float mean = 0;
+  int8_t div = 0;
+  for (int i=0; i<kHistorySize; i++) {
+    uint32_t v = history_[i];
+    if (v != 0) {
+      mean += static_cast<float>(v);
+      div++;
     }
   }
+  mean /= div;
 
-  void Clock::Start() {
-    phase_ = 0.0f;
-    running_ = true;
-    reset_ = true;
-  }
-
-  void Clock::Stop() {
-    running_ = false;
-    counter_ = 0;
-    phase_increment_ = 0.0f;
-    for (int i=0; i<kHistorySize; i++)
-      history_[i] = 0;
-  }
-
-  void Clock::Tap() {
-    last_tap_ = counter_;
-    counter_ = 0;
-    Start();
-  }
-
-  void Clock::RecordLastTap() {
-    history_[history_cursor_++] = last_tap_;
-
-    if (history_cursor_ == kHistorySize)
-      history_cursor_ = 0;
-
-    float mean = 0;
-    int8_t div = 0;
-    for (int i=0; i<kHistorySize; i++) {
-      uint32_t v = history_[i];
-      if (v != 0) {
-        mean += static_cast<float>(v);
-        div++;
-      }
-    }
-    mean /= div;
-
-    if (mean > 1) {
-      phase_increment_ = 1.0f / mean;
-    }
+  if (mean > 1) {
+    phase_increment_ = 1.0f / mean;
   }
 }

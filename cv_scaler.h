@@ -26,8 +26,8 @@
 //
 // Calibration settings.
 
-#ifndef MTD_CV_SCALER_H_
-#define MTD_CV_SCALER_H_
+#ifndef CV_SCALER_H_
+#define CV_SCALER_H_
 
 #include "stmlib/stmlib.h"
 #include "average.h"
@@ -35,13 +35,6 @@
 #include "drivers/adc.h"
 #include "drivers/gate_input.h"
 #include "parameters.h"
-
-namespace mtd {
-
-struct CvTransformation {
-  bool flip;
-  float filter_coefficient;
-};
 
 class CvScaler {
  public:
@@ -63,6 +56,4 @@ class CvScaler {
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_CV_SCALER_H_
+#endif

@@ -26,14 +26,12 @@
 //
 // Driver for the gate inputs.
 
-#ifndef MTD_DRIVERS_GATE_INPUT_H_
-#define MTD_DRIVERS_GATE_INPUT_H_
+#ifndef GATE_INPUT_H_
+#define GATE_INPUT_H_
 
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
-
-namespace mtd {
 
 enum GateNames {
 	GATE_INPUT_PING,
@@ -103,6 +101,4 @@ class GateInput {
   DISALLOW_COPY_AND_ASSIGN(GateInput);
 };
 
-}  // namespace mtd
-
-#endif  // MTD_DRIVERS_GATE_INPUT_H_
+#endif

@@ -32,8 +32,6 @@
 
 #include <stm32f4xx_conf.h>
 
-namespace mtd {
-
 void System::Init(bool application) {
 	SystemInit();
   
@@ -46,5 +44,3 @@ void System::Init(bool application) {
 void System::StartTimers() {
   SysTick_Config(F_CPU / 1000);
 }
-
-}  // namespace mtd

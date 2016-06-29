@@ -38,7 +38,6 @@
 #include "multitap_delay.h"
 #include "clock.h"
 
-using namespace mtd;
 using namespace stmlib;
 
 System sys;
@@ -82,7 +81,7 @@ extern "C" {
     if (parameters.ping) {
       clock.Tap();
       clock.RecordLastTap();
-    }    
+    }
     
     bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
 

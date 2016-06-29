@@ -26,8 +26,8 @@
 //
 // Multitap delay
 
-#ifndef MTD_MULTITAP_DELAY_H_
-#define MTD_MULTITAP_DELAY_H_
+#ifndef MULTITAP_DELAY_H_
+#define MULTITAP_DELAY_H_
 
 #include "parameters.h"
 #include "clock.h"
@@ -37,45 +37,42 @@
 
 using namespace stmlib;
 
-namespace mtd 
+class MultitapDelay
 {
-  class MultitapDelay
-  {
-  public:
-    MultitapDelay() { }
-    ~MultitapDelay() { }
+ public:
+  MultitapDelay() { }
+  ~MultitapDelay() { }
 
-    void Init(short* buffer, int32_t buffer_size, Clock* clock);
-    bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+  void Init(short* buffer, int32_t buffer_size, Clock* clock);
+  bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
-    void AddTap(float velocity,
-                EditMode edit_mode,
-                Quantize quantize,
-                Panning panning);
-    void RemTap();
-    void Clear();
+  void AddTap(float velocity,
+              EditMode edit_mode,
+              Quantize quantize,
+              Panning panning);
+  void RemTap();
+  void Clear();
 
-  private:
-    TapAllocator tap_allocator_;
-    Tap taps_[kMaxTaps];
-    RingBuffer buffer_;
-    int16_t feedback_buffer[kBlockSize];   /* max block size */
+ private:
+  TapAllocator tap_allocator_;
+  Tap taps_[kMaxTaps];
+  AudioBuffer buffer_;
+  int16_t feedback_buffer[kBlockSize];   /* max block size */
 
-    Parameters prev_params_;
-    DCBlocker dc_blocker_;
+  Parameters prev_params_;
+  DCBlocker dc_blocker_;
 
-    bool previous_repeat_;
-    Fader repeat_fader_;
-    Fader dry_fader_;
+  bool previous_repeat_;
+  Fader repeat_fader_;
+  Fader dry_fader_;
 
-    Clock* clock_;
+  Clock* clock_;
 
-    bool counter_running_;
-    uint32_t counter_;
-    uint32_t repeat_time_;
+  bool counter_running_;
+  uint32_t counter_;
+  uint32_t repeat_time_;
 
-    DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
-  };
-}
+  DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
+};
 
 #endif

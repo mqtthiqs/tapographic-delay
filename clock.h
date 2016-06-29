@@ -28,50 +28,47 @@
 
 #include "stmlib/stmlib.h"
 
-#ifndef MTD_CLOCK_H_
-#define MTD_CLOCK_H_
+#ifndef CLOCK_H_
+#define CLOCK_H_
 
-namespace mtd 
+const uint8_t kHistorySize = 3;
+
+class Clock
 {
-  const uint8_t kHistorySize = 3;
+ public:
+  Clock() { }
+  ~Clock() { }
 
-  class Clock
-  {
-  public:
-    Clock() { }
-    ~Clock() { }
+  void Init();
+  void Tick();
+  void Tap();
+  void RecordLastTap();
+  void Start();
+  void Stop();
 
-    void Init();
-    void Tick();
-    void Tap();
-    void RecordLastTap();
-    void Start();
-    void Stop();
+  inline float phase() { return phase_; }
 
-    inline float phase() { return phase_; }
+  inline float reset() {
+    bool r = reset_;
+    reset_ = false;
+    return r;
+  }
 
-    inline float reset() {
-      bool r = reset_;
-      reset_ = false;
-      return r;
-    }
+  inline bool running() { return running_; }
+  inline float period() { return 1.0f / phase_increment_; }
 
-    inline bool running() { return running_; }
-    inline float period() { return 1.0f / phase_increment_; }
+ private:
+  uint32_t counter_;
+  uint32_t last_tap_;
+  bool running_;
+  bool reset_;
+  float phase_;
+  float phase_increment_;
 
-  private:
-    uint32_t counter_;
-    uint32_t last_tap_;
-    bool running_;
-    bool reset_;
-    float phase_;
-    float phase_increment_;
+  uint32_t history_[kHistorySize];
+  uint8_t history_cursor_;
 
-    uint32_t history_[kHistorySize];
-    uint8_t history_cursor_;
+  DISALLOW_COPY_AND_ASSIGN(Clock);
+};
 
-    DISALLOW_COPY_AND_ASSIGN(Clock);
-  };
-}
-
-#endif  // MTD_CLOCK_H_
+#endif
