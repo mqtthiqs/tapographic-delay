@@ -82,9 +82,6 @@ namespace mtd {
 
 
     void Init() {
-      //  FMC SDRAM device initialization sequence
-      //  Timing configuration for 90 Mhz of SD clock frequency (180Mhz/2)
-      //  TMRD : 2 Clock cycles
       GPIO_InitTypeDef            GPIO_InitStructure;
       FMC_SDRAMTimingInitTypeDef  FMCT;
       FMC_SDRAMInitTypeDef        FMCI;
@@ -161,13 +158,13 @@ namespace mtd {
       /* GPIOG configuration */
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource0 , GPIO_AF_FMC);
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource1 , GPIO_AF_FMC);
-      // GPIO_PinAFConfig(GPIOG, GPIO_PinSource2 , GPIO_AF_FMC); // added by Dan
+      GPIO_PinAFConfig(GPIOG, GPIO_PinSource2 , GPIO_AF_FMC);
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource4 , GPIO_AF_FMC);
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource5 , GPIO_AF_FMC);
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource8 , GPIO_AF_FMC);
       GPIO_PinAFConfig(GPIOG, GPIO_PinSource15 , GPIO_AF_FMC);
 
-      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |GPIO_Pin_1// |GPIO_Pin_2 // added by Dan
+      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |GPIO_Pin_1 | GPIO_Pin_2
         | GPIO_Pin_4 | GPIO_Pin_5
         | GPIO_Pin_8 | GPIO_Pin_15;
 
@@ -262,14 +259,10 @@ namespace mtd {
       while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy));
       FMC_SDRAMCmdConfig(&FMCC);
 
-      //  Set the refresh rate counter
-      //  (15.6 us x Freq) - 20 = (15.6 * 90MHz) - 20 = 1384
-      //  Set the device refresh counter
-
-      FMC_SetRefreshCount(1384);
+      FMC_SetRefreshCount(683);
       while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
-    }
-
+    }    
+    
     DISALLOW_COPY_AND_ASSIGN(SDRAM);
   };
 
