@@ -112,7 +112,7 @@ inline void Ui::PaintLeds() {
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
-    for (int i=0; i<kNumLeds; i++){
+    for (int i=0; i<kNumLeds; i++) {
       leds_.set(i, (animation_counter_ % kNumLeds) == i);
     }
   }
@@ -130,28 +130,28 @@ inline void Ui::PaintLeds() {
     if (beat_led_counter_ > 0)
       beat_led_counter_--;
 
-    leds_.set(LED_PING, ping_led_counter_);
-    leds_.set(LED_REPEAT1, beat_led_counter_);
-    leds_.set(LED_REPEAT2, parameters_->repeat);
+    // leds_.set(LED_PING, ping_led_counter_);
+    // leds_.set(LED_REPEAT1, beat_led_counter_);
+    // leds_.set(LED_REPEAT2, parameters_->repeat);
   }
   break;
 
   case UI_MODE_SETTINGS:
   {
-    leds_.set(LED_PING, animation_counter_ & 4);
+    // leds_.set(LED_PING, animation_counter_ & 4);
 
-    bool pan_led =
-      parameters_->panning == 0 ? false :
-      parameters_->panning == 1 ? animation_counter_ & 1 :
-      true;
+    // bool pan_led =
+    //   parameters_->panning == 0 ? false :
+    //   parameters_->panning == 1 ? animation_counter_ & 1 :
+    //   true;
 
-    bool vel_led =
-      parameters_->velocity_type == 0 ? false :
-      parameters_->velocity_type == 1 ? animation_counter_ & 1 :
-      true;
+    // bool vel_led =
+    //   parameters_->velocity_type == 0 ? false :
+    //   parameters_->velocity_type == 1 ? animation_counter_ & 1 :
+    //   true;
 
-    leds_.set(LED_REPEAT1, pan_led);
-    leds_.set(LED_REPEAT2, vel_led);
+    // leds_.set(LED_REPEAT1, pan_led);
+    // leds_.set(LED_REPEAT2, vel_led);
 
     break;
   }

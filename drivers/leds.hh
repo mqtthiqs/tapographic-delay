@@ -33,16 +33,98 @@
 
 #include <stm32f4xx_conf.h>
 
-const uint8_t kNumLeds = 7;
+const uint8_t kNumLeds = 20;
 
 enum LedNames {
-	LED_PING,
-	LED_REPEAT1,
-	LED_REPEAT2,
-	LED_CH1,
-	LED_CH2,
-	LED_REV1,
-	LED_REV2,
+  LED_BUT6_R,
+  LED_BUT6_G,
+  LED_BUT6_B,
+  LED_BUT5_R,
+  LED_BUT5_G,
+  LED_BUT5_B,
+  LED_BUT4_R,
+  LED_BUT4_G,
+  LED_BUT4_B,
+  LED_BUT3_R,
+  LED_BUT3_G,
+  LED_BUT3_B,
+  LED_BUT2_R,
+  LED_BUT2_G,
+  LED_BUT2_B,
+  LED_BUT1_R,
+  LED_BUT1_G,
+  LED_BUT1_B,
+  LED_DEL,
+  LED_REPEAT,
+};
+
+static uint16_t const LED_Pins[20] = {
+		GPIO_Pin_10,
+    GPIO_Pin_9,                 // pb
+		GPIO_Pin_8,
+		GPIO_Pin_9,
+		GPIO_Pin_8,
+		GPIO_Pin_7,
+		GPIO_Pin_7,
+		GPIO_Pin_6,
+		GPIO_Pin_3,
+		GPIO_Pin_13,
+		GPIO_Pin_12,
+		GPIO_Pin_11,
+    GPIO_Pin_2,                 // pb
+		GPIO_Pin_5,
+    GPIO_Pin_5,                 // pb
+		GPIO_Pin_6,
+    GPIO_Pin_13,                // pb
+    GPIO_Pin_14,
+    GPIO_Pin_10,
+    GPIO_Pin_12,
+};
+
+static uint16_t const LED_PinSources[20] = {
+		GPIO_PinSource10,
+		GPIO_PinSource9,
+		GPIO_PinSource8,
+		GPIO_PinSource9,
+		GPIO_PinSource8,
+		GPIO_PinSource7,
+		GPIO_PinSource7,
+		GPIO_PinSource6,
+		GPIO_PinSource3,
+		GPIO_PinSource13,
+		GPIO_PinSource12,
+		GPIO_PinSource11,
+		GPIO_PinSource2,
+		GPIO_PinSource5,
+		GPIO_PinSource5,
+		GPIO_PinSource6,
+		GPIO_PinSource13,
+    GPIO_PinSource14,
+    GPIO_PinSource10,
+    GPIO_PinSource12,
+};
+
+static GPIO_TypeDef* const LED_GPIOs[20] = {
+		GPIOA,
+		GPIOA,
+		GPIOA,
+		GPIOC,
+		GPIOC,
+		GPIOC,
+		GPIOG,
+		GPIOG,
+		GPIOG,
+		GPIOD,
+		GPIOD,
+		GPIOD,
+		GPIOB,
+		GPIOC,
+		GPIOE,
+		GPIOE,
+		GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOC,
 };
 
 class Leds {
@@ -51,6 +133,14 @@ class Leds {
   ~Leds() { }
 
   void Init() {
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA
+                           | RCC_AHB1Periph_GPIOB
+                           | RCC_AHB1Periph_GPIOC
+                           | RCC_AHB1Periph_GPIOD
+                           | RCC_AHB1Periph_GPIOE
+                           | RCC_AHB1Periph_GPIOG, ENABLE);
+
     GPIO_InitTypeDef gpio;
     GPIO_StructInit(&gpio);
     gpio.GPIO_Mode = GPIO_Mode_OUT;
@@ -58,40 +148,29 @@ class Leds {
     gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
     gpio.GPIO_Speed = GPIO_Speed_2MHz;
 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
-    gpio.GPIO_Pin = GPIO_Pin_4; // ping
-    GPIO_Init(GPIOE, &gpio);
+    // LED pins configure
+    for (int i=0; i<kNumLeds; i++) {
+      gpio.GPIO_Pin = LED_Pins[i];
+      GPIO_Init(LED_GPIOs[i], &gpio);
+      values_[i] = 255;
+    }
 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-    gpio.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_2; // inf1, rev2
-    GPIO_Init(GPIOD, &gpio);
-
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 |
-      GPIO_Pin_12 | GPIO_Pin_15; // inf2, ch1, ch2, rev1
-    GPIO_Init(GPIOA, &gpio);
-
-    for (int i=0; i<kNumLeds; i++)
-      values_[i] = 0;
     Write();
   }
 
   void Write() {
-    GPIO_WriteBit(GPIOE, GPIO_Pin_4, static_cast<BitAction>(values_[0])); // ping
-    GPIO_WriteBit(GPIOD, GPIO_Pin_4, static_cast<BitAction>(values_[1])); // inf1
-    GPIO_WriteBit(GPIOA, GPIO_Pin_10, static_cast<BitAction>(values_[2])); // inf2
-    GPIO_WriteBit(GPIOA, GPIO_Pin_11, static_cast<BitAction>(values_[3])); // ch1
-    GPIO_WriteBit(GPIOA, GPIO_Pin_12, static_cast<BitAction>(values_[4])); // ch2
-    GPIO_WriteBit(GPIOA, GPIO_Pin_15, static_cast<BitAction>(values_[5])); // rev1
-    GPIO_WriteBit(GPIOD, GPIO_Pin_2, static_cast<BitAction>(values_[6])); // rev2
+    for (int i=0; i<kNumLeds; i++) {
+      bool v = i<18 ? !values_[i] : values_[i];
+      GPIO_WriteBit(LED_GPIOs[i], LED_Pins[i], static_cast<BitAction>(v));
+    }
   }
 
   void set(uint8_t channel, bool value) {
-		values_[channel] = value;
+    values_[channel] = value ? 255 : 0;
   }
 
  private:
-  bool values_[kNumLeds];
+  uint8_t values_[kNumLeds];
 
   DISALLOW_COPY_AND_ASSIGN(Leds);
 };
