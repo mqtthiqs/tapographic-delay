@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Driver for the front panel switches.
+// Driver for the front panel buttons.
 
-#ifndef SWITCHES_H_
-#define SWITCHES_H_
+#ifndef BUTTONS_H_
+#define BUTTONS_H_
 
 #include "stmlib/stmlib.h"
 
@@ -36,30 +36,47 @@
 
 using namespace std;
 
-const uint8_t kNumSwitches = 2;
-const uint8_t kNumBitPerSwitch = 2;
+const uint8_t kNumButtons = 8;
 
-enum SwitchNames {
-  SWITCH_EDIT,
-  SWITCH_VELO,
+enum ButtonNames {
+  BUTTON_1,
+  BUTTON_2,
+  BUTTON_3,
+  BUTTON_4,
+  BUTTON_5,
+  BUTTON_6,
+  BUTTON_REPEAT,
+  BUTTON_DELETE,
 };
 
-const PinAssign switch_pins[kNumSwitches * kNumBitPerSwitch] = {
-  {GPIOB, GPIO_Pin_0},
-  {GPIOB, GPIO_Pin_1},
-  {GPIOB, GPIO_Pin_7},
-  {GPIOC, GPIO_Pin_15},
+struct PinAssign {
+	GPIO_TypeDef* gpio;
+	uint16_t pin;
 };
 
-class Switches {
+const PinAssign button_pins[kNumButtons] = {
+  {GPIOD, GPIO_Pin_2},
+  {GPIOD, GPIO_Pin_4},
+  {GPIOG, GPIO_Pin_9},
+  {GPIOG, GPIO_Pin_11},
+  {GPIOG, GPIO_Pin_13},
+  {GPIOB, GPIO_Pin_8},
+  {GPIOC, GPIO_Pin_11},
+  {GPIOA, GPIO_Pin_15},
+};
+
+class Buttons {
  public:
-  Switches() { }
-  ~Switches() { }
+  Buttons() { }
+  ~Buttons() { }
   
 
   void Init() {
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
 
     GPIO_InitTypeDef gpio;
     gpio.GPIO_Mode = GPIO_Mode_IN;
@@ -67,37 +84,37 @@ class Switches {
     gpio.GPIO_Speed = GPIO_Speed_25MHz;
     gpio.GPIO_PuPd = GPIO_PuPd_UP;
 
-    for (uint8_t i=0; i<kNumSwitches * kNumBitPerSwitch; i++) {
-      gpio.GPIO_Pin = switch_pins[i].pin;
-      GPIO_Init(switch_pins[i].gpio, &gpio);
+    for (uint8_t i=0; i<kNumButtons; i++) {
+      gpio.GPIO_Pin = button_pins[i].pin;
+      GPIO_Init(button_pins[i].gpio, &gpio);
     }
 
-    fill(&switch_state_[0], &switch_state_[kNumSwitches], 0xff);
+    fill(&button_state_[0], &button_state_[kNumButtons], 0xff);
   }
 
-  void Read() {
-    for (int i=0; i<kNumSwitches; i++) {
-      previous_switch_state_[i] = switch_state_[i];
-      switch_state_[i] = 0;
-      for (int j=0; j<kNumBitPerSwitch; j++) {
-        int idx = j + kNumBitPerSwitch * i;
-        switch_state_[i] = switch_state_[i] << 1
-          | !GPIO_ReadInputDataBit(switch_pins[idx].gpio,
-                                  switch_pins[idx].pin);
-      }
+  void Debounce() {
+    for (uint8_t i=0; i<kNumButtons; i++) {
+      button_state_[i] = (button_state_[i] << 1) | \
+        GPIO_ReadInputDataBit(button_pins[i].gpio, button_pins[i].pin);
     }
   }
 
-  inline uint8_t state(int i) { return switch_state_[i]; }
-  inline uint8_t switched(int i) {
-    return switch_state_[i] != previous_switch_state_[i];
+  inline bool released(uint8_t index) const {
+    return button_state_[index] == 0x7f;
+  }
+  
+  inline bool just_pressed(uint8_t index) const {
+    return button_state_[index] == 0x80;
+  }
+
+  inline bool pressed(uint8_t index) const {
+    return button_state_[index] == 0x00;
   }
 
 private:
-  uint8_t switch_state_[kNumSwitches];
-  uint8_t previous_switch_state_[kNumSwitches];
-
-  DISALLOW_COPY_AND_ASSIGN(Switches);
+  uint8_t button_state_[kNumButtons];
+  
+  DISALLOW_COPY_AND_ASSIGN(Buttons);
 };
 
 #endif

@@ -35,48 +35,50 @@ const int32_t kVeryLongPressDuration = 2500;
 using namespace stmlib;
 
   void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters) {
-  cv_scaler_ = cv_scaler;
-  multitap_delay_ = mtd;
-  parameters_ = parameters;
-  clock_ = clock;
+    cv_scaler_ = cv_scaler;
+    multitap_delay_ = mtd;
+    parameters_ = parameters;
+    clock_ = clock;
 
-  leds_.Init();
-  switches_.Init();
-  
-  mode_ = UI_MODE_SPLASH;
-  ignore_releases_ = 0;
+    leds_.Init();
+    buttons_.Init();
+    switches_.Init();
 
-  // parameters initialization
-  parameters->scale = 1.0f; //center to avoid slope on startup
-  parameters->edit_mode = EDIT_NORMAL;
-  parameters->quantize = QUANTIZE_NONE;
-  parameters->panning = PANNING_RANDOM;
-  parameters->velocity_type = VELOCITY_AMP;
-  parameters->edit_mode = EDIT_NORMAL;
-  parameters->repeat = false;
-}
+    mode_ = UI_MODE_SPLASH;
+    ignore_releases_ = 0;
+
+    // parameters initialization
+    parameters->scale = 1.0f; //center to avoid slope on startup
+    parameters->edit_mode = EDIT_NORMAL;
+    parameters->quantize = QUANTIZE_NONE;
+    parameters->panning = PANNING_RANDOM;
+    parameters->velocity_type = VELOCITY_AMP;
+    parameters->edit_mode = EDIT_NORMAL;
+    parameters->repeat = false;
+  }
 
 void Ui::Start() {
   mode_ = UI_MODE_NORMAL;
 }
 
 void Ui::Poll() {
-  switches_.Debounce();
+  buttons_.Debounce();
+  switches_.Read();
   
-  for (uint8_t i = 0; i < kNumSwitches; ++i) {
-    if (switches_.just_pressed(i)) {
+  for (uint8_t i=0; i<kNumButtons; i++) {
+    if (buttons_.just_pressed(i)) {
       queue_.AddEvent(CONTROL_SWITCH, i, 0);
       press_time_[i] = system_clock.milliseconds();
       long_press_time_[i] = system_clock.milliseconds();
     }
-    if (switches_.pressed(i) && press_time_[i] != 0) {
+    if (buttons_.pressed(i) && press_time_[i] != 0) {
       int32_t pressed_time = system_clock.milliseconds() - press_time_[i];
       if (pressed_time > kLongPressDuration) {
         queue_.AddEvent(CONTROL_SWITCH, i, pressed_time);
         press_time_[i] = 0;
       }
     }
-    if (switches_.pressed(i) && long_press_time_[i] != 0) {
+    if (buttons_.pressed(i) && long_press_time_[i] != 0) {
       int32_t pressed_time = system_clock.milliseconds() - long_press_time_[i];
       if (pressed_time > kVeryLongPressDuration) {
         queue_.AddEvent(CONTROL_SWITCH, i, pressed_time);
@@ -84,7 +86,7 @@ void Ui::Poll() {
       }
     }
     
-    if (switches_.released(i) && press_time_[i] != 0) {
+    if (buttons_.released(i) && press_time_[i] != 0) {
       queue_.AddEvent(
           CONTROL_SWITCH,
           i,
@@ -93,12 +95,10 @@ void Ui::Poll() {
     }
   }
 
-  if (mode_ == UI_MODE_NORMAL) {
-    parameters_->edit_mode = static_cast<EditMode>(switches_.state1());
-    parameters_->quantize = static_cast<Quantize>(switches_.state2());
-  } else if (mode_ == UI_MODE_SETTINGS) {
-    parameters_->panning = static_cast<Panning>(switches_.state1());
-    parameters_->velocity_type = static_cast<VelocityType>(switches_.state2());
+  for (uint8_t i=0; i<kNumSwitches; i++) {
+    if (switches_.switched(i)) {
+      queue_.AddEvent(CONTROL_ENCODER, i, switches_.state(i));
+    }
   }
 
   PaintLeds();
@@ -120,39 +120,19 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
-    if (clock_->running() && clock_->reset()) {
-      ping_led_counter_ = 40;
+    for (int i=0; i<6; i++) {
+      bool b = last_button_pressed_ == i;
+      leds_.set(i*3, b);
+      leds_.set(i*3+1, b);
+      leds_.set(i*3+2, b);
     }
-
-    if (ping_led_counter_ > 0)
-      ping_led_counter_--;
-
-    if (beat_led_counter_ > 0)
-      beat_led_counter_--;
-
-    // leds_.set(LED_PING, ping_led_counter_);
-    // leds_.set(LED_REPEAT1, beat_led_counter_);
-    // leds_.set(LED_REPEAT2, parameters_->repeat);
+    // leds_.set(LED_DELETE, button_state_);
+    leds_.set(LED_REPEAT, parameters_->repeat);
   }
   break;
 
   case UI_MODE_SETTINGS:
   {
-    // leds_.set(LED_PING, animation_counter_ & 4);
-
-    // bool pan_led =
-    //   parameters_->panning == 0 ? false :
-    //   parameters_->panning == 1 ? animation_counter_ & 1 :
-    //   true;
-
-    // bool vel_led =
-    //   parameters_->velocity_type == 0 ? false :
-    //   parameters_->velocity_type == 1 ? animation_counter_ & 1 :
-    //   true;
-
-    // leds_.set(LED_REPEAT1, pan_led);
-    // leds_.set(LED_REPEAT2, vel_led);
-
     break;
   }
 
@@ -175,25 +155,12 @@ void Ui::Panic() {
   mode_ = UI_MODE_PANIC;
 }
 
-inline void Ui::OnSwitchPressed(const Event& e) {
+void Ui::OnButtonPressed(const Event& e) {
 
-  // double press -> feature switch mode
-  if ((e.control_id == SWITCH_REPEAT1
-       && switches_.pressed(SWITCH_REPEAT2)) ||
-      (e.control_id == SWITCH_REPEAT2
-       && switches_.pressed(SWITCH_REPEAT1))) {
-    if (mode_ == UI_MODE_NORMAL)
-      mode_ = UI_MODE_SETTINGS;
-    else if (mode_ == UI_MODE_SETTINGS)
-      mode_ = UI_MODE_NORMAL;
-    ignore_releases_ = 2;
-  } else if (mode_ == UI_MODE_NORMAL) {
+  if (mode_ == UI_MODE_NORMAL) {
     // normal mode:
     switch (e.control_id) {
-    case SWITCH_PING:
-      clock_->Tap();
-      break;
-    case SWITCH_REPEAT1:
+    case BUTTON_DELETE:
       multitap_delay_->AddTap(parameters_->velocity,
                               parameters_->edit_mode,
                               parameters_->quantize,
@@ -203,7 +170,7 @@ inline void Ui::OnSwitchPressed(const Event& e) {
   }
 }
 
-inline void Ui::OnSwitchReleased(const Event& e) {
+void Ui::OnButtonReleased(const Event& e) {
   // hack for double presses
   if (ignore_releases_ > 0) {
     ignore_releases_--;
@@ -213,24 +180,35 @@ inline void Ui::OnSwitchReleased(const Event& e) {
   // normal mode:
   if (mode_ == UI_MODE_NORMAL) {
     switch (e.control_id) {
-    case SWITCH_PING:
-      if (e.data >= kLongPressDuration) {
-        clock_->Stop();
-      } else {
-        clock_->RecordLastTap();
-      }
-      break;
-    case SWITCH_REV1:
+    case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
         multitap_delay_->Clear();
       } else {
         multitap_delay_->RemTap();
       }
       break;
-    case SWITCH_REPEAT2:
+    case BUTTON_REPEAT:
       parameters_->repeat = !parameters_->repeat;
       break;
-    case SWITCH_REPEAT1:
+    case BUTTON_1:
+    case BUTTON_2:
+    case BUTTON_3:
+    case BUTTON_4:
+    case BUTTON_5:
+    case BUTTON_6:
+      last_button_pressed_ = e.control_id;
+      break;
+    }
+  }
+}
+
+void Ui::OnSwitchSwitched(const stmlib::Event& e) {
+  if (mode_ == UI_MODE_NORMAL) {
+    switch (e.control_id) {
+    case SWITCH_EDIT:
+      parameters_->edit_mode = static_cast<EditMode>(e.data);
+      break;
+    case SWITCH_VELO:
       break;
     }
   }
@@ -241,10 +219,12 @@ void Ui::DoEvents() {
     Event e = queue_.PullEvent();
     if (e.control_type == CONTROL_SWITCH) {
       if (e.data == 0) {
-        OnSwitchPressed(e);
+        OnButtonPressed(e);
       } else {
-        OnSwitchReleased(e);
+        OnButtonReleased(e);
       }
+    } else if (e.control_type == CONTROL_ENCODER) {
+      OnSwitchSwitched(e);
     }
   }
 

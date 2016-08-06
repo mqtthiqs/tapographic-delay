@@ -123,8 +123,7 @@ static GPIO_TypeDef* const LED_GPIOs[20] = {
 		GPIOC,
 		GPIOA,
 		GPIOA,
-		GPIOA,
-
+    GPIOA,
     GPIOC,
     GPIOC,
 };

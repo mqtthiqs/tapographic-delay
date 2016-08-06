@@ -33,6 +33,7 @@
 #include "stmlib/ui/event_queue.h"
 
 #include "drivers/leds.hh"
+#include "drivers/buttons.hh"
 #include "drivers/switches.hh"
 #include "parameters.hh"
 #include "clock.hh"
@@ -61,13 +62,10 @@ class Ui {
   void Start();
   void Panic();
 
-  inline void set_beat_led(bool value) {
-    if (value) beat_led_counter_ = 20;
-  }
-
  private:
-  void OnSwitchPressed(const stmlib::Event& e);
-  void OnSwitchReleased(const stmlib::Event& e);
+  void OnButtonPressed(const stmlib::Event& e);
+  void OnButtonReleased(const stmlib::Event& e);
+  void OnSwitchSwitched(const stmlib::Event& e);
 
   void PaintLeds();
 
@@ -79,12 +77,12 @@ class Ui {
   Parameters* parameters_;
   
   Leds leds_;
-  uint16_t ping_led_counter_;
-  uint16_t beat_led_counter_;
+  uint16_t last_button_pressed_; // TODO temp
 
+  Buttons buttons_;
   Switches switches_;
-  uint32_t press_time_[kNumSwitches];
-  uint32_t long_press_time_[kNumSwitches];
+  uint32_t press_time_[kNumButtons];
+  uint32_t long_press_time_[kNumButtons];
   UiMode mode_;
   uint16_t animation_counter_;
 
