@@ -36,93 +36,95 @@
 const uint8_t kNumLeds = 20;
 
 enum LedNames {
-  LED_BUT6_R,
-  LED_BUT6_G,
-  LED_BUT6_B,
-  LED_BUT5_R,
-  LED_BUT5_G,
-  LED_BUT5_B,
-  LED_BUT4_R,
-  LED_BUT4_G,
-  LED_BUT4_B,
-  LED_BUT3_R,
-  LED_BUT3_G,
-  LED_BUT3_B,
-  LED_BUT2_R,
-  LED_BUT2_G,
-  LED_BUT2_B,
   LED_BUT1_R,
   LED_BUT1_G,
   LED_BUT1_B,
-  LED_DEL,
+  LED_BUT2_R,
+  LED_BUT2_G,
+  LED_BUT2_B,
+  LED_BUT3_R,
+  LED_BUT3_G,
+  LED_BUT3_B,
+  LED_BUT4_R,
+  LED_BUT4_G,
+  LED_BUT4_B,
+  LED_BUT5_R,
+  LED_BUT5_G,
+  LED_BUT5_B,
+  LED_BUT6_R,
+  LED_BUT6_G,
+  LED_BUT6_B,
+  LED_DELETE,
   LED_REPEAT,
 };
 
 static uint16_t const LED_Pins[20] = {
-		GPIO_Pin_10,
-    GPIO_Pin_9,                 // pb
-		GPIO_Pin_8,
-		GPIO_Pin_9,
-		GPIO_Pin_8,
-		GPIO_Pin_7,
-		GPIO_Pin_7,
-		GPIO_Pin_6,
-		GPIO_Pin_3,
-		GPIO_Pin_13,
+    GPIO_Pin_6,
+    GPIO_Pin_13,
+    GPIO_Pin_14,
+    GPIO_Pin_2,
+		GPIO_Pin_5,
+    GPIO_Pin_5,
+    GPIO_Pin_13,
 		GPIO_Pin_12,
 		GPIO_Pin_11,
-    GPIO_Pin_2,                 // pb
-		GPIO_Pin_5,
-    GPIO_Pin_5,                 // pb
+    GPIO_Pin_7,
 		GPIO_Pin_6,
-    GPIO_Pin_13,                // pb
-    GPIO_Pin_14,
+		GPIO_Pin_3,
+    GPIO_Pin_9,
+		GPIO_Pin_8,
+		GPIO_Pin_7,
+		GPIO_Pin_10,
+    GPIO_Pin_9,
+    GPIO_Pin_8,
+
     GPIO_Pin_10,
     GPIO_Pin_12,
 };
 
 static uint16_t const LED_PinSources[20] = {
-		GPIO_PinSource10,
-		GPIO_PinSource9,
-		GPIO_PinSource8,
-		GPIO_PinSource9,
-		GPIO_PinSource8,
-		GPIO_PinSource7,
-		GPIO_PinSource7,
-		GPIO_PinSource6,
-		GPIO_PinSource3,
-		GPIO_PinSource13,
+    GPIO_PinSource6,
+    GPIO_PinSource13,
+    GPIO_PinSource14,
+    GPIO_PinSource2,
+		GPIO_PinSource5,
+    GPIO_PinSource5,
+    GPIO_PinSource13,
 		GPIO_PinSource12,
 		GPIO_PinSource11,
-		GPIO_PinSource2,
-		GPIO_PinSource5,
-		GPIO_PinSource5,
+    GPIO_PinSource7,
 		GPIO_PinSource6,
-		GPIO_PinSource13,
-    GPIO_PinSource14,
+		GPIO_PinSource3,
+    GPIO_PinSource9,
+		GPIO_PinSource8,
+		GPIO_PinSource7,
+		GPIO_PinSource10,
+    GPIO_PinSource9,
+    GPIO_PinSource8,
     GPIO_PinSource10,
     GPIO_PinSource12,
 };
 
 static GPIO_TypeDef* const LED_GPIOs[20] = {
-		GPIOA,
-		GPIOA,
-		GPIOA,
-		GPIOC,
-		GPIOC,
-		GPIOC,
-		GPIOG,
-		GPIOG,
-		GPIOG,
-		GPIOD,
-		GPIOD,
-		GPIOD,
-		GPIOB,
-		GPIOC,
-		GPIOE,
-		GPIOE,
+    GPIOE,
 		GPIOC,
     GPIOC,
+    GPIOB,
+		GPIOC,
+		GPIOE,
+    GPIOD,
+		GPIOD,
+		GPIOD,
+    GPIOG,
+		GPIOG,
+		GPIOG,
+    GPIOC,
+		GPIOC,
+		GPIOC,
+		GPIOA,
+		GPIOA,
+		GPIOA,
+
     GPIOC,
     GPIOC,
 };
@@ -166,11 +168,11 @@ class Leds {
   }
 
   void set(uint8_t channel, bool value) {
-    values_[channel] = value ? 255 : 0;
+    values_[channel] = value;
   }
 
  private:
-  uint8_t values_[kNumLeds];
+  bool values_[kNumLeds];
 
   DISALLOW_COPY_AND_ASSIGN(Leds);
 };
