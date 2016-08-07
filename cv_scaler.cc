@@ -35,6 +35,9 @@
 
 using namespace std;
 
+const float kPotDeadZoneSize = 0.01f;
+const float kScalePotNotchSize = 0.06f;
+
 void CvScaler::Init() {
   adc_.Init();
   gate_input_.Init();
@@ -43,83 +46,131 @@ void CvScaler::Init() {
   }
 }
 
+inline float CropDeadZone(float x) {
+  return x * (1.0f + 2.0f * kPotDeadZoneSize) - kPotDeadZoneSize;
+}
+
+
 void CvScaler::Read(Parameters* parameters) {
-  for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
-    float value = adc_.float_value(i);
+
+  float scaled_values[ADC_CHANNEL_LAST];
+
+  /* 1. Apply pot laws */
+  float val;
+
+  // gain
+  val = CropDeadZone(adc_.float_value(ADC_GAIN_POT));
+  val *= val;          // quadratic
+  scaled_values[ADC_GAIN_POT] = val;
+
+  // scale
+  val = CropDeadZone(adc_.float_value(ADC_SCALE_POT));
+  scaled_values[ADC_SCALE_POT] = val;
+
+  // feedback
+  val = CropDeadZone(adc_.float_value(ADC_FEEDBACK_POT));
+  scaled_values[ADC_FEEDBACK_POT] = val;
+
+  // modulation
+  val = CropDeadZone(adc_.float_value(ADC_MODULATION_POT));
+  scaled_values[ADC_MODULATION_POT] = val;
+
+  // drywet
+  val = CropDeadZone(adc_.float_value(ADC_DRYWET_POT));
+  scaled_values[ADC_DRYWET_POT] = val;
+
+  // morph
+  val = CropDeadZone(adc_.float_value(ADC_MORPH_POT));
+  scaled_values[ADC_MORPH_POT] = val;
+
+  /* 2. Offset and scale CVs */
+
+  for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
+    scaled_values[i] = adc_.float_value(i); // TODO
+  }
+
+  /* 3. Filter pots and CVs */
+
+  for (size_t i=0; i<ADC_CHANNEL_LAST; i++) {
+    float value = scaled_values[i];
     average_[i].Process(value);
   }
 
-  // float time =
-  //   average_[ADC_TIME1_POT] +
-  //   average_[ADC_TIME1_CV];
-  // CONSTRAIN(time, 0.0f, 1.0f);
-  // parameters->time = time;
+  /* 4. Add CV and pot, constrain, and write to parameters */
 
-  float velocity =
-    average_[ADC_LEVEL1_POT].value() +
-    average_[ADC_LEVEL1_CV].value();
-  CONSTRAIN(velocity, 0.0f, 1.0f);
-  parameters->velocity = velocity;
+  // gain
+  val = average_[ADC_GAIN_POT].value();
+  val *= 2.0f;
+  parameters->gain = val;
 
-  float feedback =
-    average_[ADC_REGEN1_POT].value() +
-    average_[ADC_REGEN1_CV].value();
-  CONSTRAIN(feedback, 0.0f, 1.0f);
-  parameters->feedback = feedback;
-
-  float drywet = average_[ADC_MIX1_POT].value();
-  drywet = 1.0f - drywet;
-  drywet = drywet * 1.1f - 0.05f;
-  CONSTRAIN(drywet, 0.0f, 1.0f);
-  parameters->drywet = drywet;
-
-  const float kNotchSize = 0.06f;
-  float scale = average_[ADC_MIX2_POT].value();
-  if (scale < 0.5f - kNotchSize) {
-    scale += kNotchSize;
-  } else if (scale > 0.5f + kNotchSize) {
-    scale -= kNotchSize;
+  // scale
+  val =
+    average_[ADC_SCALE_POT].value() +
+    average_[ADC_SCALE_CV].value();
+  // flat zone at noon
+  if (val < 0.5f - kScalePotNotchSize) {
+    val += kScalePotNotchSize;
+  } else if (val > 0.5f + kScalePotNotchSize) {
+    val -= kScalePotNotchSize;
   } else {
-    scale = 0.5f;
+    val = 0.5f;
   }
+  CONSTRAIN(val, 0.0f, 1.0f);
+  val *= val;
+  val *= 4.0f;
+  // // TODO refilter scale after adding CV
+  // average_scale_.Process(TODO);
+  // float scale_av = average_scale_.value();
+  // ONE_POLE(scale_lp_, scale_av, 0.002f);
+  parameters->scale = val;
 
-  CONSTRAIN(scale, 0.0f, 1.0f);
+  // feedback
+  val =
+    average_[ADC_FEEDBACK_POT].value() +
+    average_[ADC_FEEDBACK_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  parameters->feedback = val;
 
-  scale = scale*2;
-  scale *= scale;
+  // modulation
+  val =
+    average_[ADC_MODULATION_POT].value() +
+    average_[ADC_MODULATION_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  parameters->modulation = val;
 
-  average_scale_.Process(scale);
-  float scale_av = average_scale_.value();
-  ONE_POLE(scale_lp_, scale_av, 0.002f);
+  // drywet
+  val =
+    average_[ADC_DRYWET_POT].value() +
+    average_[ADC_DRYWET_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  parameters->drywet = val;
 
-  parameters->scale = scale_lp_; // 0..1..4
+  // morph
+  val =
+    average_[ADC_MORPH_POT].value() +
+    average_[ADC_MORPH_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  val = (val + 0.1f) / 1.1f;
+  val = val * val * val * val;
+  val *= 500000.0f;
+  parameters->morph = val;
 
-  float jitter_amount =
-    average_[ADC_LEVEL2_POT].value();
-  CONSTRAIN(jitter_amount, 0.0f, 1.0f);
-  jitter_amount *= jitter_amount;
-  parameters->jitter_amount = jitter_amount;
+  // velocity
+  val = average_[ADC_FSR_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  parameters->velocity = val;
 
-  float jitter_frequency =
-    average_[ADC_REGEN2_POT].value();
-  CONSTRAIN(jitter_frequency, 0.0f, 1.0f);
-  jitter_frequency *= jitter_frequency * jitter_frequency;
-  parameters->jitter_frequency = jitter_frequency;
+  ////////////
 
-  float morph =
-    average_[ADC_TIME1_POT].value();
-  CONSTRAIN(morph, 0.0f, 1.0f);
-  morph += 0.1f;
-  morph /= 1.1f;
-  morph *= morph;
-  morph *= morph;
-  parameters->morph = morph * 500000.0f;
-
+  // repeat
   if (gate_input_.rising_edge(GATE_INPUT_REPEAT)) {
     parameters->repeat = true;
   } else if (gate_input_.falling_edge(GATE_INPUT_REPEAT)) {
     parameters->repeat = false;
   }
+
+  // TODO
+  parameters->test = adc_.float_value(ADC_TAPTRIG_CV);
 
   gate_input_.Read();
   adc_.Convert();
