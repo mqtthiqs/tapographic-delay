@@ -126,7 +126,6 @@ inline void Ui::PaintLeds() {
       leds_.set(i*3+1, b);
       leds_.set(i*3+2, b);
     }
-    // leds_.set(LED_DELETE, button_state_);
     leds_.set(LED_REPEAT, parameters_->repeat);
   }
   break;
@@ -158,13 +157,13 @@ void Ui::Panic() {
 void Ui::OnButtonPressed(const Event& e) {
 
   if (mode_ == UI_MODE_NORMAL) {
-    // normal mode:
     switch (e.control_id) {
     case BUTTON_DELETE:
-      multitap_delay_->AddTap(parameters_->velocity,
-                              parameters_->edit_mode,
-                              parameters_->quantize,
-                              parameters_->panning);
+      // TODO
+      // multitap_delay_->AddTap(parameters_->velocity,
+      //                         parameters_->edit_mode,
+      //                         parameters_->quantize,
+      //                         parameters_->panning);
       break;
     }
   }
