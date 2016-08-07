@@ -62,20 +62,28 @@ enum Panning {
 };
 
 struct Parameters {
-  float velocity;
-  float feedback;
-  float drywet;
-  float morph;
+  float gain;
   float scale;
+  float feedback;
+  float modulation;
+  float morph;
+  float drywet;
+
+  float velocity;
+
+  // TODO delete:
   float jitter_amount;
   float jitter_frequency;
 
+  float test;                   // TODO
+
   bool repeat;
-  bool ping;
+  bool ping;                    // TOD delete
+  // TODO add: bool tap; // add a tap
 
   EditMode edit_mode;
-  Quantize quantize;
-  Panning panning;
+  Quantize quantize;            // TODO delete
+  Panning panning;              // TODO rename Mode
   VelocityType velocity_type;
 };
 
