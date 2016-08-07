@@ -34,21 +34,22 @@
 #include <stm32f4xx_conf.h>
 
 enum AdcChannel {
-	ADC_TIME1_POT,
-	ADC_TIME2_POT,
-	ADC_LEVEL1_POT,
-	ADC_LEVEL2_POT,
-	ADC_REGEN1_POT,
-	ADC_REGEN2_POT,
-	ADC_MIX1_POT,
-	ADC_MIX2_POT,
-	ADC_TIME1_CV,
-	ADC_TIME2_CV,
-	ADC_LEVEL1_CV,
-	ADC_LEVEL2_CV,
-	ADC_REGEN1_CV,
-	ADC_REGEN2_CV,
-	ADC_CHANNEL_LAST
+  ADC_SCALE_POT,
+  ADC_FEEDBACK_POT,
+  ADC_MODULATION_POT,
+  ADC_DRYWET_POT,
+  ADC_MORPH_POT,
+  ADC_GAIN_POT,
+
+  ADC_SCALE_CV,
+  ADC_FEEDBACK_CV,
+  ADC_MODULATION_CV,
+  ADC_DRYWET_CV,
+  ADC_MORPH_CV,
+  ADC_FSR_CV,
+  ADC_VEL_CV,
+  ADC_TAPTRIG_CV,
+  ADC_CHANNEL_LAST
 };
 
 class Adc {
@@ -67,28 +68,30 @@ public:
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 |
                            RCC_APB2Periph_ADC3, ENABLE);
 
-
     // Configure analog input pins
     GPIO_InitTypeDef gpio_init;
 
     gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
     gpio_init.GPIO_Mode = GPIO_Mode_AN;
 
-    gpio_init.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_6 | GPIO_Pin_7;
+    // pots
+    gpio_init.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7; //Channel 6, 7
     GPIO_Init(GPIOA, &gpio_init);
 
-    gpio_init.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_Init(GPIOB, &gpio_init);
-
-    gpio_init.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4;
+    gpio_init.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4; //Channel 11, 12, 13, 14
     GPIO_Init(GPIOC, &gpio_init);
 
-    gpio_init.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10;
+    // cvs
+    gpio_init.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3; //Channel 1, 2, 3
+    GPIO_Init(GPIOA, &gpio_init);
+
+    gpio_init.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10; //Channel 4, 5, 6, 7, 8
     GPIO_Init(GPIOF, &gpio_init);
 
-    // // Use DMA to automatically copy ADC data register to values_ buffer.
+    // Use DMA to automatically copy ADC data register to values_ buffer.
     DMA_InitTypeDef dma_init;
 
+    dma_init.DMA_DIR = DMA_DIR_PeripheralToMemory;
     dma_init.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
     dma_init.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -104,17 +107,17 @@ public:
     dma_init.DMA_Channel = DMA_Channel_0;
     dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR;
     dma_init.DMA_Memory0BaseAddr = (uint32_t)&values_[0];
-    dma_init.DMA_DIR = DMA_DIR_PeripheralToMemory;
-    dma_init.DMA_BufferSize = 8;
+    dma_init.DMA_BufferSize = 6;
 
     DMA_Init(DMA2_Stream4, &dma_init);
     DMA_Cmd(DMA2_Stream4, ENABLE);
 
-    // // DMA2 Stream 0 Channel 2 for pots
+    // DMA2 Stream 0 Channel 2 for CVs
     dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC3->DR;
-    dma_init.DMA_Memory0BaseAddr = (uint32_t)&values_[ADC_TIME1_CV];
-    dma_init.DMA_BufferSize = 6;
+    dma_init.DMA_Memory0BaseAddr = (uint32_t)&values_[ADC_SCALE_CV];
+    dma_init.DMA_BufferSize = 8;
     dma_init.DMA_Channel = DMA_Channel_2;
+
     DMA_Init(DMA2_Stream0, &dma_init);
     DMA_Cmd(DMA2_Stream0, ENABLE);
 
@@ -133,33 +136,33 @@ public:
     adc_init.ADC_ContinuousConvMode = DISABLE;
     adc_init.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
     adc_init.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
-    adc_init.ADC_DataAlign = ADC_DataAlign_Right;
+    adc_init.ADC_DataAlign = ADC_DataAlign_Left;
 
-    // // ADC1 for pots
-    adc_init.ADC_NbrOfConversion = 8;
+    // ADC1 for pots
+    adc_init.ADC_NbrOfConversion = 6;
     ADC_Init(ADC1, &adc_init);
 
     // ADC3 for CVs
-    adc_init.ADC_NbrOfConversion = 6;
+    adc_init.ADC_NbrOfConversion = 8;
     ADC_Init(ADC3, &adc_init);
 
     // ADC1 channel configuration (pots)
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 1, ADC_SampleTime_480Cycles); // time1_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 2, ADC_SampleTime_480Cycles); // time2_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 3, ADC_SampleTime_480Cycles); // level1_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 4, ADC_SampleTime_480Cycles); // level2_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 5, ADC_SampleTime_480Cycles); // regen1_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_12, 6, ADC_SampleTime_480Cycles); // regen2_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_14, 7, ADC_SampleTime_480Cycles); // mix1_pot
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_13, 8, ADC_SampleTime_480Cycles); // mix2_pot
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_11, ADC_MORPH_POT+1, ADC_SampleTime_480Cycles); //PC1
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_12, ADC_DRYWET_POT+1, ADC_SampleTime_480Cycles); //PC2
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_13, ADC_MODULATION_POT+1, ADC_SampleTime_480Cycles); //PC3
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_14, ADC_GAIN_POT+1, ADC_SampleTime_480Cycles); //PC4
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_6, ADC_FEEDBACK_POT+1, ADC_SampleTime_480Cycles); //PA6
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_7, ADC_SCALE_POT+1, ADC_SampleTime_480Cycles); //PA7
 
     // ADC3 channel configuration (CVs)
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_5, 1, ADC_SampleTime_480Cycles); //PF7
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_6, 2, ADC_SampleTime_480Cycles); //PF8
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_3, 3, ADC_SampleTime_480Cycles); //PA3
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_4, 4, ADC_SampleTime_480Cycles); //PF6
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_7, 5, ADC_SampleTime_480Cycles); //PF9
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, 6, ADC_SampleTime_480Cycles); //PF10
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_1, ADC_MORPH_CV+1, ADC_SampleTime_480Cycles); //PA1
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_2, ADC_TAPTRIG_CV+1, ADC_SampleTime_480Cycles); //PA2
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_3, ADC_FSR_CV+1, ADC_SampleTime_480Cycles); //PA3
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_4, ADC_VEL_CV+1, ADC_SampleTime_480Cycles); //PF6
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_5, ADC_DRYWET_CV+1, ADC_SampleTime_480Cycles); //PF7
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_6, ADC_MODULATION_CV+1, ADC_SampleTime_480Cycles); //PF8
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_7, ADC_FEEDBACK_CV+1, ADC_SampleTime_480Cycles); //PF9
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, ADC_SCALE_CV+1, ADC_SampleTime_480Cycles); //PF10
 
     ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
     ADC_DMACmd(ADC1, ENABLE);
@@ -182,10 +185,10 @@ public:
   }
 
 	inline uint16_t value(uint8_t channel) const {
-    return values_[channel] << 4; /* compensate for ADC max of 4096 */
+    return values_[channel];
 	}
   inline float float_value(uint8_t channel) const {
-		return static_cast<float>(values_[channel]) / 4096.0f; /* max is 4096 */
+    return static_cast<float>(values_[channel]) / 65536.0f;
 	}
 
  private:
