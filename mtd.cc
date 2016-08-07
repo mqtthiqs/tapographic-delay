@@ -30,7 +30,6 @@
 
 #include "stmlib/system/system_clock.h"
 #include "drivers/system.hh"
-#include "drivers/gate_output.hh"
 #include "drivers/codec.hh"
 #include "drivers/sdram.hh"
 #include "cv_scaler.hh"
@@ -41,7 +40,6 @@
 using namespace stmlib;
 
 System sys;
-GateOutput gate_output;
 // Codec codec;
 SDRAM sdram;
 CvScaler cv_scaler;
@@ -83,10 +81,7 @@ extern "C" {
       clock.RecordLastTap();
     }
     
-    bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
-
-    ui.set_beat_led(gate);
-    gate_output.Write(gate);
+    delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
   }
 }
 
@@ -94,7 +89,6 @@ void Init() {
   sys.Init(false);
   system_clock.Init();
   sdram.Init();
-  gate_output.Init();
   cv_scaler.Init();
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
