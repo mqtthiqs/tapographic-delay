@@ -57,6 +57,24 @@ public:
   Adc() { }
   ~Adc() { }
 
+  void Deinit(void) {
+    ADC_Cmd(ADC3, DISABLE);
+    ADC_DMACmd(ADC3, DISABLE);
+    ADC_DMARequestAfterLastTransferCmd(ADC3, DISABLE);
+    DMA_Cmd(DMA2_Stream0, DISABLE);
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC3, DISABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, DISABLE);
+
+    ADC_Cmd(ADC1, DISABLE);
+    ADC_DMACmd(ADC1, DISABLE);
+    ADC_DMARequestAfterLastTransferCmd(ADC1, DISABLE);
+    DMA_Cmd(DMA2_Stream4, DISABLE);
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, DISABLE);
+  }
+
   void Init() {
 
     // Initialize peripherals
@@ -155,14 +173,14 @@ public:
     ADC_RegularChannelConfig(ADC1, ADC_Channel_7, ADC_SCALE_POT+1, ADC_SampleTime_480Cycles); //PA7
 
     // ADC3 channel configuration (CVs)
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_1, ADC_MORPH_CV+1, ADC_SampleTime_480Cycles); //PA1
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_2, ADC_TAPTRIG_CV+1, ADC_SampleTime_480Cycles); //PA2
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_3, ADC_FSR_CV+1, ADC_SampleTime_480Cycles); //PA3
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_4, ADC_VEL_CV+1, ADC_SampleTime_480Cycles); //PF6
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_5, ADC_DRYWET_CV+1, ADC_SampleTime_480Cycles); //PF7
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_6, ADC_MODULATION_CV+1, ADC_SampleTime_480Cycles); //PF8
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_7, ADC_FEEDBACK_CV+1, ADC_SampleTime_480Cycles); //PF9
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, ADC_SCALE_CV+1, ADC_SampleTime_480Cycles); //PF10
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, ADC_SCALE_CV-5, ADC_SampleTime_480Cycles); //PF10
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_7, ADC_FEEDBACK_CV-5, ADC_SampleTime_480Cycles); //PF9
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_6, ADC_MODULATION_CV-5, ADC_SampleTime_480Cycles); //PF8
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_5, ADC_DRYWET_CV-5, ADC_SampleTime_480Cycles); //PF7
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_1, ADC_MORPH_CV-5, ADC_SampleTime_480Cycles); //PA1
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_3, ADC_FSR_CV-5, ADC_SampleTime_480Cycles); //PA3
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_4, ADC_VEL_CV-5, ADC_SampleTime_480Cycles); //PF6
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_2, ADC_TAPTRIG_CV-5, ADC_SampleTime_480Cycles); //PA2
 
     ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
     ADC_DMACmd(ADC1, ENABLE);
