@@ -32,6 +32,7 @@
 #include "drivers/system.hh"
 #include "drivers/codec.hh"
 #include "drivers/sdram.hh"
+#include "drivers/dac.hh"
 #include "cv_scaler.hh"
 #include "ui.hh"
 #include "multitap_delay.hh"
@@ -46,6 +47,7 @@ CvScaler cv_scaler;
 Ui ui;
 MultitapDelay delay;
 Clock clock;
+Dac dac;
 
 Parameters parameters;
 
@@ -89,6 +91,7 @@ void Init() {
   sys.Init(false);
   system_clock.Init();
   sdram.Init();
+  dac.Init();
   cv_scaler.Init();
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
