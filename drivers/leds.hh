@@ -33,7 +33,7 @@
 
 #include <stm32f4xx_conf.h>
 
-const uint8_t kNumLeds = 20;
+const uint8_t kNumLeds = 21;
 
 enum LedNames {
   LED_BUT1_R,
@@ -56,9 +56,10 @@ enum LedNames {
   LED_BUT6_B,
   LED_DELETE,
   LED_REPEAT,
+  LED_TAP,
 };
 
-static uint16_t const LED_Pins[20] = {
+static uint16_t const LED_Pins[kNumLeds] = {
     GPIO_Pin_6,
     GPIO_Pin_13,
     GPIO_Pin_14,
@@ -77,12 +78,12 @@ static uint16_t const LED_Pins[20] = {
 		GPIO_Pin_10,
     GPIO_Pin_9,
     GPIO_Pin_8,
-
     GPIO_Pin_10,
     GPIO_Pin_12,
+    GPIO_Pin_0,
 };
 
-static uint16_t const LED_PinSources[20] = {
+static uint16_t const LED_PinSources[kNumLeds] = {
     GPIO_PinSource6,
     GPIO_PinSource13,
     GPIO_PinSource14,
@@ -103,9 +104,10 @@ static uint16_t const LED_PinSources[20] = {
     GPIO_PinSource8,
     GPIO_PinSource10,
     GPIO_PinSource12,
+    GPIO_PinSource0,
 };
 
-static GPIO_TypeDef* const LED_GPIOs[20] = {
+static GPIO_TypeDef* const LED_GPIOs[kNumLeds] = {
     GPIOE,
 		GPIOC,
     GPIOC,
@@ -126,6 +128,7 @@ static GPIO_TypeDef* const LED_GPIOs[20] = {
     GPIOA,
     GPIOC,
     GPIOC,
+    GPIOA,
 };
 
 class Leds {
@@ -135,12 +138,12 @@ class Leds {
 
   void Init() {
 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA
-                           | RCC_AHB1Periph_GPIOB
-                           | RCC_AHB1Periph_GPIOC
-                           | RCC_AHB1Periph_GPIOD
-                           | RCC_AHB1Periph_GPIOE
-                           | RCC_AHB1Periph_GPIOG, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA |
+                           RCC_AHB1Periph_GPIOB |
+                           RCC_AHB1Periph_GPIOC |
+                           RCC_AHB1Periph_GPIOD |
+                           RCC_AHB1Periph_GPIOE |
+                           RCC_AHB1Periph_GPIOG, ENABLE);
 
     GPIO_InitTypeDef gpio;
     GPIO_StructInit(&gpio);
