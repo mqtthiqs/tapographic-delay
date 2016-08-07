@@ -86,7 +86,15 @@ void CvScaler::Read(Parameters* parameters) {
   /* 2. Offset and scale CVs */
 
   for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
-    scaled_values[i] = adc_.float_value(i); // TODO
+    // TODO calibrate CV
+    if (i < ADC_FSR_CV) {
+      // bipolar CVs
+      scaled_values[i] = 0.5f - adc_.float_value(i); // -0.5..0.5
+    } else {
+      // unipolar CVs
+      scaled_values[i] = adc_.float_value(i); // -0.5..0.5
+    }
+
   }
 
   /* 3. Filter pots and CVs */
@@ -115,6 +123,7 @@ void CvScaler::Read(Parameters* parameters) {
   } else {
     val = 0.5f;
   }
+  // TODO: go all the way to 0..1
   CONSTRAIN(val, 0.0f, 1.0f);
   val *= val;
   val *= 4.0f;
@@ -160,6 +169,8 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(val, 0.0f, 1.0f);
   parameters->velocity = val;
 
+  // TODO: tap trig & velocity CV
+
   ////////////
 
   // repeat
@@ -170,7 +181,7 @@ void CvScaler::Read(Parameters* parameters) {
   }
 
   // TODO
-  parameters->test = adc_.float_value(ADC_TAPTRIG_CV);
+  parameters->test = adc_.float_value(ADC_FSR_CV);
 
   gate_input_.Read();
   adc_.Convert();
