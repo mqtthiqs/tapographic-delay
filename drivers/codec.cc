@@ -222,7 +222,7 @@ bool InitControlInterface(void)
 	ASSERT(WriteRegister(CS4271_REG_DACMIX, ATAPI_aLbR));
 	ASSERT(WriteRegister(CS4271_REG_DACAVOL, 0));
 	ASSERT(WriteRegister(CS4271_REG_DACBVOL, 0));
-	ASSERT(WriteRegister(CS4271_REG_ADCCTRL, ADC_DIF_I2S));
+  ASSERT(WriteRegister(CS4271_REG_ADCCTRL, ADC_DIF_I2S | HPFDisableA | HPFDisableB));
 
   //Power Down disable
 	ASSERT(WriteRegister(CS4271_REG_MODECTRL2, CPEN))
@@ -348,7 +348,7 @@ void Fill(int32_t offset) {
 
 extern "C" 
 {
-  void DMA1_Stream2_IRQHandler(void) {  
+  void DMA1_Stream3_IRQHandler(void) {
     if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
       AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
       Fill(1);

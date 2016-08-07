@@ -93,9 +93,7 @@ void Init() {
   ui.Init(&cv_scaler, &delay, &clock, &parameters);
   sys.StartTimers();
 
-  Init(SAMPLE_RATE, FillBuffer) || Panic(); 
-
-  // codec.Init(SAMPLE_RATE) || Panic();
+  Init(SAMPLE_RATE, &FillBuffer) || Panic();
 
   short* buffer = (short*)SDRAM_BASE;
 
@@ -106,7 +104,6 @@ void Init() {
   delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
 
   ui.Start();
-  // codec.Start(&FillBuffer) || Panic();
 }
 
 int main(void) {
