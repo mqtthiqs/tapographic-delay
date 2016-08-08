@@ -71,14 +71,12 @@ struct Parameters {
 
   float velocity;
 
-  float test;                   // TODO
-
   bool repeat;
   bool tap;
 
   EditMode edit_mode;
-  Quantize quantize;            // TODO delete
-  PanningMode panning_mode;              // TODO rename Mode
+  Quantize quantize;
+  PanningMode panning_mode;
   VelocityType velocity_type;
 };
 
