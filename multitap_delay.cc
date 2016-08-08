@@ -39,7 +39,8 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   dry_fader_.fade_in(100); // TODO temp
 
   buffer_.Init(buffer, buffer_size);
-  dc_blocker_.Init(1.0f - 10.0f / SAMPLE_RATE);
+  dc_blocker_.Init();
+  dc_blocker_.set_f<FREQUENCY_FAST>(20.0f / SAMPLE_RATE);
   repeat_fader_.Init();
 
   for (size_t i=0; i<kMaxTaps; i++) {
@@ -201,7 +202,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     FloatFrame sample = { buf[i].l, buf[i].r};
 
     float fb = sample.l + sample.r;
-    dc_blocker_.Process(&fb, 1);
+    fb = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(fb);
 
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
