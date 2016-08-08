@@ -68,24 +68,24 @@ class Tap
 
   /* Dispatch function */
   void Process(VelocityType velocity_type,
-               float prev_scale, float prev_jitter_amount,
-               float scale, float jitter_amount, float jitter_frequency,
+               float prev_scale, float prev_modulation,
+               float scale, float modulation,
                AudioBuffer *buffer, FloatFrame* output) {
     if (velocity_type == VELOCITY_AMP)
-      Process<VELOCITY_AMP>(prev_scale, prev_jitter_amount, scale,
-                            jitter_amount, jitter_frequency, buffer, output);
+      Process<VELOCITY_AMP>(prev_scale, prev_modulation,
+                            scale, modulation, buffer, output);
     else if (velocity_type == VELOCITY_LP)
-      Process<VELOCITY_LP>(prev_scale, prev_jitter_amount, scale,
-                           jitter_amount, jitter_frequency, buffer, output);
+      Process<VELOCITY_LP>(prev_scale, prev_modulation,
+                           scale, modulation, buffer, output);
     else if (velocity_type == VELOCITY_BP)
-      Process<VELOCITY_BP>(prev_scale, prev_jitter_amount, scale,
-                           jitter_amount, jitter_frequency, buffer, output);
+      Process<VELOCITY_BP>(prev_scale, prev_modulation,
+                           scale, modulation, buffer, output);
   }
 
   template<VelocityType velocity_type>
-    void Process(float prev_scale, float prev_jitter_amount,
-                 float scale, float jitter_amount, float jitter_frequency,
-                 AudioBuffer *buffer, FloatFrame* output) {
+  void Process(float prev_scale, float prev_modulation,
+               float scale, float modulation,
+               AudioBuffer *buffer, FloatFrame* output) {
 
     /* TODO: enable this in the final version to save energy */
     // if (!active())
@@ -98,17 +98,30 @@ class Tap
       filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ / 20.0f, 2.5f);
     }
 
+    // offset avoids null frequency
+    float modulation_frequency = (1.0f - modulation) / 2.0f + 0.000001f;
+    float prev_modulation_amount = prev_modulation;
+    float modulation_amount = modulation;
+
+    modulation_frequency *= modulation_frequency * modulation_frequency * modulation_frequency;
+    modulation_amount *= modulation_amount * modulation_amount;
+    prev_modulation_amount *= prev_modulation_amount * prev_modulation_amount;
+
+    // modulation_amount = 0.5f;
+    // prev_modulation_amount = 0.5f;
+
     /* compute random LFO */
-    lfo_.set_slope(jitter_frequency / 20.0f);
+    lfo_.set_slope(modulation_frequency);
     float lfo_sample = lfo_.Next();
 
     float time_start = time_ * prev_scale;
     float time_end = time_ * scale;
 
+    // TODO revise this part!
     float amplitude = 0.2f * SAMPLE_RATE;
     if (amplitude > time_end) amplitude = time_end;
-    time_start += amplitude * previous_lfo_sample_ * prev_jitter_amount;
-    time_end += amplitude * lfo_sample * jitter_amount;
+    time_start += amplitude * previous_lfo_sample_ * prev_modulation_amount;
+    time_end += amplitude * lfo_sample * modulation_amount;
     previous_lfo_sample_ = lfo_sample;
 
     /* assert (time_start > 0.0f && time_end > 0.0f); */
@@ -155,6 +168,7 @@ class Tap
 
   float time_;
   float velocity_;
+  // TODO do we need two variables?
   float gain_l_, gain_r_;
 
   Fader fader_;

@@ -166,8 +166,8 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(params->velocity_type,
-                     prev_params_.scale, prev_params_.jitter_amount,
-                     params->scale, params->jitter_amount, params->jitter_frequency,
+                     prev_params_.scale, prev_params_.modulation,
+                     params->scale, params->modulation,
                      &buffer_, buf);
 
     if (counter_running_

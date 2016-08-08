@@ -71,10 +71,6 @@ struct Parameters {
 
   float velocity;
 
-  // TODO delete:
-  float jitter_amount;
-  float jitter_frequency;
-
   float test;                   // TODO
 
   bool repeat;
