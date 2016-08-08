@@ -27,6 +27,7 @@
 // Multitap delay
 
 #include "stmlib/dsp/dsp.h"
+#include "stmlib/dsp/parameter_interpolator.h"
 
 #include "multitap_delay.hh"
 
@@ -38,7 +39,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   dry_fader_.fade_in(100); // TODO temp
 
   buffer_.Init(buffer, buffer_size);
-  dc_blocker_.Init(1.0f - 20.0f / SAMPLE_RATE);
+  dc_blocker_.Init(1.0f - 10.0f / SAMPLE_RATE);
   repeat_fader_.Init();
 
   for (size_t i=0; i<kMaxTaps; i++) {
@@ -94,6 +95,7 @@ void MultitapDelay::Clear() {
 
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
+  // add tap if needed
   if (params->tap) {
     AddTap(params->velocity,
            params->velocity_type,
@@ -143,15 +145,27 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
     previous_repeat_ = params->repeat;
 
+
+    float gain = prev_params_.gain;
+    float gain_end = params->gain;
+    float gain_increment = (gain_end - gain) / kBlockSize;
+
+    float feedback = prev_params_.feedback;
+    float feedback_end = params->feedback;
+    float feedback_increment = (feedback_end - feedback) / kBlockSize;
+
+
     for (size_t i=0; i<kBlockSize; i++) {
       repeat_fader_.Process(buffer[i]);
       int32_t sample =
         static_cast<int32_t>(buffer[i])
-        + params->gain * static_cast<int32_t>(input[i].l)
-        + params->feedback * feedback_buffer[i];
+        + gain * static_cast<int32_t>(input[i].l)
+        + feedback * feedback_buffer[i];
       // float s = static_cast<float>(sample) / 32768.0f;
       // buffer[i] = SoftConvert(s * 2);
       buffer[i] = Clip16(sample);
+      gain += gain_increment;
+      feedback += feedback_increment;
     }
     buffer_.Write(buffer, kBlockSize);
   }
@@ -178,25 +192,29 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   dry_fader_.Prepare();
 
+  float drywet = prev_params_.drywet;
+  float drywet_end = params->drywet;
+  float drywet_increment = (drywet_end - drywet) / kBlockSize;
+
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
-    float sample_l = buf[i].l;
-    float sample_r = buf[i].r;
-      
-    float fb = sample_l + sample_r;
+    FloatFrame sample = { buf[i].l, buf[i].r};
+
+    float fb = sample.l + sample.r;
     dc_blocker_.Process(&fb, 1);
 
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
     dry_fader_.Process(dry);
-    sample_l += (dry - sample_l) * params->drywet;
-    sample_r += (dry - sample_r) * params->drywet;
+    sample.l += (dry - sample.l) * drywet;
+    sample.r += (dry - sample.r) * drywet;
 
     // write to feedback buffer in Q1.15 to leave headroom
     feedback_buffer[i] = Clip16(static_cast<int32_t>(16384.0f * fb));
 
-    output[i].l = SoftConvert(sample_l);
-    output[i].r = SoftConvert(sample_r);
+    output[i].l = SoftConvert(sample.l);
+    output[i].r = SoftConvert(sample.r);
+    drywet += drywet_increment;
   }
 
   prev_params_ = *params;

@@ -32,7 +32,7 @@
 #include "stmlib/stmlib.h"
 
 const size_t kBlockSize = 128;
-const uint8_t kMaxTaps = 44;
+const uint8_t kMaxTaps = 42;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -65,7 +65,7 @@ struct Parameters {
   float gain;
   float scale;
   float feedback;
-  float modulation;
+  float modulation;             // TODO 2 variables
   float morph;
   float drywet;
 
