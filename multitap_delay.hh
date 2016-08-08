@@ -30,7 +30,6 @@
 #define MULTITAP_DELAY_H_
 
 #include "parameters.hh"
-#include "clock.hh"
 #include "tap_allocator.hh"
 
 #include "stmlib/dsp/filter.h"
@@ -43,7 +42,7 @@ class MultitapDelay
   MultitapDelay() { }
   ~MultitapDelay() { }
 
-  void Init(short* buffer, int32_t buffer_size, Clock* clock);
+  void Init(short* buffer, int32_t buffer_size);
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
   void AddTap(float velocity,
@@ -65,8 +64,6 @@ class MultitapDelay
   bool previous_repeat_;
   Fader repeat_fader_;
   Fader dry_fader_;
-
-  Clock* clock_;
 
   bool counter_running_;
   uint32_t counter_;

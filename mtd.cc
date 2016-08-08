@@ -36,17 +36,16 @@
 #include "cv_scaler.hh"
 #include "ui.hh"
 #include "multitap_delay.hh"
-#include "clock.hh"
 
 using namespace stmlib;
 
 System sys;
+// TODO cleanup codec
 // Codec codec;
 SDRAM sdram;
 CvScaler cv_scaler;
 Ui ui;
 MultitapDelay delay;
-Clock clock;
 Dac dac;
 
 Parameters parameters;
@@ -76,13 +75,7 @@ extern "C" {
   }
   
   void FillBuffer(Frame* input, Frame* output) {
-    clock.Tick();
     cv_scaler.Read(&parameters);
-    if (parameters.ping) {
-      clock.Tap();
-      clock.RecordLastTap();
-    }
-    
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
   }
 }
@@ -93,7 +86,7 @@ void Init() {
   sdram.Init();
   dac.Init();
   cv_scaler.Init();
-  ui.Init(&cv_scaler, &delay, &clock, &parameters);
+  ui.Init(&cv_scaler, &delay, &parameters);
   sys.StartTimers();
 
   Init(SAMPLE_RATE, &FillBuffer) || Panic();
@@ -103,8 +96,7 @@ void Init() {
   // sdram.Clear();
   // sdram.Test() || Panic();
 
-  clock.Init();
-  delay.Init(buffer, SDRAM_SIZE/sizeof(short), &clock);
+  delay.Init(buffer, SDRAM_SIZE/sizeof(short));
 
   ui.Start();
 }

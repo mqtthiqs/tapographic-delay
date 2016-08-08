@@ -32,9 +32,7 @@
 
 using namespace stmlib;
 
-void MultitapDelay::Init(short* buffer, int32_t buffer_size, Clock* clock) {
-  clock_ = clock;
-    
+void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   counter_ = 0;
   counter_running_ = true;    // TODO temp
   dry_fader_.fade_in(100); // TODO temp
@@ -106,9 +104,7 @@ void MultitapDelay::Clear() {
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
   // repeat time, in samples
-  repeat_time_ = clock_->running() ?
-    clock_->period() * kBlockSize :
-    tap_allocator_.max_time() * params->scale;
+  repeat_time_ = tap_allocator_.max_time() * params->scale;
 
   if (repeat_time_ > buffer_.size() ||
       repeat_time_ < 100) {
@@ -188,7 +184,6 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   for (size_t i=0; i<kBlockSize; i++) {
     float sample_l = buf[i].l;
     float sample_r = buf[i].r;
-      
       
     float fb = sample_l + sample_r;
     dc_blocker_.Process(&fb, 1);

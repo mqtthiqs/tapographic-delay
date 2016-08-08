@@ -34,11 +34,10 @@ const int32_t kVeryLongPressDuration = 2500;
 
 using namespace stmlib;
 
-  void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters) {
+  void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters) {
     cv_scaler_ = cv_scaler;
     multitap_delay_ = mtd;
     parameters_ = parameters;
-    clock_ = clock;
 
     leds_.Init();
     buttons_.Init();

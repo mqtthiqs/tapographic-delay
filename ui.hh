@@ -36,7 +36,6 @@
 #include "drivers/buttons.hh"
 #include "drivers/switches.hh"
 #include "parameters.hh"
-#include "clock.hh"
 #include "multitap_delay.hh"
 
 enum UiMode {
@@ -56,7 +55,7 @@ class Ui {
   Ui() { }
   ~Ui() { }
   
-  void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Clock* clock, Parameters* parameters);
+  void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Start();
@@ -72,7 +71,6 @@ class Ui {
   stmlib::EventQueue<16> queue_;
 
   CvScaler* cv_scaler_;
-  Clock* clock_;
   MultitapDelay* multitap_delay_;
   Parameters* parameters_;
   
