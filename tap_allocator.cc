@@ -41,6 +41,8 @@ void TapAllocator::Init(Tap taps[kMaxTaps]) {
   }
 }
 
+// TODO: differentiate manual tap (doesn't queue) and batch add when
+// recalling IR (puts in queues)
 void TapAllocator::Add(float time, float velocity, float panning) {
 
   if ((next_voice_ + 1) % kMaxTaps != oldest_voice_) {
@@ -79,6 +81,7 @@ void TapAllocator::Clear() {
   for (size_t i=0; i<kMaxTaps; i++) {
     taps_[i].fade_out(fade_time_);
   }
+  queue_.Flush();
   max_time_ = 0.0f;
   next_voice_ = oldest_voice_ = 0;
 }
