@@ -152,7 +152,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       repeat_fader_.Process(buffer[i]);
       int32_t sample =
         static_cast<int32_t>(buffer[i])
-        + static_cast<int32_t>(input[i].l)
+        + params->gain * static_cast<int32_t>(input[i].l)
         + params->feedback * feedback_buffer[i];
       // float s = static_cast<float>(sample) / 32768.0f;
       // buffer[i] = SoftConvert(s * 2);
