@@ -107,9 +107,6 @@ class Tap
     modulation_amount *= modulation_amount * modulation_amount;
     prev_modulation_amount *= prev_modulation_amount * prev_modulation_amount;
 
-    // modulation_amount = 0.5f;
-    // prev_modulation_amount = 0.5f;
-
     /* compute random LFO */
     lfo_.set_slope(modulation_frequency);
     float lfo_sample = lfo_.Next();
@@ -147,9 +144,9 @@ class Tap
         sample *= velocity_ * velocity_;
       } else if (velocity_type == VELOCITY_LP) {
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
-        sample *= (2.0f - velocity_) * velocity_;
+        sample *= velocity_;
       } else if (velocity_type == VELOCITY_BP) {
-        sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
+        sample = filter_.Process<FILTER_MODE_BAND_PASS_NORMALIZED>(sample);
       }
 
       /* write to buffer */
@@ -164,7 +161,7 @@ class Tap
 
  private:
 
-  NaiveSvf filter_;
+  Svf filter_;
 
   float time_;
   float velocity_;
