@@ -181,8 +181,10 @@ void CvScaler::Read(Parameters* parameters) {
     parameters->repeat = false;
   }
 
-  // TODO
+  // TODO temp
   parameters->test = adc_.float_value(ADC_FSR_CV);
+  parameters->jitter_amount = 0.0f;
+  parameters->jitter_frequency = 1.0f;
 
   gate_input_.Read();
   adc_.Convert();
