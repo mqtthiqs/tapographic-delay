@@ -29,8 +29,8 @@
 #include "cv_scaler.hh"
 #include "ui.hh"
 
-const int32_t kLongPressDuration = 1000;
-const int32_t kVeryLongPressDuration = 2500;
+const int32_t kLongPressDuration = 500;
+const int32_t kVeryLongPressDuration = 2000;
 
 using namespace stmlib;
 
@@ -160,13 +160,6 @@ void Ui::OnButtonPressed(const Event& e) {
 
   if (mode_ == UI_MODE_NORMAL) {
     switch (e.control_id) {
-    case BUTTON_DELETE:
-      // TODO
-      // multitap_delay_->AddTap(parameters_->velocity,
-      //                         parameters_->edit_mode,
-      //                         parameters_->quantize,
-      //                         parameters_->panning);
-      break;
     }
   }
 }
