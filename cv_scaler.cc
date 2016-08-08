@@ -128,11 +128,11 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(val, 0.0f, 1.0f);
   val *= val;
   val *= 4.0f;
-  // // TODO refilter scale after adding CV
-  // average_scale_.Process(TODO);
-  // float scale_av = average_scale_.value();
-  // ONE_POLE(scale_lp_, scale_av, 0.002f);
-  parameters->scale = val;
+  average_scale_.Process(val);
+  //
+  float scale_av = average_scale_.value();
+  ONE_POLE(scale_lp_, scale_av, 0.02f);
+  parameters->scale = scale_lp_;
 
   // feedback
   val =
@@ -182,7 +182,7 @@ void CvScaler::Read(Parameters* parameters) {
     parameters->repeat = false;
   }
 
-  // TODO temp
+  // tap
   float fsr = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
   bool tap = fsr > 0.01f;
   parameters->tap = !previous_tap_ && tap;

@@ -53,8 +53,8 @@ class CvScaler {
   GateInput gate_input_;
 
   Average<32> average_[ADC_CHANNEL_LAST];
-  // Average<512> average_scale_;
-  // float scale_lp_;
+  Average<512> average_scale_;
+  float scale_lp_;
   OnePole fsr_filter_;
   bool previous_tap_;
 
