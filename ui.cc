@@ -119,12 +119,15 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
+    int t = static_cast<int>(parameters_->test * 6.0f);
+
     for (int i=0; i<6; i++) {
-      bool b = last_button_pressed_ == i;
+      bool b = i == t;
       leds_.set(i*3, b);
       leds_.set(i*3+1, b);
       leds_.set(i*3+2, b);
     }
+
     leds_.set(LED_REPEAT, parameters_->repeat);
   }
   break;
