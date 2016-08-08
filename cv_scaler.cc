@@ -44,6 +44,7 @@ void CvScaler::Init() {
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
     average_[i].Init();
   }
+  fsr_filter_.set_f<FREQUENCY_FAST>(0.01f);
 }
 
 inline float CropDeadZone(float x) {
@@ -166,7 +167,7 @@ void CvScaler::Read(Parameters* parameters) {
   parameters->morph = val;
 
   // velocity
-  val = average_[ADC_FSR_CV].value();
+  val = scaled_values[ADC_FSR_CV]; // ignore filtering
   CONSTRAIN(val, 0.0f, 1.0f);
   parameters->velocity = val;
 
@@ -182,7 +183,11 @@ void CvScaler::Read(Parameters* parameters) {
   }
 
   // TODO temp
-  parameters->test = adc_.float_value(ADC_FSR_CV);
+  float fsr = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
+  bool tap = fsr > 0.01f;
+  parameters->tap = !previous_tap_ && tap;
+  previous_tap_ = tap;
+  parameters->test = tap;
 
   gate_input_.Read();
   adc_.Convert();

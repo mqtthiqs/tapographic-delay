@@ -74,8 +74,7 @@ struct Parameters {
   float test;                   // TODO
 
   bool repeat;
-  bool ping;                    // TOD delete
-  // TODO add: bool tap; // add a tap
+  bool tap;
 
   EditMode edit_mode;
   Quantize quantize;            // TODO delete

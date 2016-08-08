@@ -103,6 +103,13 @@ void MultitapDelay::Clear() {
 
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
+  if (params->tap) {
+    AddTap(params->velocity,
+           params->edit_mode,
+           params->quantize,
+           params->panning);
+  }
+
   // repeat time, in samples
   repeat_time_ = tap_allocator_.max_time() * params->scale;
 

@@ -30,11 +30,14 @@
 #define CV_SCALER_H_
 
 #include "stmlib/stmlib.h"
+#include "stmlib/dsp/filter.h"
 #include "average.hh"
 
 #include "drivers/adc.hh"
 #include "drivers/gate_input.hh"
 #include "parameters.hh"
+
+using namespace stmlib;
 
 class CvScaler {
  public:
@@ -52,6 +55,8 @@ class CvScaler {
   Average<32> average_[ADC_CHANNEL_LAST];
   // Average<512> average_scale_;
   // float scale_lp_;
+  OnePole fsr_filter_;
+  bool previous_tap_;
 
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };
