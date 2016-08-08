@@ -210,6 +210,7 @@ void Ui::OnSwitchSwitched(const stmlib::Event& e) {
       parameters_->edit_mode = static_cast<EditMode>(e.data);
       break;
     case SWITCH_VELO:
+      parameters_->velocity_type = static_cast<VelocityType>(e.data);
       break;
     }
   }
