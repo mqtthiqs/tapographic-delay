@@ -206,8 +206,10 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
     dry_fader_.Process(dry);
-    sample.l += (dry - sample.l) * drywet;
-    sample.r += (dry - sample.r) * drywet;
+    float fade_in = Interpolate(lut_xfade_in, drywet, 16.0f);
+    float fade_out = Interpolate(lut_xfade_out, drywet, 16.0f);
+    sample.l = dry * fade_out + sample.l * fade_in;
+    sample.r = dry * fade_out + sample.r * fade_in;
 
     // write to feedback buffer in Q1.15 to leave headroom
     feedback_buffer[i] = Clip16(static_cast<int32_t>(16384.0f * fb));
