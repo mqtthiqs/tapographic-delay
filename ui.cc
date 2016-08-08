@@ -50,7 +50,7 @@ using namespace stmlib;
     parameters->scale = 1.0f; //center to avoid slope on startup
     parameters->edit_mode = EDIT_NORMAL;
     parameters->quantize = QUANTIZE_NONE;
-    parameters->panning = PANNING_RANDOM;
+    parameters->panning_mode = PANNING_RANDOM;
     parameters->velocity_type = VELOCITY_AMP;
     parameters->edit_mode = EDIT_NORMAL;
     parameters->repeat = false;

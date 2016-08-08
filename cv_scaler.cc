@@ -187,7 +187,6 @@ void CvScaler::Read(Parameters* parameters) {
   bool tap = fsr > 0.01f;
   parameters->tap = !previous_tap_ && tap;
   previous_tap_ = tap;
-  parameters->test = tap;
 
   gate_input_.Read();
   adc_.Convert();

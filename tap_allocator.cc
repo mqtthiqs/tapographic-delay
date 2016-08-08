@@ -35,32 +35,41 @@ void TapAllocator::Init(Tap taps[kMaxTaps]) {
   // Dummy IR generation
   for (size_t i=0; i<kMaxTaps; i++) {
     float t = static_cast<float>(i) + 1.0f;
-    float pan = i&1;//Random::GetFloat();
     float time = t * t * t * SAMPLE_RATE * 0.005f / kMaxTaps + 500.0f;
     float velocity = (t+1) / (kMaxTaps+1);
-    Add(time, velocity, VELOCITY_BP, pan);
+    Add(time, velocity, VELOCITY_BP, PANNING_ALTERNATE);
   }
 }
 
 // TODO: differentiate manual tap (doesn't queue) and batch add when
 // recalling IR (puts in queues)
 void TapAllocator::Add(float time, float velocity,
-                       VelocityType velocity_type, float panning) {
+                       VelocityType velocity_type,
+                       PanningMode panning_mode) {
 
   if ((next_voice_ + 1) % kMaxTaps != oldest_voice_) {
+
+    // compute panning
+    float panning = 0.0f;
+    if (panning_mode == PANNING_RANDOM) {
+      panning = Random::GetFloat();
+    } else if (panning_mode == PANNING_ALTERNATE) {
+      static bool pan_state = true;
+      panning = pan_state ? 1.0f : 0.0f;
+      pan_state = !pan_state;
+    }
+
     taps_[next_voice_].fade_in(fade_time_);
     taps_[next_voice_].set_time(time);
     taps_[next_voice_].set_velocity(velocity, velocity_type);
-    float gain_l = panning;
-    float gain_r = 1.0f - panning;
-    taps_[next_voice_].set_gains(gain_l, gain_r);
+    taps_[next_voice_].set_panning(panning);
 
     if (time > max_time_)
       max_time_ = time;
 
     next_voice_ = (next_voice_ + 1) % kMaxTaps;
   } else {
-    TapParameter p = {velocity_type, time, velocity, panning};
+    TapParameter p = {velocity_type, panning_mode, time, velocity};
     queue_.Overwrite(p);
   }
 }
@@ -75,7 +84,7 @@ void TapAllocator::Remove() {
 void TapAllocator::Poll() {
   if (queue_.readable()) {
     TapParameter p = queue_.Read();
-    Add(p.time, p.velocity, p.velocity_type, p.panning);
+    Add(p.time, p.velocity, p.velocity_type, p.panning_mode);
   }
 }
 

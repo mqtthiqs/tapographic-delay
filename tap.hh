@@ -50,7 +50,7 @@ class Tap
     previous_lfo_sample_ = 0.0f;
     time_ = kBlockSize;
     velocity_ = 0.0f;
-    gain_l_ = gain_r_ = 1.0f;
+    panning_ = 0.5f;
   };
 
   /* minimum time is block size */
@@ -59,9 +59,8 @@ class Tap
     velocity_ = velocity;
     velocity_type_ = velo_type;
   }
-  inline void set_gains(float gain_l, float gain_r) {
-    gain_l_ = gain_l;
-    gain_r_ = gain_r;
+  inline void set_panning(float panning) {
+    panning_ = panning;
   }
 
   float time() { return time_; }
@@ -152,8 +151,8 @@ class Tap
       }
 
       /* write to buffer */
-      output->l += sample * gain_l_;
-      output->r += sample * gain_r_;
+      output->l += sample * panning_;
+      output->r += sample * (1.0f - panning_);
 
       /* increment stuff */
       output++;
@@ -169,7 +168,7 @@ class Tap
   float time_;
   float velocity_;
   // TODO do we need two variables?
-  float gain_l_, gain_r_;
+  float panning_;
 
   Fader fader_;
 

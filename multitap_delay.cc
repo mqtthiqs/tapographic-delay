@@ -51,7 +51,7 @@ void MultitapDelay::AddTap(float velocity,
                            VelocityType velocity_type,
                            EditMode edit_mode,
                            Quantize quantize,
-                           Panning panning) {
+                           PanningMode panning_mode) {
   // first tap does not count, it just starts the counter
   if (!counter_running_) {
     counter_running_ = true;
@@ -71,19 +71,9 @@ void MultitapDelay::AddTap(float velocity,
       * repeat / q;
   }
 
-  // compute panning
-  float pan = 0.0f;
-  if (panning == PANNING_RANDOM) {
-    pan = Random::GetFloat();
-  } else if (panning == PANNING_ALTERNATE) {
-    static bool pan_state = true;
-    pan = pan_state ? 1.0f : 0.0f;
-    pan_state = !pan_state;
-  }
-
   // add tap
   if (time < buffer_.size()) {
-    tap_allocator_.Add(time, velocity, velocity_type, pan);
+    tap_allocator_.Add(time, velocity, velocity_type, panning_mode);
   }
 
   // in overwrite mode, remove oldest tap
@@ -109,7 +99,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
            params->velocity_type,
            params->edit_mode,
            params->quantize,
-           params->panning);
+           params->panning_mode);
   }
 
   // repeat time, in samples

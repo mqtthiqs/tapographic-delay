@@ -39,7 +39,7 @@ class TapAllocator
   ~TapAllocator() { }
 
   void Init(Tap taps[kMaxTaps]);
-  void Add(float time, float velocity, VelocityType velocity_type, float panning);
+  void Add(float time, float velocity, VelocityType velocity_type, PanningMode panning_mode);
   void Remove();
   void Clear();
   void Poll();
@@ -62,9 +62,9 @@ class TapAllocator
 
   struct TapParameter {
     VelocityType velocity_type;
+    PanningMode panning_mode;
     float time;
     float velocity;
-    float panning;
   };
 
   stmlib::RingBuffer<TapParameter, 32> queue_;

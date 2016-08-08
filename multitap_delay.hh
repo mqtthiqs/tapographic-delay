@@ -49,7 +49,7 @@ class MultitapDelay
               VelocityType velocity_type,
               EditMode edit_mode,
               Quantize quantize,
-              Panning panning);
+              PanningMode panning_mode);
   void RemTap();
   void Clear();
 

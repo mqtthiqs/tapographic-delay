@@ -32,7 +32,7 @@
 #include "stmlib/stmlib.h"
 
 const size_t kBlockSize = 128;
-const uint8_t kMaxTaps = 32;
+const uint8_t kMaxTaps = 44;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -55,7 +55,7 @@ enum Quantize {
   QUANTIZE_16,
 };
 
-enum Panning {
+enum PanningMode {
   PANNING_LEFT,
   PANNING_RANDOM,
   PANNING_ALTERNATE,
@@ -78,7 +78,7 @@ struct Parameters {
 
   EditMode edit_mode;
   Quantize quantize;            // TODO delete
-  Panning panning;              // TODO rename Mode
+  PanningMode panning_mode;              // TODO rename Mode
   VelocityType velocity_type;
 };
 
