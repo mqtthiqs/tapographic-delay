@@ -152,6 +152,7 @@ void CvScaler::Read(Parameters* parameters) {
     average_[ADC_DRYWET_POT].value() +
     average_[ADC_DRYWET_CV].value();
   CONSTRAIN(val, 0.0f, 1.0f);
+  val = 1.0f - val;
   parameters->drywet = val;
 
   // morph
