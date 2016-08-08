@@ -48,6 +48,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
 };
 
 void MultitapDelay::AddTap(float velocity,
+                           VelocityType velocity_type,
                            EditMode edit_mode,
                            Quantize quantize,
                            Panning panning) {
@@ -82,7 +83,7 @@ void MultitapDelay::AddTap(float velocity,
 
   // add tap
   if (time < buffer_.size()) {
-    tap_allocator_.Add(time, velocity, pan);
+    tap_allocator_.Add(time, velocity, velocity_type, pan);
   }
 
   // in overwrite mode, remove oldest tap
@@ -105,6 +106,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   if (params->tap) {
     AddTap(params->velocity,
+           params->velocity_type,
            params->edit_mode,
            params->quantize,
            params->panning);
@@ -172,8 +174,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   bool gate = counter_running_ && counter_ < kBlockSize+1;
 
   for (int i=0; i<kMaxTaps; i++) {
-    taps_[i].Process(params->velocity_type,
-                     prev_params_.scale, prev_params_.modulation,
+    taps_[i].Process(prev_params_.scale, prev_params_.modulation,
                      params->scale, params->modulation,
                      &buffer_, buf);
 

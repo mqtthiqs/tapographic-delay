@@ -55,7 +55,10 @@ class Tap
 
   /* minimum time is block size */
   inline void set_time(float time) { time_ = time + kBlockSize; }
-  inline void set_velocity(float velocity) { velocity_ = velocity; }
+  inline void set_velocity(float velocity, VelocityType velo_type) {
+    velocity_ = velocity;
+    velocity_type_ = velo_type;
+  }
   inline void set_gains(float gain_l, float gain_r) {
     gain_l_ = gain_l;
     gain_r_ = gain_r;
@@ -67,17 +70,16 @@ class Tap
   void fade_out(float length) { fader_.fade_out(length); }
 
   /* Dispatch function */
-  void Process(VelocityType velocity_type,
-               float prev_scale, float prev_modulation,
+  void Process(float prev_scale, float prev_modulation,
                float scale, float modulation,
                AudioBuffer *buffer, FloatFrame* output) {
-    if (velocity_type == VELOCITY_AMP)
+    if (velocity_type_ == VELOCITY_AMP)
       Process<VELOCITY_AMP>(prev_scale, prev_modulation,
                             scale, modulation, buffer, output);
-    else if (velocity_type == VELOCITY_LP)
+    else if (velocity_type_ == VELOCITY_LP)
       Process<VELOCITY_LP>(prev_scale, prev_modulation,
                            scale, modulation, buffer, output);
-    else if (velocity_type == VELOCITY_BP)
+    else if (velocity_type_ == VELOCITY_BP)
       Process<VELOCITY_BP>(prev_scale, prev_modulation,
                            scale, modulation, buffer, output);
   }
@@ -163,6 +165,7 @@ class Tap
 
   Svf filter_;
 
+  VelocityType velocity_type_;
   float time_;
   float velocity_;
   // TODO do we need two variables?

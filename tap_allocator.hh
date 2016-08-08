@@ -39,7 +39,7 @@ class TapAllocator
   ~TapAllocator() { }
 
   void Init(Tap taps[kMaxTaps]);
-  void Add(float time, float velocity, float panning);
+  void Add(float time, float velocity, VelocityType velocity_type, float panning);
   void Remove();
   void Clear();
   void Poll();
@@ -61,6 +61,7 @@ class TapAllocator
   float max_time_;
 
   struct TapParameter {
+    VelocityType velocity_type;
     float time;
     float velocity;
     float panning;

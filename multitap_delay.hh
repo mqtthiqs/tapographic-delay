@@ -46,6 +46,7 @@ class MultitapDelay
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
   void AddTap(float velocity,
+              VelocityType velocity_type,
               EditMode edit_mode,
               Quantize quantize,
               Panning panning);
