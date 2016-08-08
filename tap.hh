@@ -100,11 +100,11 @@ class Tap
     }
 
     // offset avoids null frequency
-    float modulation_frequency = (1.0f - modulation) / 2.0f + 0.000001f;
-    float prev_modulation_amount = prev_modulation;
-    float modulation_amount = modulation;
+    float modulation_frequency = modulation / 2.0f + 0.000001f;
+    float prev_modulation_amount = 1.0f - prev_modulation;
+    float modulation_amount = 1.0f - modulation;
 
-    modulation_frequency *= modulation_frequency * modulation_frequency * modulation_frequency;
+    modulation_frequency *= modulation_frequency * modulation_frequency;
     modulation_amount *= modulation_amount * modulation_amount;
     prev_modulation_amount *= prev_modulation_amount * prev_modulation_amount;
 
