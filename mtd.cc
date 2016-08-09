@@ -76,7 +76,9 @@ extern "C" {
   
   void FillBuffer(Frame* input, Frame* output) {
     cv_scaler.Read(&parameters);
+    dac.Write(true);            // TODO profiling
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
+    dac.Write(false);           // TODO profiling
   }
 }
 
