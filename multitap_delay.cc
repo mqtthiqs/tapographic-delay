@@ -144,21 +144,23 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_end = params->feedback;
   float feedback_increment = (feedback_end - feedback) / kBlockSize;
 
-  float repeat_time_end = tap_allocator_.max_time() * params->scale;
-  float repeat_time_increment = (repeat_time_end - repeat_time) / kBlockSize;
+  float repeat = 0.0f;
+  float repeat_end = tap_allocator_.max_time() * params->scale;
+  float repeat_increment = (repeat_end - repeat_time) / kBlockSize;
 
   for (size_t i=0; i<kBlockSize; i++) {
-    float dry = static_cast<float>(input[i].l) / 32768.0f;
-    float repeat = buffer_.ReadHermite(repeat_time) / kBufferHeadroom;
-    repeat_fader_.Process(repeat);
-    float fb = feedback_buffer[i];
-    float sample = gain * dry + feedback * fb + repeat;
+    float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
+    // addition is done here to avoid rounding errors in the increment
+    float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / kBufferHeadroom;
+    repeat_fader_.Process(repeat_sample);
+    float fb_sample = feedback_buffer[i];
+    float sample = gain * dry_sample + feedback * fb_sample + repeat_sample;
     sample = SoftLimit(sample * kBufferHeadroom);
     int16_t s = Clip16(static_cast<int32_t>(sample * 32768.0f));
     buffer_.Write(s);
     gain += gain_increment;
     feedback += feedback_increment;
-    repeat_time += repeat_time_increment;
+    repeat += repeat_increment;
   }
 
   /* 2. Read and sum taps from buffer */
