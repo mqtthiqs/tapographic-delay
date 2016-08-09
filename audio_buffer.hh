@@ -97,6 +97,23 @@ class AudioBuffer
   }
 
   /* Assumes that buffer_size_ is 2^n */
+  inline float ReadHermite(float pos) {
+    MAKE_INTEGRAL_FRACTIONAL(pos);
+    int32_t x = cursor_ - pos_integral;
+    float xm1 = buffer_[x & (buffer_size_-1)];
+    float x0 = buffer_[(x - 1) & (buffer_size_-1)];
+    float x1 = buffer_[(x - 2) & (buffer_size_-1)];
+    float x2 = buffer_[(x - 3) & (buffer_size_-1)];
+    float c = (x1 - xm1) * 0.5f;
+    float v = x0 - x1;
+    float w = c + v;
+    float a = w + v + (x2 - x0) * 0.5f;
+    float b_neg = w + a;
+    float t = pos_fractional;
+    return ((((a * t) - b_neg) * t + c) * t + x0) / 32768.0f;
+  }
+
+  /* Assumes that buffer_size_ is 2^n */
   inline float Read(float pos) {
     int32_t pos_integral = static_cast<uint32_t>(pos); \
     int32_t x = cursor_ - pos_integral;

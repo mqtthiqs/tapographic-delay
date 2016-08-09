@@ -151,7 +151,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   for (size_t i=0; i<kBlockSize; i++) {
     float dry = static_cast<float>(input[i].l) / 32768.0f;
-    float repeat = buffer_.ReadLinear(repeat_time) / kBufferHeadroom; // TODO hermite
+    float repeat = buffer_.ReadHermite(repeat_time) / kBufferHeadroom; // TODO hermite
     repeat_fader_.Process(repeat);
     float fb = feedback_buffer[i];
     float sample = gain * dry + feedback * fb + repeat;
