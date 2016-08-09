@@ -29,32 +29,38 @@
 #include "cv_scaler.hh"
 #include "ui.hh"
 
-const int32_t kLongPressDuration = 500;
+const int32_t kLongPressDuration = 400;
 const int32_t kVeryLongPressDuration = 2000;
 
 using namespace stmlib;
 
-  void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters) {
-    cv_scaler_ = cv_scaler;
-    multitap_delay_ = mtd;
-    parameters_ = parameters;
+void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters) {
+  cv_scaler_ = cv_scaler;
+  multitap_delay_ = mtd;
+  parameters_ = parameters;
 
-    leds_.Init();
-    buttons_.Init();
-    switches_.Init();
+  leds_.Init();
+  buttons_.Init();
+  switches_.Init();
 
-    mode_ = UI_MODE_SPLASH;
-    ignore_releases_ = 0;
+  mode_ = UI_MODE_SPLASH;
+  ignore_releases_ = 0;
 
-    // parameters initialization
-    parameters->scale = 1.0f; //center to avoid slope on startup
-    parameters->edit_mode = EDIT_NORMAL;
-    parameters->quantize = QUANTIZE_NONE;
-    parameters->panning_mode = PANNING_RANDOM;
-    parameters->velocity_type = VELOCITY_AMP;
-    parameters->edit_mode = EDIT_NORMAL;
-    parameters->repeat = false;
-  }
+  // parameters initialization
+  parameters->scale = 1.0f; //center to avoid slope on startup
+  parameters->edit_mode = EDIT_NORMAL;
+  parameters->quantize = QUANTIZE_NONE;
+  parameters->panning_mode = PANNING_RANDOM;
+  parameters->velocity_type = VELOCITY_AMP;
+  parameters->edit_mode = EDIT_NORMAL;
+  parameters->repeat = false;
+}
+
+void Ui::PingGateLed() {
+  if (ping_led_counter_ == 0)   // TODO necessary?
+    ping_led_counter_ = 3;
+}
+
 
 void Ui::Start() {
   mode_ = UI_MODE_NORMAL;
@@ -108,6 +114,9 @@ inline void Ui::PaintLeds() {
   if ((system_clock.milliseconds() & 63) == 0)
     animation_counter_++;
 
+  if (ping_led_counter_ > 0)
+    ping_led_counter_--;
+
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
@@ -120,18 +129,22 @@ inline void Ui::PaintLeds() {
   case UI_MODE_NORMAL:
   {
     // TODO temp: indicate velocity of last tap
+    static float level = 0;
     if (parameters_->tap) {
-      int t = static_cast<int>(parameters_->velocity * 6.0f);
-
-      for (int i=0; i<6; i++) {
-        bool b = i <= t;
-        leds_.set(i*3, b);
-        leds_.set(i*3+1, b);
-        leds_.set(i*3+2, b);
-      }
-
+      level = parameters_->velocity * 6.0f;
+    } else {
+      level -= 0.03f;
     }
 
+    for (int i=0; i<6; i++) {
+      bool b = i <= level;
+      leds_.set(i*3, b);
+      leds_.set(i*3+1, b);
+      leds_.set(i*3+2, b);
+    }
+    
+
+    leds_.set(LED_DELETE, ping_led_counter_);
     leds_.set(LED_REPEAT, parameters_->repeat);
   }
   break;
@@ -194,7 +207,6 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_4:
     case BUTTON_5:
     case BUTTON_6:
-      last_button_pressed_ = e.control_id;
       break;
     }
   }

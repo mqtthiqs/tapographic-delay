@@ -54,7 +54,9 @@ class Ui {
  public:
   Ui() { }
   ~Ui() { }
-  
+
+  void PingGateLed();
+
   void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
@@ -75,7 +77,6 @@ class Ui {
   Parameters* parameters_;
   
   Leds leds_;
-  uint16_t last_button_pressed_; // TODO temp
 
   Buttons buttons_;
   Switches switches_;
@@ -85,6 +86,8 @@ class Ui {
   uint16_t animation_counter_;
 
   uint16_t ignore_releases_;
+
+  uint16_t ping_led_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
