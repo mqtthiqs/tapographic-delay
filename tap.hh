@@ -116,16 +116,19 @@ class Tap
     float time_start = time_ * prev_scale + kBlockSize;
     float time_end = time_ * scale + kBlockSize;
 
-    float amplitude = 0.2f * SAMPLE_RATE;
+    float amplitude_start = 0.2f * SAMPLE_RATE;
+    float amplitude_end = 0.2f * SAMPLE_RATE;
 
     // limit LFO amplitude to no cross write head
-    float min_time = time_start < time_end ? time_start : time_end;
-    if (amplitude >= min_time - kBlockSize) {
-      amplitude = min_time - kBlockSize;
+    if (amplitude_start >= time_start - kBlockSize) {
+      amplitude_start = time_start - kBlockSize;
+    }
+    if (amplitude_end >= time_end - kBlockSize) {
+      amplitude_end = time_end - kBlockSize;
     }
 
-    time_start += amplitude * previous_lfo_sample_ * prev_modulation_amount;
-    time_end += amplitude * lfo_sample * modulation_amount;
+    time_start += amplitude_start * previous_lfo_sample_ * prev_modulation_amount;
+    time_end += amplitude_end * lfo_sample * modulation_amount;
     previous_lfo_sample_ = lfo_sample;
 
     float time = 0.0f;
