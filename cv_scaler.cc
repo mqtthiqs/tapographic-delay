@@ -127,8 +127,13 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(val, 0.0f, 1.0f);
   val *= val;
   val *= 4.0f;
-  average_scale_.Process(val);
-  //
+
+  if (fabs(val - scale_hy_) > 0.05f) {
+    scale_hy_ = val;
+  }
+
+  average_scale_.Process(scale_hy_);
+
   float scale_av = average_scale_.value();
   ONE_POLE(scale_lp_, scale_av, 0.02f);
   parameters->scale = scale_lp_;
@@ -194,6 +199,7 @@ void CvScaler::Read(Parameters* parameters) {
 
   // tap
   float tap_trig = scaled_values[ADC_TAPTRIG_CV];
+
   float fsr = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
   bool tap = fsr > 0.01f || tap_trig > 0.1f;
   parameters->tap = !previous_tap_ && tap;

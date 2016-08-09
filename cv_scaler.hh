@@ -54,7 +54,7 @@ class CvScaler {
 
   Average<32> average_[ADC_CHANNEL_LAST];
   Average<512> average_scale_;
-  float scale_lp_;
+  float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
   bool previous_tap_;
   float freq_lp_;
