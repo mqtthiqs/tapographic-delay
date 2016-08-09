@@ -177,6 +177,7 @@ void CvScaler::Read(Parameters* parameters) {
 
   // velocity
   val = scaled_values[ADC_FSR_CV]; // ignore filtering
+  val += scaled_values[ADC_VEL_CV];
   CONSTRAIN(val, 0.0f, 1.0f);
   parameters->velocity = val;
 
@@ -192,8 +193,9 @@ void CvScaler::Read(Parameters* parameters) {
   }
 
   // tap
+  float tap_trig = scaled_values[ADC_TAPTRIG_CV];
   float fsr = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
-  bool tap = fsr > 0.01f;
+  bool tap = fsr > 0.01f || tap_trig > 0.1f;
   parameters->tap = !previous_tap_ && tap;
   previous_tap_ = tap;
 
