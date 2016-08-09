@@ -146,7 +146,18 @@ void CvScaler::Read(Parameters* parameters) {
     average_[ADC_MODULATION_POT].value() +
     average_[ADC_MODULATION_CV].value();
   CONSTRAIN(val, 0.0f, 1.0f);
-  parameters->modulation = val;
+
+  float amount = 1.0f - val;
+  amount *= amount * amount;
+  // offset avoids null frequency (NaN samples)
+  float freq = val * 0.6f + 0.0000001f;
+  freq *= freq * freq * freq;
+
+  ONE_POLE(freq_lp_, freq, 0.03f);
+  ONE_POLE(amount_lp_, amount, 0.03f);
+
+  parameters->modulation_amount = amount_lp_;
+  parameters->modulation_frequency = freq_lp_;
 
   // drywet
   val =

@@ -65,7 +65,8 @@ struct Parameters {
   float gain;
   float scale;
   float feedback;
-  float modulation;             // TODO 2 variables
+  float modulation_amount;
+  float modulation_frequency;
   float morph;
   float drywet;
 

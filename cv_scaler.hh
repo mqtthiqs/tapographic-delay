@@ -57,6 +57,8 @@ class CvScaler {
   float scale_lp_;
   OnePole fsr_filter_;
   bool previous_tap_;
+  float freq_lp_;
+  float amount_lp_;
 
   DISALLOW_COPY_AND_ASSIGN(CvScaler);
 };

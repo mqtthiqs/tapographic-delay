@@ -39,6 +39,8 @@
 
 using namespace stmlib;
 
+const float kTimeLfoAmplitude = 0.5f;
+
 class Tap
 {
  public:
@@ -94,25 +96,16 @@ class Tap
       filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ * velocity_ / 10.0f, 4.0f);
     }
 
-    // offset avoids null frequency (NaN samples)
-    float modulation_frequency = params->modulation / 2.0f + 0.000001f;
-    float prev_modulation_amount = 1.0f - prev_params->modulation;
-    float modulation_amount = 1.0f - prev_params->modulation;
-
-    modulation_frequency *= modulation_frequency * modulation_frequency;
-    modulation_amount *= modulation_amount * modulation_amount;
-    prev_modulation_amount *= prev_modulation_amount * prev_modulation_amount;
-
     /* compute random LFO */
-    lfo_.set_slope(modulation_frequency);
+    lfo_.set_slope(params->modulation_frequency);
     float lfo_sample = lfo_.Next(); // -1..1
 
     // min time is kBlockSize
     float time_start = time_ * prev_params->scale + kBlockSize;
     float time_end = time_ * params->scale + kBlockSize;
 
-    float amplitude_start = 0.2f * SAMPLE_RATE;
-    float amplitude_end = 0.2f * SAMPLE_RATE;
+    float amplitude_start = kTimeLfoAmplitude * SAMPLE_RATE;
+    float amplitude_end = kTimeLfoAmplitude * SAMPLE_RATE;
 
     // limit LFO amplitude to no cross write head
     if (amplitude_start >= time_start - kBlockSize) {
@@ -122,8 +115,8 @@ class Tap
       amplitude_end = time_end - kBlockSize;
     }
 
-    time_start += amplitude_start * previous_lfo_sample_ * prev_modulation_amount;
-    time_end += amplitude_end * lfo_sample * modulation_amount;
+    time_start += amplitude_start * previous_lfo_sample_ * prev_params->modulation_amount;
+    time_end += amplitude_end * lfo_sample * params->modulation_amount;
     previous_lfo_sample_ = lfo_sample;
 
     float time = 0.0f;
