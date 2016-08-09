@@ -45,11 +45,7 @@ class MultitapDelay
   void Init(short* buffer, int32_t buffer_size);
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
-  void AddTap(float velocity,
-              VelocityType velocity_type,
-              EditMode edit_mode,
-              Quantize quantize,
-              PanningMode panning_mode);
+  void AddTap(Parameters *params, float repeat_time);
   void RemTap();
   void Clear();
 
@@ -57,7 +53,7 @@ class MultitapDelay
   TapAllocator tap_allocator_;
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
-  int16_t feedback_buffer[kBlockSize];   /* max block size */
+  float feedback_buffer[kBlockSize];   /* max block size */
 
   Parameters prev_params_;
   OnePole dc_blocker_;
@@ -67,7 +63,6 @@ class MultitapDelay
 
   bool counter_running_;
   uint32_t counter_;
-  uint32_t repeat_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
 };
