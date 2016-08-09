@@ -202,7 +202,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
-    dry_fader_.Process(&dry);
+    dry_fader_.Process(dry);
     float fade_in = Interpolate(lut_xfade_in, drywet, 16.0f);
     float fade_out = Interpolate(lut_xfade_out, drywet, 16.0f);
     sample.l = dry * fade_out + sample.l * fade_in;
