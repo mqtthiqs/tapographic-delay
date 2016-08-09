@@ -127,25 +127,23 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   tap_allocator_.set_fade_time(params->morph);
   tap_allocator_.Poll();
 
-  { /* Write into the buffer */
+  { /* Read from repeat tap */
     int16_t buffer[kBlockSize];
 
     buffer_.Read(buffer, repeat_time_, kBlockSize);
 
+    // TODO bug: what if we turn it on while repeat_time_ < 100?
     // fade in/out the repeat buffer
     if (repeat_time_ // only if repeat time > 100
         && params->repeat
-        && !previous_repeat_) {
+        && !prev_params_.repeat) {
       repeat_fader_.fade_in(params->morph);
     } else if (!params->repeat
-               && previous_repeat_) {
+               && prev_params_.repeat) {
       repeat_fader_.fade_out(params->morph);
     } else {
       repeat_fader_.Prepare();
     }
-
-    previous_repeat_ = params->repeat;
-
 
     float gain = prev_params_.gain;
     float gain_end = params->gain;

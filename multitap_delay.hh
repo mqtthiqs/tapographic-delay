@@ -62,7 +62,6 @@ class MultitapDelay
   Parameters prev_params_;
   OnePole dc_blocker_;
 
-  bool previous_repeat_;
   Fader repeat_fader_;
   Fader dry_fader_;
 
