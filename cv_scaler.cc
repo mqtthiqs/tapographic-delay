@@ -36,7 +36,7 @@
 using namespace std;
 
 const float kPotDeadZoneSize = 0.01f;
-const float kScalePotNotchSize = 0.06f;
+const float kScalePotNotchSize = 0.05f;
 
 void CvScaler::Init() {
   adc_.Init();
@@ -128,7 +128,7 @@ void CvScaler::Read(Parameters* parameters) {
   val *= val;
   val *= 4.0f;
 
-  if (fabs(val - scale_hy_) > 0.05f) {
+  if (fabs(val - scale_hy_) > 0.01f) {
     scale_hy_ = val;
   }
 
