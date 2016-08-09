@@ -66,6 +66,14 @@ void CvScaler::Read(Parameters* parameters) {
 
   // scale
   val = CropDeadZone(adc_.float_value(ADC_SCALE_POT));
+  // flat zone at noon
+  if (val < 0.5f - kScalePotNotchSize) {
+    val += kScalePotNotchSize;
+  } else if (val > 0.5f + kScalePotNotchSize) {
+    val -= kScalePotNotchSize;
+  } else {
+    val = 0.5f;
+  } // TODO: go all the way to 0..1
   scaled_values[ADC_SCALE_POT] = val;
 
   // feedback
@@ -116,15 +124,6 @@ void CvScaler::Read(Parameters* parameters) {
   val =
     average_[ADC_SCALE_POT].value() +
     average_[ADC_SCALE_CV].value();
-  // flat zone at noon
-  if (val < 0.5f - kScalePotNotchSize) {
-    val += kScalePotNotchSize;
-  } else if (val > 0.5f + kScalePotNotchSize) {
-    val -= kScalePotNotchSize;
-  } else {
-    val = 0.5f;
-  }
-  // TODO: go all the way to 0..1
   CONSTRAIN(val, 0.0f, 1.0f);
   val *= val;
   val *= 4.0f;
