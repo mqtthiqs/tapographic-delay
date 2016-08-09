@@ -37,8 +37,7 @@ const float kBufferHeadroom = 0.5f;
 
 void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   counter_ = 0;
-  counter_running_ = true;    // TODO temp
-  dry_fader_.fade_in(100); // TODO temp
+  counter_running_ = true;
 
   buffer_.Init(buffer, buffer_size);
   dc_blocker_.Init();
@@ -145,13 +144,12 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_end = params->feedback;
   float feedback_increment = (feedback_end - feedback) / kBlockSize;
 
-  // repeat time, in samples
   float repeat_time_end = tap_allocator_.max_time() * params->scale;
   float repeat_time_increment = (repeat_time_end - repeat_time) / kBlockSize;
 
   for (size_t i=0; i<kBlockSize; i++) {
     float dry = static_cast<float>(input[i].l) / 32768.0f;
-    float repeat = buffer_.ReadHermite(repeat_time) / kBufferHeadroom; // TODO hermite
+    float repeat = buffer_.ReadHermite(repeat_time) / kBufferHeadroom;
     repeat_fader_.Process(repeat);
     float fb = feedback_buffer[i];
     float sample = gain * dry + feedback * fb + repeat;
@@ -185,8 +183,6 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   /* 3. Feed back, apply dry/wet, write to output */
 
-  dry_fader_.Prepare();
-
   float drywet = prev_params_.drywet;
   float drywet_end = params->drywet;
   float drywet_increment = (drywet_end - drywet) / kBlockSize;
@@ -194,7 +190,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
     FloatFrame sample = { buf[i].l / kBufferHeadroom,
-                          buf[i].r / kBufferHeadroom};
+                          buf[i].r / kBufferHeadroom };
 
     // write to feedback buffer
     float fb = sample.l + sample.r;
@@ -202,7 +198,6 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
-    dry_fader_.Process(dry);
     float fade_in = Interpolate(lut_xfade_in, drywet, 16.0f);
     float fade_out = Interpolate(lut_xfade_out, drywet, 16.0f);
     sample.l = dry * fade_out + sample.l * fade_in;

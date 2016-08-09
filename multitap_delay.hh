@@ -59,7 +59,6 @@ class MultitapDelay
   OnePole dc_blocker_;
 
   Fader repeat_fader_;
-  Fader dry_fader_;
 
   bool counter_running_;
   uint32_t counter_;
