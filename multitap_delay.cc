@@ -179,9 +179,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   bool gate = counter_running_ && counter_ < kBlockSize+1;
 
   for (int i=0; i<kMaxTaps; i++) {
-    taps_[i].Process(prev_params_.scale, prev_params_.modulation,
-                     params->scale, params->modulation,
-                     &buffer_, buf);
+    taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
     if (counter_running_
         && taps_[i].active()

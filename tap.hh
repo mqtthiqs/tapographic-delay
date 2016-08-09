@@ -69,23 +69,18 @@ class Tap
   void fade_out(float length) { fader_.fade_out(length); }
 
   /* Dispatch function */
-  void Process(float prev_scale, float prev_modulation,
-               float scale, float modulation,
+  void Process(Parameters *prev_params, Parameters *params,
                AudioBuffer *buffer, FloatFrame* output) {
     if (velocity_type_ == VELOCITY_AMP)
-      Process<VELOCITY_AMP>(prev_scale, prev_modulation,
-                            scale, modulation, buffer, output);
+      Process<VELOCITY_AMP>(prev_params, params, buffer, output);
     else if (velocity_type_ == VELOCITY_LP)
-      Process<VELOCITY_LP>(prev_scale, prev_modulation,
-                           scale, modulation, buffer, output);
+      Process<VELOCITY_LP>(prev_params, params, buffer, output);
     else if (velocity_type_ == VELOCITY_BP)
-      Process<VELOCITY_BP>(prev_scale, prev_modulation,
-                           scale, modulation, buffer, output);
+      Process<VELOCITY_BP>(prev_params, params, buffer, output);
   }
 
   template<VelocityType velocity_type>
-  void Process(float prev_scale, float prev_modulation,
-               float scale, float modulation,
+  void Process(Parameters *prev_params, Parameters *params,
                AudioBuffer *buffer, FloatFrame* output) {
 
     /* TODO: enable this in the final version to save energy */
@@ -100,9 +95,9 @@ class Tap
     }
 
     // offset avoids null frequency (NaN samples)
-    float modulation_frequency = modulation / 2.0f + 0.000001f;
-    float prev_modulation_amount = 1.0f - prev_modulation;
-    float modulation_amount = 1.0f - modulation;
+    float modulation_frequency = params->modulation / 2.0f + 0.000001f;
+    float prev_modulation_amount = 1.0f - prev_params->modulation;
+    float modulation_amount = 1.0f - prev_params->modulation;
 
     modulation_frequency *= modulation_frequency * modulation_frequency;
     modulation_amount *= modulation_amount * modulation_amount;
@@ -113,8 +108,8 @@ class Tap
     float lfo_sample = lfo_.Next(); // -1..1
 
     // min time is kBlockSize
-    float time_start = time_ * prev_scale + kBlockSize;
-    float time_end = time_ * scale + kBlockSize;
+    float time_start = time_ * prev_params->scale + kBlockSize;
+    float time_end = time_ * params->scale + kBlockSize;
 
     float amplitude_start = 0.2f * SAMPLE_RATE;
     float amplitude_end = 0.2f * SAMPLE_RATE;
