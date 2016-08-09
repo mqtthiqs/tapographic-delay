@@ -54,7 +54,7 @@ class Tap
   };
 
   /* minimum time is block size */
-  inline void set_time(float time) { time_ = time + kBlockSize; }
+  inline void set_time(float time) { time_ = time; }
   inline void set_velocity(float velocity, VelocityType velo_type) {
     velocity_ = velocity;
     velocity_type_ = velo_type;
@@ -99,7 +99,7 @@ class Tap
       filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ * velocity_ / 10.0f, 4.0f);
     }
 
-    // offset avoids null frequency
+    // offset avoids null frequency (NaN samples)
     float modulation_frequency = modulation / 2.0f + 0.000001f;
     float prev_modulation_amount = 1.0f - prev_modulation;
     float modulation_amount = 1.0f - modulation;
@@ -110,19 +110,23 @@ class Tap
 
     /* compute random LFO */
     lfo_.set_slope(modulation_frequency);
-    float lfo_sample = lfo_.Next();
+    float lfo_sample = lfo_.Next(); // -1..1
 
-    float time_start = time_ * prev_scale;
-    float time_end = time_ * scale;
+    // min time is kBlockSize
+    float time_start = time_ * prev_scale + kBlockSize;
+    float time_end = time_ * scale + kBlockSize;
 
-    // TODO revise this part!
     float amplitude = 0.2f * SAMPLE_RATE;
-    if (amplitude > time_end) amplitude = time_end;
+
+    // limit LFO amplitude to no cross write head
+    float min_time = time_start < time_end ? time_start : time_end;
+    if (amplitude >= min_time - kBlockSize) {
+      amplitude = min_time - kBlockSize;
+    }
+
     time_start += amplitude * previous_lfo_sample_ * prev_modulation_amount;
     time_end += amplitude * lfo_sample * modulation_amount;
     previous_lfo_sample_ = lfo_sample;
-
-    /* assert (time_start > 0.0f && time_end > 0.0f); */
 
     float time = 0.0f;
     const float time_increment = (time_end - time_start - kBlockSize)
