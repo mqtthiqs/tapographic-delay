@@ -69,6 +69,8 @@ void TapAllocator::Add(float time, float velocity,
 
     next_voice_ = (next_voice_ + 1) % kMaxTaps;
   } else {
+    // no taps left: queue and start fade out
+    Remove();
     TapParameter p = {velocity_type, panning_mode, time, velocity};
     queue_.Overwrite(p);
   }
