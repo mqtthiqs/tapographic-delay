@@ -46,6 +46,8 @@ void CvScaler::Init() {
   }
   fsr_filter_.Init();
   fsr_filter_.set_f<FREQUENCY_FAST>(0.01f);
+  average_scale_.Process(1.0f);
+  scale_lp_ = 1.0f;
 }
 
 inline float CropDeadZone(float x) {
