@@ -42,9 +42,16 @@
 enum UiMode {
   UI_MODE_SPLASH,
   UI_MODE_NORMAL,
-  UI_MODE_PANIC,
   UI_MODE_SETTINGS,
+  UI_MODE_PANIC,
   UI_MODE_LAST
+};
+
+enum SettingsPages {
+  PAGE_VELOCITY_PARAMETER,
+  PAGE_BANK,
+  PAGE_PANNING_MODE,
+  PAGE_QUALITY,
 };
 
 class Ui {
@@ -66,6 +73,7 @@ class Ui {
   void OnButtonPressed(const stmlib::Event& e);
   void OnButtonReleased(const stmlib::Event& e);
   void OnSwitchSwitched(const stmlib::Event& e);
+  void ParseSettings();
 
   void PaintLeds();
 
@@ -82,6 +90,8 @@ class Ui {
   uint32_t press_time_[kNumButtons];
   uint32_t long_press_time_[kNumButtons];
   UiMode mode_;
+  int settings_page_;
+  int settings_item_;
   uint16_t animation_counter_;
 
   uint16_t ignore_releases_;

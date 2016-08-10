@@ -137,6 +137,19 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_SETTINGS:
   {
+    for (int i=0; i<6; i++) {
+      if (i == settings_page_) {
+        leds_.set_rgb(i, COLOR_BLUE);
+      } else if (i == settings_page_ + settings_item_) {
+        leds_.set_rgb(i, COLOR_CYAN);
+      } else {
+        leds_.set_rgb(i, COLOR_BLACK);
+      }
+    }
+
+    leds_.set(LED_TAP, parameters_->counter_running);
+    leds_.set(LED_REPEAT, parameters_->repeat);
+    leds_.set(LED_DELETE, ping_led_counter_);
     break;
   }
 
@@ -183,10 +196,39 @@ void Ui::Panic() {
   mode_ = UI_MODE_PANIC;
 }
 
+void Ui::ParseSettings() {
+  switch (settings_page_) {
+  case PAGE_VELOCITY_PARAMETER:
+    float p = static_cast<float>(settings_item_ - 1.0f) / 4.0f;
+    parameters_->velocity_parameter = p;
+    break;
+    // TODO
+  }
+}
+
+bool settings_button(int button) {
+  return button == BUTTON_1
+    || button == BUTTON_2
+    || button == BUTTON_3
+    || button == BUTTON_4
+    || button == BUTTON_5
+    || button == BUTTON_6;
+}
+
 void Ui::OnButtonPressed(const Event& e) {
 
-  if (mode_ == UI_MODE_NORMAL) {
-    switch (e.control_id) {
+  if (settings_button(e.control_id)) {
+    // scan other pressed buttons on the left
+    int pressed = -1;
+    for (int i=0; i<e.control_id; i++) {
+      if (buttons_.pressed(i)) pressed = i;
+    }
+    if (pressed != -1) {
+      mode_ = UI_MODE_SETTINGS;
+      ignore_releases_ = 2;
+      settings_page_ = pressed;
+      settings_item_ = e.control_id - pressed;
+      ParseSettings();
     }
   }
 }
@@ -251,5 +293,8 @@ void Ui::DoEvents() {
 
   if (queue_.idle_time() > 1000) {
     queue_.Touch();
+    if (mode_ == UI_MODE_SETTINGS) {
+      mode_ = UI_MODE_NORMAL;
+    }
   }
 }
