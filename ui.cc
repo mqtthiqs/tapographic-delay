@@ -133,7 +133,7 @@ inline void Ui::PaintLeds() {
     if (parameters_->tap) {
       level = parameters_->velocity * 6.0f;
     } else {
-      level -= 0.03f;
+      level -= 0.05f;
     }
 
     for (int i=0; i<6; i++) {

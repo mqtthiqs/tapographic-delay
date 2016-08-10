@@ -56,7 +56,8 @@ class CvScaler {
   Average<256> average_scale_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
-  bool previous_tap_;
+  bool taptrig_armed_;
+  bool tapfsr_armed_;
   float freq_lp_;
   float amount_lp_;
 

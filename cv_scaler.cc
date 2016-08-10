@@ -44,6 +44,7 @@ void CvScaler::Init() {
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
     average_[i].Init();
   }
+  fsr_filter_.Init();
   fsr_filter_.set_f<FREQUENCY_FAST>(0.01f);
 }
 
@@ -128,7 +129,7 @@ void CvScaler::Read(Parameters* parameters) {
   val *= val;
   val *= 4.0f;
 
-  if (fabs(val - scale_hy_) > 0.01f) {
+  if (fabs(val - scale_hy_) > 0.02f) {
     scale_hy_ = val;
   }
 
@@ -180,15 +181,39 @@ void CvScaler::Read(Parameters* parameters) {
   val *= 500000.0f;
   parameters->morph = val;
 
-  // velocity
-  val = scaled_values[ADC_FSR_CV]; // ignore filtering
-  val += scaled_values[ADC_VEL_CV];
-  CONSTRAIN(val, 0.0f, 1.0f);
-  parameters->velocity = val;
+  // tap & velocity
 
-  // TODO: tap trig & velocity CV
+  // from external source:
+  float taptrig = scaled_values[ADC_TAPTRIG_CV];
+  bool ext_tap;
+  if (taptrig > 0.2f && taptrig_armed_) {
+    ext_tap = true;
+    parameters->velocity = scaled_values[ADC_VEL_CV];
+    taptrig_armed_ = false;
+  } else {
+    ext_tap = false;
+  }
 
-  ////////////
+  if (taptrig < 0.1f) {
+    taptrig_armed_ = true;
+  }
+
+  // from FSR:
+  float deriv = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
+
+  if (deriv > 0.01f && tapfsr_armed_) {
+    parameters->tap = true;
+    tapfsr_armed_ = false;
+    parameters->velocity = scaled_values[ADC_FSR_CV];
+  } else {
+    parameters->tap = ext_tap;
+  }
+
+  if (deriv < 0.005f) {
+    tapfsr_armed_ = true;
+  }
+
+  /////////////
 
   // repeat
   if (gate_input_.rising_edge(GATE_INPUT_REPEAT)) {
@@ -197,13 +222,7 @@ void CvScaler::Read(Parameters* parameters) {
     parameters->repeat = false;
   }
 
-  // tap
-  float tap_trig = scaled_values[ADC_TAPTRIG_CV];
-
-  float fsr = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
-  bool tap = fsr > 0.01f || tap_trig > 0.1f;
-  parameters->tap = !previous_tap_ && tap;
-  previous_tap_ = tap;
+  ///////////
 
   gate_input_.Read();
   adc_.Convert();
