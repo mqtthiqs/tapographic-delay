@@ -48,10 +48,10 @@ enum UiMode {
 };
 
 enum SettingsPages {
-  PAGE_VELOCITY_PARAMETER,
-  PAGE_BANK,
-  PAGE_PANNING_MODE,
-  PAGE_QUALITY,
+  PAGE_VELOCITY_PARAMETER = 0,
+  PAGE_BANK = 1,
+  PAGE_PANNING_MODE = 2,
+  PAGE_QUALITY = 3,
 };
 
 class Ui {
@@ -91,7 +91,7 @@ class Ui {
   uint32_t long_press_time_[kNumButtons];
   UiMode mode_;
   int settings_page_;
-  int settings_item_;
+  int settings_item_[kNumButtons-2];
   uint16_t animation_counter_;
 
   uint16_t ignore_releases_;

@@ -32,7 +32,7 @@
 #include "stmlib/stmlib.h"
 
 const size_t kBlockSize = 128;
-const uint8_t kMaxTaps = 38;
+const uint8_t kMaxTaps = 36;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
@@ -90,7 +90,9 @@ struct Parameters {
 
   // Settings
   float velocity_parameter;
+  uint8_t bank;
   VelocityType velocity_type;
+  bool quality;
 
   // delay -> ui
   float last_tap_velocity;     // 0 if none; reset after read

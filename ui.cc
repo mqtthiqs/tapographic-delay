@@ -28,7 +28,7 @@
 
 #include "ui.hh"
 
-const int32_t kLongPressDuration = 400;
+const int32_t kLongPressDuration = 300;
 const int32_t kVeryLongPressDuration = 2000;
 
 using namespace stmlib;
@@ -138,9 +138,11 @@ inline void Ui::PaintLeds() {
   case UI_MODE_SETTINGS:
   {
     for (int i=0; i<6; i++) {
+      int page = settings_page_;
+      int item = settings_item_[settings_page_];
       if (i == settings_page_) {
         leds_.set_rgb(i, COLOR_BLUE);
-      } else if (i == settings_page_ + settings_item_) {
+      } else if (i == page + item + 1) {
         leds_.set_rgb(i, COLOR_CYAN);
       } else {
         leds_.set_rgb(i, COLOR_BLACK);
@@ -189,7 +191,6 @@ inline void Ui::PaintLeds() {
   } else if (velocity_meter_ > 0.0f) {
     velocity_meter_ -= 0.01f;
   }
-
 }
 
 void Ui::Panic() {
@@ -198,36 +199,37 @@ void Ui::Panic() {
 
 void Ui::ParseSettings() {
   switch (settings_page_) {
-  case PAGE_VELOCITY_PARAMETER:
-    float p = static_cast<float>(settings_item_ - 1.0f) / 4.0f;
+  case PAGE_VELOCITY_PARAMETER: {
+    float p = static_cast<float>(settings_item_[PAGE_VELOCITY_PARAMETER]) / 4.0f;
     parameters_->velocity_parameter = p;
-    break;
-    // TODO
+  } break;
+  case PAGE_BANK: {
+    int b = settings_item_[PAGE_VELOCITY_PARAMETER];
+    parameters_->bank = b;
   }
-}
-
-bool settings_button(int button) {
-  return button == BUTTON_1
-    || button == BUTTON_2
-    || button == BUTTON_3
-    || button == BUTTON_4
-    || button == BUTTON_5
-    || button == BUTTON_6;
+  case PAGE_PANNING_MODE: {
+  }
+  case PAGE_QUALITY: {
+    bool q = settings_item_[PAGE_VELOCITY_PARAMETER];
+    parameters_->quality = q;
+  } break;
+  }
 }
 
 void Ui::OnButtonPressed(const Event& e) {
 
-  if (settings_button(e.control_id)) {
+  if (e.control_id <= BUTTON_6) {
     // scan other pressed buttons on the left
     int pressed = -1;
     for (int i=0; i<e.control_id; i++) {
-      if (buttons_.pressed(i)) pressed = i;
+      if (buttons_.pressed(i) && i<=BUTTON_4) pressed = i;
     }
     if (pressed != -1) {
+      // double press
       mode_ = UI_MODE_SETTINGS;
       ignore_releases_ = 2;
       settings_page_ = pressed;
-      settings_item_ = e.control_id - pressed;
+      settings_item_[pressed] = e.control_id - pressed - 1;
       ParseSettings();
     }
   }
@@ -238,6 +240,17 @@ void Ui::OnButtonReleased(const Event& e) {
   if (ignore_releases_ > 0) {
     ignore_releases_--;
     return;
+  }
+
+  if (mode_ == UI_MODE_SETTINGS) {
+    if (e.data >= kLongPressDuration
+        && e.control_id <= BUTTON_4) {
+      settings_page_ = e.control_id;
+    } else if (e.control_id <= settings_page_) {
+      settings_page_ = e.control_id;
+    } else {
+      settings_item_[settings_page_] = e.control_id - settings_page_ - 1;
+    }
   }
 
   // normal mode:
@@ -257,6 +270,11 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_2:
     case BUTTON_3:
     case BUTTON_4:
+      if (e.data >= kLongPressDuration) {
+        mode_ = UI_MODE_SETTINGS;
+        settings_page_ = e.control_id;
+      }
+      break;
     case BUTTON_5:
     case BUTTON_6:
       break;
@@ -291,7 +309,7 @@ void Ui::DoEvents() {
     }
   }
 
-  if (queue_.idle_time() > 1000) {
+  if (queue_.idle_time() > 700) {
     queue_.Touch();
     if (mode_ == UI_MODE_SETTINGS) {
       mode_ = UI_MODE_NORMAL;
