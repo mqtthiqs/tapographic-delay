@@ -39,6 +39,8 @@ void TapAllocator::Init(Tap taps[kMaxTaps]) {
     float velocity = (t+1) / (kMaxTaps+1);
     Add(time, velocity, VELOCITY_BP, PANNING_ALTERNATE);
   }
+
+  // Add(5000.0f, 1.0f, VELOCITY_AMP, PANNING_ALTERNATE);
 }
 
 // TODO: differentiate manual tap (doesn't queue) and batch add when
@@ -68,6 +70,8 @@ bool TapAllocator::Add(float time, float velocity,
       max_time_ = time;
 
     next_voice_ = (next_voice_ + 1) % kMaxTaps;
+    busy_voices_++;
+
     return true;
   } else {
     // no taps left: queue and start fade out
@@ -78,10 +82,15 @@ bool TapAllocator::Add(float time, float velocity,
   }
 }
 
-void TapAllocator::Remove() {
+// TODO use this info
+bool TapAllocator::Remove() {
   if (oldest_voice_ != next_voice_) {
     taps_[oldest_voice_].fade_out(fade_time_);
     oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
+    busy_voices_--;
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -99,4 +108,5 @@ void TapAllocator::Clear() {
   queue_.Flush();
   max_time_ = 0.0f;
   next_voice_ = oldest_voice_ = 0;
+  busy_voices_ = 0;
 }
