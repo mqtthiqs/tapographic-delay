@@ -35,6 +35,17 @@
 
 const uint8_t kNumLeds = 21;
 
+enum colors {
+  COLOR_BLACK,
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_YELLOW,
+  COLOR_BLUE,
+  COLOR_MAGENTA,
+  COLOR_CYAN,
+  COLOR_WHITE,
+};
+
 enum LedNames {
   LED_BUT1_R,
   LED_BUT1_G,
@@ -171,6 +182,12 @@ class Leds {
 
   void set(uint8_t channel, bool value) {
     values_[channel] = value;
+  }
+
+  void set_rgb(uint8_t channel, uint8_t color) {
+    for (int i=0; i<3; i++) {
+      set(channel * 3 + i, (color >> i) & 1);
+    }
   }
 
  private:

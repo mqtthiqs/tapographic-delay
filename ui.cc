@@ -137,13 +137,10 @@ inline void Ui::PaintLeds() {
     }
 
     for (int i=0; i<6; i++) {
-      bool b = i <= level;
-      leds_.set(i*3, b);
-      leds_.set(i*3+1, b);
-      leds_.set(i*3+2, b);
+      int color = i <= level ? COLOR_WHITE : COLOR_BLACK;
+      leds_.set_rgb(i, color);
     }
     
-
     leds_.set(LED_DELETE, ping_led_counter_);
     leds_.set(LED_REPEAT, parameters_->repeat);
   }
