@@ -26,7 +26,6 @@
 //
 // User interface.
 
-#include "cv_scaler.hh"
 #include "ui.hh"
 
 const int32_t kLongPressDuration = 400;
@@ -36,7 +35,7 @@ using namespace stmlib;
 
 void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters) {
   cv_scaler_ = cv_scaler;
-  multitap_delay_ = mtd;
+  delay_ = mtd;
   parameters_ = parameters;
 
   leds_.Init();
@@ -45,6 +44,7 @@ void Ui::Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters) {
 
   mode_ = UI_MODE_SPLASH;
   ignore_releases_ = 0;
+  velocity_meter_ = -1.0f;
 
   // parameters initialization
   parameters->scale = 1.0f; //center to avoid slope on startup
@@ -111,12 +111,6 @@ void Ui::Poll() {
 
 inline void Ui::PaintLeds() {
 
-  if ((system_clock.milliseconds() & 63) == 0)
-    animation_counter_++;
-
-  if (ping_led_counter_ > 0)
-    ping_led_counter_--;
-
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
@@ -128,19 +122,13 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
-    // TODO temp: indicate velocity of last tap
-    static float level = 0;
-    if (parameters_->tap) {
-      level = parameters_->velocity * 6.0f;
-    } else {
-      level -= 0.05f;
-    }
-
     for (int i=0; i<6; i++) {
-      int color = i <= level ? COLOR_WHITE : COLOR_BLACK;
+      int color = i <= velocity_meter_ * 6.0f ?
+        velocity_meter_color_ : COLOR_BLACK;
       leds_.set_rgb(i, color);
     }
-    
+
+    leds_.set(LED_TAP, delay_->counter_running());
     leds_.set(LED_DELETE, ping_led_counter_);
     leds_.set(LED_REPEAT, parameters_->repeat);
   }
@@ -164,6 +152,28 @@ inline void Ui::PaintLeds() {
   }
 
   leds_.Write();
+
+  // Update state variables
+  if ((system_clock.milliseconds() & 63) == 0)
+    animation_counter_++;
+
+  if (ping_led_counter_ > 0)
+    ping_led_counter_--;
+
+  float v = delay_->tap_velocity_just_added();
+  if (v > 0.0f) {
+    velocity_meter_ = v;
+    TapType t = delay_->last_tap_type();
+    velocity_meter_color_ =
+      t == TAP_DRY ? COLOR_BLACK : // TODO necessary?
+      t == TAP_NORMAL ? COLOR_WHITE :
+      t == TAP_OVERWRITE ? COLOR_MAGENTA :
+      t == TAP_OVERDUB ? COLOR_YELLOW :
+      COLOR_RED;
+  } else if (velocity_meter_ > 0.0f) {
+    velocity_meter_ -= 0.01f;
+  }
+
 }
 
 void Ui::Panic() {
@@ -190,9 +200,9 @@ void Ui::OnButtonReleased(const Event& e) {
     switch (e.control_id) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
-        multitap_delay_->Clear();
+        delay_->Clear();
       } else {
-        multitap_delay_->RemTap();
+        delay_->RemTap();
       }
       break;
     case BUTTON_REPEAT:

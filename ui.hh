@@ -37,6 +37,7 @@
 #include "drivers/switches.hh"
 #include "parameters.hh"
 #include "multitap_delay.hh"
+#include "cv_scaler.hh"
 
 enum UiMode {
   UI_MODE_SPLASH,
@@ -73,7 +74,7 @@ class Ui {
   stmlib::EventQueue<16> queue_;
 
   CvScaler* cv_scaler_;
-  MultitapDelay* multitap_delay_;
+  MultitapDelay* delay_;
   Parameters* parameters_;
   
   Leds leds_;
@@ -88,6 +89,8 @@ class Ui {
   uint16_t ignore_releases_;
 
   uint16_t ping_led_counter_;
+  float velocity_meter_;
+  LedColor velocity_meter_color_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
