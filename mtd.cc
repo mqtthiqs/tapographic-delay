@@ -102,7 +102,9 @@ void Init() {
   // sdram.Clear();
   // sdram.Test() || Panic();
 
-  delay.Init(buffer, SDRAM_SIZE/sizeof(short));
+  // TODO: the division by two avoids a HardFault occuring every 6
+  // mins :(
+  delay.Init(buffer, SDRAM_SIZE/sizeof(short) / 2);
 
   ui.Start();
 }
