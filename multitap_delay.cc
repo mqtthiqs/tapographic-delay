@@ -41,7 +41,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
 
   buffer_.Init(buffer, buffer_size);
   dc_blocker_.Init();
-  dc_blocker_.set_f<FREQUENCY_FAST>(20.0f / SAMPLE_RATE);
+  dc_blocker_.set_f<FREQUENCY_FAST>(40.0f / SAMPLE_RATE);
   repeat_fader_.Init();
 
   for (size_t i=0; i<kMaxTaps; i++) {
