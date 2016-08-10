@@ -162,7 +162,6 @@ class Tap
   VelocityType velocity_type_;
   float time_;
   float velocity_;
-  // TODO do we need two variables?
   float panning_;
 
   Fader fader_;

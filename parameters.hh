@@ -61,7 +61,16 @@ enum PanningMode {
   PANNING_ALTERNATE,
 };
 
+enum TapType {
+  TAP_DRY,
+  TAP_NORMAL,
+  TAP_OVERWRITE,
+  TAP_OVERDUB,
+  TAP_FAIL
+};
+
 struct Parameters {
+  // ui -> delay
   float gain;
   float scale;
   float feedback;
@@ -79,6 +88,11 @@ struct Parameters {
   Quantize quantize;
   PanningMode panning_mode;
   VelocityType velocity_type;
+
+  // delay -> ui
+  float last_tap_velocity;     // 0 if none; reset after read
+  bool counter_running;         // reset to false after read
+  TapType last_tap_type;
 };
 
 #endif  // MTD_DSP_PARAMETERS_H_

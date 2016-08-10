@@ -54,6 +54,7 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
   parameters->repeat = false;
+  parameters->counter_running = true;
 }
 
 void Ui::PingGateLed() {
@@ -128,9 +129,9 @@ inline void Ui::PaintLeds() {
       leds_.set_rgb(i, color);
     }
 
-    leds_.set(LED_TAP, delay_->counter_running());
-    leds_.set(LED_DELETE, ping_led_counter_);
+    leds_.set(LED_TAP, parameters_->counter_running);
     leds_.set(LED_REPEAT, parameters_->repeat);
+    leds_.set(LED_DELETE, ping_led_counter_);
   }
   break;
 
@@ -160,12 +161,14 @@ inline void Ui::PaintLeds() {
   if (ping_led_counter_ > 0)
     ping_led_counter_--;
 
-  float v = delay_->tap_velocity_just_added();
+  float v = parameters_->last_tap_velocity;
+  parameters_->last_tap_velocity = 0.0f;
+
   if (v > 0.0f) {
     velocity_meter_ = v;
-    TapType t = delay_->last_tap_type();
+    TapType t = parameters_->last_tap_type;
     velocity_meter_color_ =
-      t == TAP_DRY ? COLOR_BLACK : // TODO necessary?
+      t == TAP_DRY ? COLOR_BLACK : // TODO
       t == TAP_NORMAL ? COLOR_WHITE :
       t == TAP_OVERWRITE ? COLOR_MAGENTA :
       t == TAP_OVERDUB ? COLOR_YELLOW :
@@ -200,7 +203,7 @@ void Ui::OnButtonReleased(const Event& e) {
     switch (e.control_id) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
-        delay_->Clear();
+        delay_->Clear(parameters_);
       } else {
         delay_->RemTap();
       }

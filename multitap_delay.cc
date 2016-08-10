@@ -37,7 +37,6 @@ const float kBufferHeadroom = 0.5f;
 
 void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   counter_ = 0;
-  counter_running_ = true;
 
   buffer_.Init(buffer, buffer_size);
   dc_blocker_.Init();
@@ -52,10 +51,10 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
 
 void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
   // first tap does not count, it just starts the counter
-  if (!counter_running_) {
-    counter_running_ = true;
-    tap_velocity_just_added_ = 1.0f;
-    last_tap_type_ = TAP_DRY;
+  if (!params->counter_running) {
+    params->counter_running = true;
+    params->last_tap_velocity = 1.0f;
+    params->last_tap_type = TAP_DRY;
     return;
   }
 
@@ -83,8 +82,8 @@ void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
     tap_allocator_.Remove();
   }
 
-  tap_velocity_just_added_ = params->velocity;
-  last_tap_type_ =
+  params->last_tap_velocity = params->velocity;
+  params->last_tap_type =
     params->edit_mode == EDIT_NORMAL ? TAP_NORMAL :
     params->edit_mode == EDIT_OVERWRITE ? TAP_OVERWRITE :
     params->edit_mode == EDIT_OVERDUB ? TAP_OVERDUB :
@@ -95,8 +94,8 @@ void MultitapDelay::RemTap() {
   tap_allocator_.Remove();
 }
 
-void MultitapDelay::Clear() {
-  counter_running_ = false;
+void MultitapDelay::Clear(Parameters *params) {
+  params->counter_running = false;
   tap_allocator_.Clear();
   counter_ = 0;
 }
@@ -117,7 +116,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   }
 
   // increment sample counter
-  if (counter_running_) {
+  if (params->counter_running) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
     if (params->edit_mode != EDIT_NORMAL &&
@@ -179,12 +178,12 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   std::fill(buf, buf+kBlockSize, empty);
 
   // gate is high at the beginning of the loop
-  bool gate = counter_running_ && counter_ < kBlockSize+1;
+  bool gate = params->counter_running && counter_ < kBlockSize+1;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
-    if (counter_running_
+    if (params->counter_running
         && taps_[i].active()
         && taps_[i].time() * params->scale < counter_
         && counter_ < taps_[i].time() * params->scale + 2000) {
