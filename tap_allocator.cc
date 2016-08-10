@@ -43,7 +43,7 @@ void TapAllocator::Init(Tap taps[kMaxTaps]) {
 
 // TODO: differentiate manual tap (doesn't queue) and batch add when
 // recalling IR (puts in queues)
-void TapAllocator::Add(float time, float velocity,
+bool TapAllocator::Add(float time, float velocity,
                        VelocityType velocity_type,
                        PanningMode panning_mode) {
 
@@ -68,11 +68,13 @@ void TapAllocator::Add(float time, float velocity,
       max_time_ = time;
 
     next_voice_ = (next_voice_ + 1) % kMaxTaps;
+    return true;
   } else {
     // no taps left: queue and start fade out
     Remove();
     TapParameter p = {velocity_type, panning_mode, time, velocity};
     queue_.Overwrite(p);
+    return false;
   }
 }
 
