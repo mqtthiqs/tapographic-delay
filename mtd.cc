@@ -33,7 +33,6 @@
 #include "drivers/codec.hh"
 #include "drivers/sdram.hh"
 #include "drivers/dac.hh"
-#include "cv_scaler.hh"
 #include "ui.hh"
 #include "multitap_delay.hh"
 
@@ -43,7 +42,6 @@ System sys;
 // TODO cleanup codec
 // Codec codec;
 SDRAM sdram;
-CvScaler cv_scaler;
 Ui ui;
 MultitapDelay delay;
 Dac dac;
@@ -75,7 +73,7 @@ extern "C" {
   }
   
   void FillBuffer(Frame* input, Frame* output) {
-    cv_scaler.Read(&parameters);
+    ui.ReadParameters();
     // dac.Write(true);            // TODO profiling
     bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
@@ -91,8 +89,7 @@ void Init() {
   system_clock.Init();
   sdram.Init();
   dac.Init();
-  cv_scaler.Init();
-  ui.Init(&cv_scaler, &delay, &parameters);
+  ui.Init(&delay, &parameters);
   sys.StartTimers();
 
   Init(SAMPLE_RATE, &FillBuffer) || Panic();

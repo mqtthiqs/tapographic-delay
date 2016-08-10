@@ -47,10 +47,6 @@ enum UiMode {
   UI_MODE_LAST
 };
 
-class CvScaler;
-class Meter;
-class Settings;
-
 class Ui {
  public:
   Ui() { }
@@ -58,11 +54,13 @@ class Ui {
 
   void PingGateLed();
 
-  void Init(CvScaler* cv_scaler, MultitapDelay* mtd, Parameters* parameters);
+  void Init(MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Start();
   void Panic();
+
+  void ReadParameters() { cv_scaler_.Read(parameters_); }
 
  private:
   void OnButtonPressed(const stmlib::Event& e);
@@ -73,7 +71,7 @@ class Ui {
 
   stmlib::EventQueue<16> queue_;
 
-  CvScaler* cv_scaler_;
+  CvScaler cv_scaler_;
   MultitapDelay* delay_;
   Parameters* parameters_;
   
