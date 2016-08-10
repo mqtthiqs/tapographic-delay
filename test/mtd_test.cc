@@ -32,8 +32,8 @@
 
 #include "stmlib/stmlib.h"
 
-#include "multitap_delay.h"
-#include "parameters.h"
+#include "multitap_delay.hh"
+#include "parameters.hh"
 
 void write_wav_header(FILE* fp, int num_samples, int num_channels) {
   uint32_t l;
@@ -69,7 +69,6 @@ const int kBufferSize = 1 << 20;
 short buffer[kBufferSize];
 
 MultitapDelay delay;
-Clock clk;
 
 Parameters params;
 
@@ -77,20 +76,19 @@ void TestDSP() {
   size_t duration = 20;
 
   params.velocity = 1.0f;
-  params.feedback = 0.99f;
-  params.drywet = 0.5f;
+  params.feedback = 0.0f;
+  params.drywet = 1.0f;
   params.morph = 0.0f;
   params.scale = 1.0f;
-  params.jitter_amount = 0.1f;
-  params.jitter_frequency = 0.001f;
+  params.modulation_amount = 0.0001f;
+  params.modulation_frequency = 0.0001f;
   params.repeat = false;
-  params.ping = false;
   params.edit_mode = EDIT_NORMAL;
   params.quantize = QUANTIZE_NONE;
-  params.panning = PANNING_LEFT;
+  params.panning_mode = PANNING_LEFT;
   params.velocity_type = VELOCITY_AMP;
 
-  FILE* fp_in = fopen("audio/bleep.wav", "rb");
+  FILE* fp_in = fopen("audio/ericderr.wav", "rb");
   FILE* fp_out = fopen("mtd.wav", "wb");
 
   size_t remaining_samples = SAMPLE_RATE * duration;
@@ -122,7 +120,6 @@ void TestDSP() {
 }
 
 int main(void) {
-  clk.Init();
-  delay.Init(buffer, kBufferSize, &clk);
+  delay.Init(buffer, kBufferSize);
   TestDSP();
 }

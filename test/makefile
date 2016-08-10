@@ -9,8 +9,7 @@ CC_FILES       = mtd_test.cc \
 		multitap_delay.cc \
 		tap_allocator.cc \
 		random.cc \
-		resources.cc \
-		clock.cc
+		resources.cc
 
 OBJ_FILES      = $(CC_FILES:.cc=.o)
 OBJS           = $(patsubst %,$(BUILD_DIR)%,$(OBJ_FILES)) $(STARTUP_OBJ)
