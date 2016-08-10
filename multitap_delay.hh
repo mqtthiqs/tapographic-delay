@@ -36,6 +36,14 @@
 
 using namespace stmlib;
 
+enum TapType {
+  TAP_DRY,
+  TAP_NORMAL,
+  TAP_OVERWRITE,
+  TAP_OVERDUB,
+  TAP_FAIL
+};
+
 class MultitapDelay
 {
  public:
@@ -48,6 +56,19 @@ class MultitapDelay
   void AddTap(Parameters *params, float repeat_time);
   void RemTap();
   void Clear();
+
+  // UI infos
+  bool counter_running() { return counter_running_; }
+  float tap_velocity_just_added() {
+    if (tap_velocity_just_added_ > 0.0f) {
+      float temp = tap_velocity_just_added_;
+      tap_velocity_just_added_ = 0.0f;
+      return temp;
+    } else {
+      return 0.0f;
+    }
+  }
+  TapType last_tap_type() { return last_tap_type_; }
 
  private:
   TapAllocator tap_allocator_;
@@ -62,6 +83,10 @@ class MultitapDelay
 
   bool counter_running_;
   uint32_t counter_;
+
+  // UI infos
+  float tap_velocity_just_added_;
+  TapType last_tap_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
 };

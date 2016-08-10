@@ -35,7 +35,7 @@
 
 const uint8_t kNumLeds = 21;
 
-enum colors {
+enum LedColor {
   COLOR_BLACK,
   COLOR_RED,
   COLOR_GREEN,

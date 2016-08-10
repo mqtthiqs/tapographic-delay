@@ -54,6 +54,8 @@ void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
   // first tap does not count, it just starts the counter
   if (!counter_running_) {
     counter_running_ = true;
+    tap_velocity_just_added_ = 1.0f;
+    last_tap_type_ = TAP_DRY;
     return;
   }
 
@@ -80,6 +82,13 @@ void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
   if (params->edit_mode == EDIT_OVERWRITE) {
     tap_allocator_.Remove();
   }
+
+  tap_velocity_just_added_ = params->velocity;
+  last_tap_type_ =
+    params->edit_mode == EDIT_NORMAL ? TAP_NORMAL :
+    params->edit_mode == EDIT_OVERWRITE ? TAP_OVERWRITE :
+    params->edit_mode == EDIT_OVERDUB ? TAP_OVERDUB :
+    TAP_FAIL;
 }
 
 void MultitapDelay::RemTap() {
