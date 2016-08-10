@@ -87,6 +87,9 @@ struct Parameters {
   EditMode edit_mode;
   Quantize quantize;
   PanningMode panning_mode;
+
+  // Settings
+  float velocity_parameter;
   VelocityType velocity_type;
 
   // delay -> ui

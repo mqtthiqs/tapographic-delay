@@ -91,9 +91,13 @@ class Tap
 
     /* set filter parameters */
     if (velocity_type == VELOCITY_LP) {
-      filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ * velocity_ / 8.0f, 0.8f);
+      float f = velocity_ * velocity_ * velocity_ / 8.0f;
+      float q = params->velocity_parameter * 2.0f + 0.5f; // 0.5..2.5
+      filter_.set_f_q<FREQUENCY_FAST>(f, q);
     } else if (velocity_type == VELOCITY_BP) {
-      filter_.set_f_q<FREQUENCY_FAST>(velocity_ * velocity_ * velocity_ / 10.0f, 4.0f);
+      float f = velocity_ * velocity_ * velocity_ / 10.0f;
+      float q = params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f;
+      filter_.set_f_q<FREQUENCY_FAST>(f, q);
     }
 
     /* compute random LFO */
