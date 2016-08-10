@@ -142,7 +142,7 @@ class Tap
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
         sample *= velocity_;
       } else if (velocity_type == VELOCITY_BP) {
-        sample = filter_.Process<FILTER_MODE_BAND_PASS_NORMALIZED>(sample);
+        sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
       }
 
       /* write to buffer */
@@ -157,7 +157,7 @@ class Tap
 
  private:
 
-  NaiveSvf filter_;
+  Svf filter_;
 
   VelocityType velocity_type_;
   float time_;
