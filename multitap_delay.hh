@@ -56,7 +56,7 @@ class MultitapDelay
   float feedback_buffer[kBlockSize];   /* max block size */
 
   Parameters prev_params_;
-  OnePole dc_blocker_;
+  Svf dc_blocker_;
 
   Fader repeat_fader_;
   uint32_t counter_;
