@@ -210,7 +210,7 @@ void Ui::ParseSettings() {
   case PAGE_PANNING_MODE: {
   }
   case PAGE_QUALITY: {
-    bool q = settings_item_[PAGE_VELOCITY_PARAMETER];
+    bool q = settings_item_[PAGE_QUALITY];
     parameters_->quality = q;
   } break;
   }

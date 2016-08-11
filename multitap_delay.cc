@@ -33,8 +33,6 @@
 
 using namespace stmlib;
 
-const float kBufferHeadroom = 0.5f;
-
 void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   counter_ = 0;
 
@@ -111,6 +109,8 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
 
+  float buffer_headroom = params->quality ? 1.0f : 0.5f;
+
   // add tap if needed
   if (params->tap) {
     AddTap(params, repeat_time);
@@ -170,11 +170,15 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   for (size_t i=0; i<kBlockSize; i++) {
     float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
     // addition is done here to avoid rounding errors in the increment
-    float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / kBufferHeadroom;
+    float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / buffer_headroom;
     repeat_fader_.Process(repeat_sample);
     float fb_sample = feedback_buffer[i];
     float sample = gain * dry_sample + feedback * fb_sample + repeat_sample;
-    sample = SoftLimit(sample * kBufferHeadroom);
+    if (params->quality) {
+      CONSTRAIN(sample, -1.0f, 1.0f);
+    } else {
+      sample = SoftLimit(sample * buffer_headroom);
+    }
     int16_t s = Clip16(static_cast<int32_t>(sample * 32768.0f));
     buffer_.Write(s);
     gain += gain_increment;
@@ -210,8 +214,8 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
-    FloatFrame sample = { buf[i].l / kBufferHeadroom,
-                          buf[i].r / kBufferHeadroom };
+    FloatFrame sample = { buf[i].l / buffer_headroom,
+                          buf[i].r / buffer_headroom };
 
     // write to feedback buffer
     float fb = sample.l + sample.r;
@@ -225,8 +229,13 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.r = dry * fade_out + sample.r * fade_in;
 
     // write to output buffer
-    output[i].l = SoftConvert(sample.l);
-    output[i].r = SoftConvert(sample.r);
+    if (params->quality) {
+      output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
+      output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
+    } else {
+      output[i].l = SoftConvert(sample.l);
+      output[i].r = SoftConvert(sample.r);
+    }
     drywet += drywet_increment;
   }
 
