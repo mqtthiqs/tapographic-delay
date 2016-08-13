@@ -70,7 +70,7 @@ class Fader {
   }
 
   inline void Process(short &sample) {
-    sample = sample * (envelope_ * envelope_);
+    sample *= envelope_ * envelope_;
     envelope_ += envelope_increment_;
   }
 
