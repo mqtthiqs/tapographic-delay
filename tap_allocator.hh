@@ -59,6 +59,7 @@ class TapAllocator
   uint8_t oldest_voice_;
   float fade_time_;
   float max_time_;
+  bool pan_state_;
 
   struct TapParameter {
     VelocityType velocity_type;

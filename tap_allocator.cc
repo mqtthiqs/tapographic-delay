@@ -56,9 +56,8 @@ bool TapAllocator::Add(float time, float velocity,
     if (panning_mode == PANNING_RANDOM) {
       panning = Random::GetFloat();
     } else if (panning_mode == PANNING_ALTERNATE) {
-      static bool pan_state = true;
-      panning = pan_state ? 1.0f : 0.0f;
-      pan_state = !pan_state;
+      panning = pan_state_ ? 1.0f : 0.0f;
+      pan_state_ = !pan_state_;
     }
 
     taps_[next_voice_].fade_in(fade_time_);
