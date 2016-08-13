@@ -50,10 +50,14 @@ class MultitapDelay
   void RemTap();
 
  private:
+  template<bool quality>
+  bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+
   TapAllocator tap_allocator_;
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
   float feedback_buffer[kBlockSize];   /* max block size */
+  uint32_t last_repeat_time_;
 
   Parameters prev_params_;
   Svf dc_blocker_;

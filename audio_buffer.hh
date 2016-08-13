@@ -77,7 +77,7 @@ class AudioBuffer
   }
 
   /* Reads the value from [pos] writes ago */
-  inline short Read(uint32_t pos) {
+  inline short ReadShort(uint32_t pos) {
     uint32_t index;// = cursor_ - pos;
     if (cursor_ < pos) {
       index = buffer_size_ - pos + cursor_;

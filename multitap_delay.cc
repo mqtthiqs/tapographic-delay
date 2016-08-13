@@ -104,12 +104,22 @@ void MultitapDelay::Clear(Parameters *params) {
   counter_ = 0;
 }
 
+// Dispatch
+bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
+  if (params->quality) {
+    return Process<true>(params, input, output);
+  } else {
+    return Process<false>(params, input, output);
+  }
+}
+
+template<bool quality>
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
 
-  float buffer_headroom = params->quality ? 1.0f : 0.5f;
+  float buffer_headroom = quality ? 1.0f : 0.5f;
 
   // add tap if needed
   if (params->tap) {
@@ -141,6 +151,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       && params->repeat
       && !prev_params_.repeat) {
     repeat_fader_.fade_in(params->morph);
+    last_repeat_time_ = static_cast<uint32_t>(repeat_time); // sample repeat time
   } else if (!params->repeat
              && prev_params_.repeat) {
     repeat_fader_.fade_out(params->morph);
@@ -168,19 +179,27 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float repeat_increment = (repeat_end - repeat_time) / kBlockSize;
 
   for (size_t i=0; i<kBlockSize; i++) {
-    float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
-    // addition is done here to avoid rounding errors in the increment
-    float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / buffer_headroom;
-    repeat_fader_.Process(repeat_sample);
     float fb_sample = feedback_buffer[i];
-    float sample = gain * dry_sample + feedback * fb_sample + repeat_sample;
-    if (params->quality) {
-      CONSTRAIN(sample, -1.0f, 1.0f);
+    int16_t sample;
+    if (quality) {
+      int16_t repeat_sample = buffer_.ReadShort(last_repeat_time_) / buffer_headroom;
+      repeat_fader_.Process(repeat_sample);
+      int16_t dry_sample = input[i].l;
+      int16_t fb = static_cast<int32_t>(fb_sample * 32768.0f);
+      int32_t s = gain * dry_sample + feedback * fb + repeat_sample;
+      sample = Clip16(s);
     } else {
-      sample = SoftLimit(sample * buffer_headroom);
+      // addition is done here to avoid rounding errors in the increment
+      float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / buffer_headroom;
+      repeat_fader_.Process(repeat_sample);
+      float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
+      float dither = (Random::GetFloat() - 0.5f) / 8192.0f;
+      float s = gain * dry_sample + feedback * fb_sample + repeat_sample + dither;
+      s = SoftLimit(s * buffer_headroom);
+      sample = Clip16(static_cast<int32_t>(s * 32768.0f));
     }
-    int16_t s = Clip16(static_cast<int32_t>(sample * 32768.0f));
-    buffer_.Write(s);
+
+    buffer_.Write(sample);
     gain += gain_increment;
     feedback += feedback_increment;
     repeat += repeat_increment;
@@ -229,7 +248,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.r = dry * fade_out + sample.r * fade_in;
 
     // write to output buffer
-    if (params->quality) {
+    if (quality) {
       output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
       output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
     } else {
