@@ -200,17 +200,20 @@ void Ui::Panic() {
 void Ui::ParseSettings() {
   switch (settings_page_) {
   case PAGE_VELOCITY_PARAMETER: {
-    float p = static_cast<float>(settings_item_[PAGE_VELOCITY_PARAMETER]) / 4.0f;
+    float p = static_cast<float>(settings_item_[settings_page_]) / 4.0f;
     parameters_->velocity_parameter = p;
   } break;
   case PAGE_BANK: {
-    int b = settings_item_[PAGE_VELOCITY_PARAMETER];
+    int b = settings_item_[settings_page_];
     parameters_->bank = b;
   }
   case PAGE_PANNING_MODE: {
+    int p = settings_item_[settings_page_];
+    parameters_->panning_mode = static_cast<PanningMode>(p);
+    delay_->RepanTaps(parameters_->panning_mode);
   }
   case PAGE_QUALITY: {
-    bool q = settings_item_[PAGE_QUALITY];
+    bool q = settings_item_[settings_page_];
     parameters_->quality = q;
   } break;
   }

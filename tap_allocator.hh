@@ -44,6 +44,8 @@ class TapAllocator
   void Clear();
   void Poll();
 
+  float ComputePanning(PanningMode panning_mode);
+
   void set_fade_time(float fade_time) {
     fade_time_ = fade_time;
   }

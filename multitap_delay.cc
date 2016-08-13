@@ -104,6 +104,13 @@ void MultitapDelay::Clear(Parameters *params) {
   counter_ = 0;
 }
 
+void MultitapDelay::RepanTaps(PanningMode panning_mode) {
+  for (int i=0; i<kMaxTaps; i++) {
+    float pan = tap_allocator_.ComputePanning(panning_mode);
+    taps_[i].set_panning(pan);
+  }
+}
+
 // Dispatch
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
   if (params->quality) {

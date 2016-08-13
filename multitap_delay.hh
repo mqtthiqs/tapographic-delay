@@ -49,6 +49,8 @@ class MultitapDelay
   void Clear(Parameters *params);
   void RemTap();
 
+  void RepanTaps(PanningMode panning_mode);
+
  private:
   template<bool quality>
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
