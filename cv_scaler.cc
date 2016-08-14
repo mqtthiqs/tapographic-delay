@@ -146,7 +146,7 @@ void CvScaler::Read(Parameters* parameters) {
     average_[ADC_FEEDBACK_POT].value() +
     average_[ADC_FEEDBACK_CV].value();
   CONSTRAIN(val, 0.0f, 1.0f);
-  val *= 1.5f;
+  val *= 1.1f;
   parameters->feedback = val;
 
   // modulation

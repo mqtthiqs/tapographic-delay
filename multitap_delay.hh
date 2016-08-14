@@ -58,7 +58,7 @@ class MultitapDelay
   TapAllocator tap_allocator_;
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
-  float feedback_buffer[kBlockSize];   /* max block size */
+  float feedback_buffer_[kBlockSize];   /* max block size */
   uint32_t last_repeat_time_;
 
   Parameters prev_params_;

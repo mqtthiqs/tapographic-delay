@@ -28,6 +28,7 @@
 
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/parameter_interpolator.h"
+#include "stmlib/dsp/rsqrt.h"
 
 #include "multitap_delay.hh"
 
@@ -58,6 +59,7 @@ void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
 
   float time = static_cast<float>(counter_);
 
+  // TODO delete quantization
   // compute quantization
   if (repeat_time) {
     float q =
@@ -172,10 +174,9 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float gain_end = params->gain;
   float gain_increment = (gain_end - gain) / kBlockSize;
 
-  float feedback_compensation =
-    static_cast<float>(tap_allocator_.busy_voices()) / 3.0f;
-  CONSTRAIN(feedback_compensation, 1.0f, 10.0f);
-  params->feedback /= feedback_compensation;
+  float feedback_compensation = static_cast<float>(tap_allocator_.busy_voices());
+  feedback_compensation = fast_rsqrt_carmack(feedback_compensation);
+  params->feedback *= feedback_compensation;
 
   float feedback = prev_params_.feedback;
   float feedback_end = params->feedback;
@@ -186,7 +187,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float repeat_increment = (repeat_end - repeat_time) / kBlockSize;
 
   for (size_t i=0; i<kBlockSize; i++) {
-    float fb_sample = feedback_buffer[i];
+    float fb_sample = feedback_buffer_[i];
     int16_t sample;
     if (quality) {
       int16_t repeat_sample = buffer_.ReadShort(last_repeat_time_) / buffer_headroom;
@@ -245,7 +246,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
     // write to feedback buffer
     float fb = sample.l + sample.r;
-    feedback_buffer[i] = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(fb);
+    feedback_buffer_[i] = dc_blocker_.Process<FILTER_MODE_HIGH_PASS>(fb);
 
     // add dry signal
     float dry = static_cast<float>(input[i].l) / 32768.0f;
