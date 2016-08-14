@@ -49,7 +49,6 @@ void CvScaler::Init() {
   average_scale_.Process(1.0f);
   scale_lp_ = 1.0f;
   scale_hy_ = 1.0f;
-  average_scale_.Reset(1.0f);
 }
 
 void CvScaler::Calibrate(Persistent* persistent)
