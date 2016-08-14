@@ -48,6 +48,19 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   tap_allocator_.Init(taps_);
 };
 
+float MultitapDelay::ComputePanning(PanningMode panning_mode)
+{
+    float panning = 1.0f;
+    if (panning_mode == PANNING_RANDOM) {
+      panning = Random::GetFloat();
+    } else if (panning_mode == PANNING_ALTERNATE) {
+      panning = pan_state_ ? 1.0f : 0.0f;
+      pan_state_ = !pan_state_;
+    }
+
+    return panning;
+}
+
 void MultitapDelay::AddTap(Parameters *params) {
   // first tap does not count, it just starts the counter
   if (!params->counter_running) {
@@ -58,6 +71,7 @@ void MultitapDelay::AddTap(Parameters *params) {
   }
 
   float time = static_cast<float>(counter_);
+  float pan = ComputePanning(params->panning_mode);
 
   // add tap
   bool success = false;
@@ -65,7 +79,7 @@ void MultitapDelay::AddTap(Parameters *params) {
     success = tap_allocator_.Add(time / params->scale,
                                  params->velocity,
                                  params->velocity_type,
-                                 params->panning_mode);
+                                 pan);
 
     // in overwrite mode, remove oldest tap
     if (success && params->edit_mode == EDIT_OVERWRITE) {
@@ -95,7 +109,7 @@ void MultitapDelay::Clear(Parameters *params) {
 
 void MultitapDelay::RepanTaps(PanningMode panning_mode) {
   for (int i=0; i<kMaxTaps; i++) {
-    float pan = tap_allocator_.ComputePanning(panning_mode);
+    float pan = ComputePanning(panning_mode);
     taps_[i].set_panning(pan);
   }
 }

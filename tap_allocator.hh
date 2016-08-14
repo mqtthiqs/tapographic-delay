@@ -39,12 +39,10 @@ class TapAllocator
   ~TapAllocator() { }
 
   void Init(Tap taps[kMaxTaps]);
-  bool Add(float time, float velocity, VelocityType velocity_type, PanningMode panning_mode);
+  bool Add(float time, float velocity, VelocityType velocity_type, float pan);
   bool Remove();
   void Clear();
   void Poll();
-
-  float ComputePanning(PanningMode panning_mode);
 
   void set_fade_time(float fade_time) {
     fade_time_ = fade_time;
@@ -61,13 +59,12 @@ class TapAllocator
   uint8_t oldest_voice_;
   float fade_time_;
   float max_time_;
-  bool pan_state_;
 
   struct TapParameter {
-    VelocityType velocity_type;
-    PanningMode panning_mode;
     float time;
     float velocity;
+    VelocityType velocity_type;
+    float pan;
   };
 
   stmlib::RingBuffer<TapParameter, 32> queue_;

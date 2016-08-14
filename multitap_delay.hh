@@ -54,18 +54,19 @@ class MultitapDelay
  private:
   template<bool quality, bool repeat_tap_on_output>
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+  float ComputePanning(PanningMode panning_mode);
 
   TapAllocator tap_allocator_;
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
   float feedback_buffer_[kBlockSize];   /* max block size */
   uint32_t last_repeat_time_;
-
-  Parameters prev_params_;
+  bool pan_state_;
   Svf dc_blocker_;
-
   Fader repeat_fader_;
   uint32_t counter_;
+
+  Parameters prev_params_;
 
   // UI infos
 
