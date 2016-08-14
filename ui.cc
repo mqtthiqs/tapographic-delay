@@ -266,14 +266,22 @@ void Ui::OnButtonReleased(const Event& e) {
   }
 
   if (mode_ == UI_MODE_SETTINGS) {
-    if (e.data >= kLongPressDuration
-        && e.control_id <= BUTTON_4) {
-      settings_page_ = e.control_id;
-    } else if (e.control_id <= settings_page_) {
-      settings_page_ = e.control_id;
+    if (e.control_id <= BUTTON_6) {
+      // upper buttons
+      if (e.data >= kLongPressDuration && e.control_id <= BUTTON_4) {
+        // long press -> change page
+        settings_page_ = e.control_id;
+      } else if (e.control_id <= settings_page_) {
+        // short press on the left -> change page
+        settings_page_ = e.control_id;
+      } else {
+        // short press on the right -> change setting
+        settings_item_[settings_page_] = e.control_id - settings_page_ - 1;
+        ParseSettingsCurrentPage();
+      }
     } else {
-      settings_item_[settings_page_] = e.control_id - settings_page_ - 1;
-      ParseSettingsCurrentPage();
+      // Delete and Repeat exit settings mode
+      mode_ = UI_MODE_NORMAL;   // control flow continues below
     }
   }
 
