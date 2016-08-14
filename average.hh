@@ -45,6 +45,10 @@ class Average {
     cursor = 0;
     std::fill(history, history+SIZE, 0.0f);
   }
+
+  void Reset(float x) {
+    last = x * (SIZE-1);
+  }
   
   void Process(float x) {
     last += x - history[(cursor+1) % SIZE];
