@@ -61,19 +61,16 @@ void MultitapDelay::AddTap(Parameters *params) {
 
   // add tap
   bool success = false;
-  // TODO bug: what if this isn't the case and we're in overwrite
-  // mode? TODO display result correctly (FAIL); make this check in
-  // TapAllocator
   if (time < buffer_.size()) {
     success = tap_allocator_.Add(time,
                                  params->velocity,
                                  params->velocity_type,
                                  params->panning_mode);
-  }
 
-  // in overwrite mode, remove oldest tap
-  if (params->edit_mode == EDIT_OVERWRITE) {
-    tap_allocator_.Remove();
+    // in overwrite mode, remove oldest tap
+    if (success && params->edit_mode == EDIT_OVERWRITE) {
+      tap_allocator_.Remove();
+    }
   }
 
   // for UI feedback
