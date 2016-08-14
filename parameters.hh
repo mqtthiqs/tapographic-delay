@@ -80,21 +80,21 @@ struct Parameters {
   float drywet;
 
   float velocity;
-
-  bool repeat;
   bool tap;
+  bool repeat;
 
   EditMode edit_mode;
+  VelocityType velocity_type;
   Quantize quantize;
-  PanningMode panning_mode;
 
   // Settings
   float velocity_parameter;
-  uint8_t bank;
-  VelocityType velocity_type;
+  PanningMode panning_mode;
   bool quality;
+  uint8_t bank;
 
   // delay -> ui
+  // TODO refactor this!
   float last_tap_velocity;     // 0 if none; reset after read
   bool counter_running;         // reset to false after read
   TapType last_tap_type;

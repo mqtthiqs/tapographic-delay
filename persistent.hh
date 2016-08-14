@@ -24,46 +24,53 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Calibration settings.
+// Persistent data
 
-#ifndef CV_SCALER_H_
-#define CV_SCALER_H_
+#ifndef PERSISTENT_H_
+#define PERSISTENT_H_
 
-#include "stmlib/stmlib.h"
-#include "stmlib/dsp/filter.h"
-#include "average.hh"
-
-#include "drivers/adc.hh"
-#include "drivers/gate_input.hh"
 #include "parameters.hh"
-#include "persistent.hh"
+#include "stmlib/system/storage.h"
 
-using namespace stmlib;
+class Persistent 
+{
+public:
+  Persistent() { };
+  ~Persistent() { };
 
-class CvScaler {
- public:
-  CvScaler() { }
-  ~CvScaler() { }
-  
-  void Init();
-  void Read(Parameters* parameters);
-  void Calibrate(Persistent* persistent);
+  struct Data {
+    uint8_t settings[4];
+  };
 
- private:
+  void Init() {
+    if (!storage_.ParsimoniousLoad(&data_, &version_token_)) {
+      // for (size_t i = 0; i < ADC_CHANNEL_NUM_OFFSETS; ++i) {
+      //   data_.calibration_data.offset[i] = 0.505f;
+      // }
+      data_.settings[0] = 2;      // velocity parameter (0-4)
+      data_.settings[1] = 0;      // bank (0-3)
+      data_.settings[2] = 1;      // panning mode (0-2)
+      data_.settings[3] = 0;      // quality (0-1)
+      Save();
+    }
 
-  Adc adc_;
-  GateInput gate_input_;
+    // sanitize settings
+    CONSTRAIN(data_.settings[0], 0, 4);
+    CONSTRAIN(data_.settings[1], 0, 3);
+    CONSTRAIN(data_.settings[2], 0, 2);
+    CONSTRAIN(data_.settings[3], 0, 1);
+  }
 
-  Average<32> average_[ADC_CHANNEL_LAST];
-  Average<256> average_scale_;
-  float scale_hy_, scale_lp_;
-  OnePole fsr_filter_;
-  bool taptrig_armed_;
-  bool tapfsr_armed_;
-  float freq_lp_;
-  float amount_lp_;
+  void Save() {
+    storage_.ParsimoniousSave(data_, &version_token_);
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(CvScaler);
+  Data* mutable_data() { return &data_; }
+
+private:
+  Data data_;
+  uint16_t version_token_;
+  stmlib::Storage<4> storage_;
 };
 
 #endif

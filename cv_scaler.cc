@@ -52,6 +52,11 @@ void CvScaler::Init() {
   average_scale_.Reset(1.0f);
 }
 
+void CvScaler::Calibrate(Persistent* persistent)
+{
+  // TODO
+}
+
 inline float CropDeadZone(float x) {
   return x * (1.0f + 2.0f * kPotDeadZoneSize) - kPotDeadZoneSize;
 }

@@ -38,6 +38,7 @@
 #include "parameters.hh"
 #include "multitap_delay.hh"
 #include "cv_scaler.hh"
+#include "persistent.hh"
 
 enum UiMode {
   UI_MODE_SPLASH,
@@ -74,11 +75,14 @@ class Ui {
   void OnButtonReleased(const stmlib::Event& e);
   void OnSwitchSwitched(const stmlib::Event& e);
   void ParseSettings();
+  void ParseSettingsCurrentPage();
+  void SaveSettings();
 
   void PaintLeds();
 
   stmlib::EventQueue<16> queue_;
 
+  Persistent persistent_;
   CvScaler cv_scaler_;
   MultitapDelay* delay_;
   Parameters* parameters_;
@@ -90,8 +94,8 @@ class Ui {
   uint32_t press_time_[kNumButtons];
   uint32_t long_press_time_[kNumButtons];
   UiMode mode_;
-  int settings_page_;
-  int settings_item_[kNumButtons-2];
+  int settings_page_;           // 0..4
+  int settings_item_[4];
   uint16_t animation_counter_;
 
   uint16_t ignore_releases_;

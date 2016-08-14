@@ -37,24 +37,32 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
   delay_ = mtd;
   parameters_ = parameters;
 
-  cv_scaler_.Init();
   leds_.Init();
   buttons_.Init();
   switches_.Init();
+  persistent_.Init();
+  cv_scaler_.Init();
+
+  // copy and initialize settings
+  for (int i=0; i<4; i++) {
+    settings_item_[i] = persistent_.mutable_data()->settings[i];
+  }
+  ParseSettings();
+
+  // initialization of rest of parameters
+  parameters->velocity_type = VELOCITY_AMP;
+  parameters->edit_mode = EDIT_NORMAL;
+  parameters->counter_running = true; // TODO
 
   mode_ = UI_MODE_SPLASH;
   ignore_releases_ = 0;
   velocity_meter_ = -1.0f;
 
-  // parameters initialization
-  parameters->scale = 1.0f; //center to avoid slope on startup
-  parameters->edit_mode = EDIT_NORMAL;
-  parameters->quantize = QUANTIZE_NONE;
-  parameters->panning_mode = PANNING_RANDOM;
-  parameters->velocity_type = VELOCITY_AMP;
-  parameters->edit_mode = EDIT_NORMAL;
-  parameters->repeat = false;
-  parameters->counter_running = true;
+  // calibration
+  if (buttons_.pressed_immediate(BUTTON_REPEAT) &&
+      buttons_.pressed_immediate(BUTTON_DELETE)) {
+    cv_scaler_.Calibrate(&persistent_);
+  }
 }
 
 void Ui::PingGateLed() {
@@ -198,25 +206,37 @@ void Ui::Panic() {
 }
 
 void Ui::ParseSettings() {
+  for (int i=0; i<4; i++) {
+    settings_page_ = i;
+    ParseSettingsCurrentPage();
+  }
+}
+
+void Ui::ParseSettingsCurrentPage() {
+  int p = settings_item_[settings_page_];
   switch (settings_page_) {
   case PAGE_VELOCITY_PARAMETER: {
-    float p = static_cast<float>(settings_item_[settings_page_]) / 4.0f;
-    parameters_->velocity_parameter = p;
+    parameters_->velocity_parameter = static_cast<float>(p) / 4.0f;
   } break;
   case PAGE_BANK: {
-    int b = settings_item_[settings_page_];
-    parameters_->bank = b;
-  }
+    parameters_->bank = p;
+  } break;
   case PAGE_PANNING_MODE: {
-    int p = settings_item_[settings_page_];
     parameters_->panning_mode = static_cast<PanningMode>(p);
     delay_->RepanTaps(parameters_->panning_mode);
-  }
+  } break;
   case PAGE_QUALITY: {
-    bool q = settings_item_[settings_page_];
-    parameters_->quality = q;
+    parameters_->quality = p;
   } break;
   }
+}
+
+void Ui::SaveSettings()
+{
+  for (int i=0; i<4; i++) {
+    persistent_.mutable_data()->settings[i] = settings_item_[i];
+  }
+  persistent_.Save();
 }
 
 void Ui::OnButtonPressed(const Event& e) {
@@ -233,7 +253,7 @@ void Ui::OnButtonPressed(const Event& e) {
       ignore_releases_ = 2;
       settings_page_ = pressed;
       settings_item_[pressed] = e.control_id - pressed - 1;
-      ParseSettings();
+      ParseSettingsCurrentPage();
     }
   }
 }
@@ -253,6 +273,7 @@ void Ui::OnButtonReleased(const Event& e) {
       settings_page_ = e.control_id;
     } else {
       settings_item_[settings_page_] = e.control_id - settings_page_ - 1;
+      ParseSettingsCurrentPage();
     }
   }
 
@@ -316,6 +337,7 @@ void Ui::DoEvents() {
     queue_.Touch();
     if (mode_ == UI_MODE_SETTINGS) {
       mode_ = UI_MODE_NORMAL;
+      SaveSettings();
     }
   }
 }

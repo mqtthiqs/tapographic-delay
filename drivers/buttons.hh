@@ -111,6 +111,11 @@ class Buttons {
     return button_state_[index] == 0x00;
   }
 
+  inline bool pressed_immediate(uint8_t index) const {
+    return GPIO_ReadInputDataBit(button_pins[index].gpio, button_pins[index].pin);
+  }
+
+
 private:
   uint8_t button_state_[kNumButtons];
   
