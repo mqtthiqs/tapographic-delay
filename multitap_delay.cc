@@ -62,7 +62,7 @@ void MultitapDelay::AddTap(Parameters *params) {
   // add tap
   bool success = false;
   if (time < buffer_.size()) {
-    success = tap_allocator_.Add(time,
+    success = tap_allocator_.Add(time / params->scale,
                                  params->velocity,
                                  params->velocity_type,
                                  params->panning_mode);
@@ -124,6 +124,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     AddTap(params);
   }
 
+  // reset repeat_time if needed
   if (repeat_time > buffer_.size() ||
       repeat_time < 100) {
     repeat_time = 0;
