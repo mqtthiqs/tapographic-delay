@@ -46,7 +46,7 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
 
 float TapAllocator::ComputePanning(PanningMode panning_mode)
 {
-    float panning = 0.0f;
+    float panning = 1.0f;
     if (panning_mode == PANNING_RANDOM) {
       panning = Random::GetFloat();
     } else if (panning_mode == PANNING_ALTERNATE) {

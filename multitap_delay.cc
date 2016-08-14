@@ -115,14 +115,16 @@ void MultitapDelay::RepanTaps(PanningMode panning_mode) {
 
 // Dispatch
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
-  if (params->quality) {
-    return Process<true>(params, input, output);
-  } else {
-    return Process<false>(params, input, output);
-  }
+  return params->quality ?
+    (params->panning_mode == PANNING_LEFT ?
+     Process<true, true>(params, input, output) :
+     Process<true, false>(params, input, output)) :
+    (params->panning_mode == PANNING_LEFT ?
+     Process<false, true>(params, input, output) :
+     Process<false, false>(params, input, output));
 }
 
-template<bool quality>
+template<bool quality, bool repeat_tap_on_output>
 bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
   // repeat time, in samples
@@ -239,6 +241,8 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float drywet_end = params->drywet;
   float drywet_increment = (drywet_end - drywet) / kBlockSize;
 
+  repeat = 0.0f;
+
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
     FloatFrame sample = { buf[i].l / buffer_headroom,
@@ -253,9 +257,14 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     float fade_in = Interpolate(lut_xfade_in, drywet, 16.0f);
     float fade_out = Interpolate(lut_xfade_out, drywet, 16.0f);
     sample.l = dry * fade_out + sample.l * fade_in;
-    sample.r = dry * fade_out + sample.r * fade_in;
 
     // write to output buffer
+    if (repeat_tap_on_output) {
+      sample.r = buffer_.ReadHermite(repeat_time + repeat + kBlockSize - i) / buffer_headroom;
+    } else {
+      sample.r = dry * fade_out + sample.r * fade_in;
+    }
+
     if (quality) {
       output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
       output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
@@ -263,7 +272,9 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       output[i].l = SoftConvert(sample.l);
       output[i].r = SoftConvert(sample.r);
     }
+
     drywet += drywet_increment;
+    repeat += repeat_increment;
   }
 
   prev_params_ = *params;

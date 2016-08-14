@@ -52,7 +52,7 @@ class MultitapDelay
   void RepanTaps(PanningMode panning_mode);
 
  private:
-  template<bool quality>
+  template<bool quality, bool repeat_tap_on_output>
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
   TapAllocator tap_allocator_;
