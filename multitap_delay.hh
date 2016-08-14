@@ -45,7 +45,7 @@ class MultitapDelay
   void Init(short* buffer, int32_t buffer_size);
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
-  void AddTap(Parameters *params, float repeat_time);
+  void AddTap(Parameters *params);
   void Clear(Parameters *params);
   void RemTap();
 

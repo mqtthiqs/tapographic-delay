@@ -49,12 +49,6 @@ enum EditMode {
   EDIT_OVERWRITE,
 };
 
-enum Quantize {
-  QUANTIZE_NONE,
-  QUANTIZE_8,
-  QUANTIZE_16,
-};
-
 enum PanningMode {
   PANNING_LEFT,
   PANNING_RANDOM,
@@ -85,7 +79,6 @@ struct Parameters {
 
   EditMode edit_mode;
   VelocityType velocity_type;
-  Quantize quantize;
 
   // Settings
   float velocity_parameter;

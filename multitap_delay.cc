@@ -48,7 +48,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   tap_allocator_.Init(taps_);
 };
 
-void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
+void MultitapDelay::AddTap(Parameters *params) {
   // first tap does not count, it just starts the counter
   if (!params->counter_running) {
     params->counter_running = true;
@@ -58,16 +58,6 @@ void MultitapDelay::AddTap(Parameters *params, float repeat_time) {
   }
 
   float time = static_cast<float>(counter_);
-
-  // TODO delete quantization
-  // compute quantization
-  if (repeat_time) {
-    float q =
-      params->quantize == QUANTIZE_8 ? 8.0f :
-      params->quantize == QUANTIZE_16 ? 16.0f :
-      repeat_time;
-    time = round(time / repeat_time * q) * repeat_time / q;
-  }
 
   // add tap
   bool success = false;
@@ -134,7 +124,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // add tap if needed
   if (params->tap) {
-    AddTap(params, repeat_time);
+    AddTap(params);
   }
 
   if (repeat_time > buffer_.size() ||
