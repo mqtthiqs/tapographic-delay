@@ -61,10 +61,10 @@ void TapAllocator::Save(uint8_t slot_nr)
 
   for(int i=0; i<busy_voices(); i++) {
     int index = (oldest_voice_ + i) % kMaxTaps;
-    slot->taps[index].time = taps_[index].time();
-    slot->taps[index].velocity = taps_[index].velocity();
-    slot->taps[index].velocity_type = taps_[index].velocity_type();
-    slot->taps[index].panning = taps_[index].panning();
+    slot->taps[i].time = taps_[index].time();
+    slot->taps[i].velocity = taps_[index].velocity();
+    slot->taps[i].velocity_type = taps_[index].velocity_type();
+    slot->taps[i].panning = taps_[index].panning();
   }
 }
 
