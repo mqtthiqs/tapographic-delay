@@ -92,16 +92,13 @@ void Init() {
   ui.Init(&delay, &parameters);
   sys.StartTimers();
 
-  Init(SAMPLE_RATE, &FillBuffer) || Panic();
 
   short* buffer = (short*)SDRAM_BASE;
-
-  // sdram.Clear();
-  // sdram.Test() || Panic();
 
   // TODO: the division by two avoids a HardFault occuring every 6
   // mins :(
   delay.Init(buffer, SDRAM_SIZE/sizeof(short) / 2);
+  Init(SAMPLE_RATE, &FillBuffer) || Panic();
 
   ui.Start();
 }
