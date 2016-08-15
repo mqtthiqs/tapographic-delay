@@ -142,10 +142,11 @@ void TapAllocator::Poll()
 
 void TapAllocator::Clear()
 {
-  for (size_t i=0; i<kMaxTaps; i++) {
-    taps_[i].fade_out(fade_time_);
+  for(int i=0; i<busy_voices(); i++) {
+    int index = (oldest_voice_ + i) % kMaxTaps;
+    taps_[index].fade_out(fade_time_);
   }
   queue_.Flush();
   max_time_ = 0.0f;
-  next_voice_ = oldest_voice_ = 0;
+  oldest_voice_ = next_voice_;
 }
