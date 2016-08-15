@@ -50,6 +50,9 @@ class TapAllocator
   }
 
   bool full() { return (next_voice_ + 1) % kMaxTaps == oldest_voice_; }
+  // the pool is writeable if it is not full, and if the last voice
+  // has finished faded out
+  bool writeable() { return !full() && !taps_[next_voice_].active(); };
   bool empty() { return next_voice_ == oldest_voice_; }
   uint8_t busy_voices() {
     int busy = next_voice_ - oldest_voice_;
@@ -61,9 +64,6 @@ class TapAllocator
  private:
   void RecomputeMaxTime();
 
-  bool writeable() {
-    return !full() && !taps_[next_voice_].active();
-  };
 
   Tap* taps_;
 
