@@ -338,7 +338,7 @@ void Ui::OnButtonReleased(const Event& e) {
       } else {
         int slot = bank_ * 6 + e.control_id;
         current_slot_ = slot;
-        delay_->Load(slot);
+        delay_->Load(parameters_, slot);
       }
       break;
     }

@@ -51,7 +51,15 @@ class MultitapDelay
 
   void RepanTaps(PanningMode panning_mode);
 
-  void Load(uint8_t slot) { tap_allocator_.Load(slot); };
+  void Load(Parameters *params, uint8_t slot) {
+    tap_allocator_.Load(slot);
+    if (tap_allocator_.busy_voices() == 0) {
+      counter_ = 0;
+      params->counter_running = false;
+    } else {
+      params->counter_running = true;
+    }
+  };
   void Save(uint8_t slot) { tap_allocator_.Save(slot); };
 
  private:
