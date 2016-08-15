@@ -65,12 +65,12 @@ class Fader {
   }
 
   inline void Process(float &sample) {
-    sample *= envelope_ * envelope_;
+    sample *= envelope_;
     envelope_ += envelope_increment_;
   }
 
   inline void Process(short &sample) {
-    sample *= envelope_ * envelope_;
+    sample *= envelope_;
     envelope_ += envelope_increment_;
   }
 
