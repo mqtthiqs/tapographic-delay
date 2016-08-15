@@ -33,15 +33,27 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
   taps_ = taps;
   fade_time_ = 1000.0f;
 
-  // // Dummy IR generation
-  // for (size_t i=0; i<kMaxTaps; i++) {
-  //   float t = static_cast<float>(i) + 1.0f;
-  //   float time = t * t * t * SAMPLE_RATE * 0.005f / kMaxTaps + 500.0f;
-  //   float velocity = (t+1) / (kMaxTaps+1);
-  //   Add(time, velocity, VELOCITY_BP, Random::GetFloat());
-  // }
+  // if (!bank0_.ParsimoniousLoad(&slots_[0], &token_[0]) ||
+  //     !bank1_.ParsimoniousLoad(&slots_[1], &token_[1]) ||
+  //     !bank2_.ParsimoniousLoad(&slots_[2], &token_[2]) ||
+  //     !bank3_.ParsimoniousLoad(&slots_[3], &token_[3])) {
+  if (!bank0_.ParsimoniousLoad(&slots_[0], 6 * sizeof(Slot), &token_[0])) {
 
-  // Add(5000.0f, 1.0f, VELOCITY_AMP, PANNING_ALTERNATE);
+    // clear slots
+    memset(slots_, 0, sizeof(slots_));
+
+    // Dummy IR generation
+    for (size_t i=0; i<kMaxTaps; i++) {
+      float t = static_cast<float>(i) + 1.0f;
+      float time = t * t * t * SAMPLE_RATE * 0.005f / kMaxTaps + 500.0f;
+      float velocity = (t+1) / (kMaxTaps+1);
+      Add(time, velocity, VELOCITY_BP, Random::GetFloat());
+    }
+    // TODO default IRs
+    // TODO save them
+  }
+
+  // TODO sanitize slots
 }
 
 void TapAllocator::Load(uint8_t slot_nr)
@@ -67,6 +79,13 @@ void TapAllocator::Save(uint8_t slot_nr)
     slot->taps[i].velocity_type = taps_[index].velocity_type();
     slot->taps[i].panning = taps_[index].panning();
   }
+
+  // int bank = slot_nr / 6;
+  // if (bank == 0)
+  bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
+  // else if (bank == 1) bank1_.ParsimoniousSave(slots_[1], &token_[1]);
+  // else if (bank == 2) bank2_.ParsimoniousSave(slots_[2], &token_[2]);
+  // else if (bank == 3) bank3_.ParsimoniousSave(slots_[3], &token_[3]);
 }
 
 
@@ -120,7 +139,7 @@ bool TapAllocator::RemoveFirst()
   }
 }
 
-bool TapAllocator::RemoveLast() 
+bool TapAllocator::RemoveLast()
 {
   if (!empty()) {
     next_voice_--;

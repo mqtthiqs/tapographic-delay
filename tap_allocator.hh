@@ -31,6 +31,7 @@
 
 #include "tap.hh"
 #include "stmlib/utils/ring_buffer.h"
+#include "stmlib/system/storage.h"
 
 const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
 
@@ -91,6 +92,12 @@ class TapAllocator
   float max_time_;
 
   stmlib::RingBuffer<TapParameters, kMaxTaps*4> queue_;
+
+  stmlib::Storage<8> bank0_;
+  stmlib::Storage<9> bank1_;
+  stmlib::Storage<10> bank2_;
+  stmlib::Storage<11> bank3_;
+  uint16_t token_[4];
 
   DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };
