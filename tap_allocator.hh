@@ -67,7 +67,7 @@ class TapAllocator
     float pan;
   };
 
-  stmlib::RingBuffer<TapParameter, 32> queue_;
+  stmlib::RingBuffer<TapParameter, kMaxTaps> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };
