@@ -51,6 +51,9 @@ class MultitapDelay
 
   void RepanTaps(PanningMode panning_mode);
 
+  void Load(uint8_t slot) { tap_allocator_.Load(slot); };
+  void Save(uint8_t slot) { tap_allocator_.Save(slot); };
+
  private:
   template<bool quality, bool repeat_tap_on_output>
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);

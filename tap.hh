@@ -66,6 +66,10 @@ class Tap
   }
 
   float time() { return time_; }
+  float velocity() { return velocity_; }
+  VelocityType velocity_type() { return velocity_type_; }
+  float panning() { return panning_; }
+
   bool active() { return fader_.volume() > 0.001f; }
   void fade_in(float length) { fader_.fade_in(length); }
   void fade_out(float length) { fader_.fade_out(length); }

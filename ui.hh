@@ -80,6 +80,8 @@ class Ui {
 
   void PaintLeds();
 
+  void PingSaveLed();
+
   stmlib::EventQueue<16> queue_;
 
   Persistent persistent_;
@@ -97,10 +99,12 @@ class Ui {
   int settings_page_;           // 0..4
   int settings_item_[4];
   uint16_t animation_counter_;
-
   uint16_t ignore_releases_;
+  uint8_t bank_;
+  uint8_t current_slot_;
 
-  uint16_t ping_led_counter_;
+  uint16_t ping_gate_led_counter_;
+  uint16_t ping_save_led_counter_;
   float velocity_meter_;
   LedColor velocity_meter_color_;
 

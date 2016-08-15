@@ -44,16 +44,41 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
   // Add(5000.0f, 1.0f, VELOCITY_AMP, PANNING_ALTERNATE);
 }
 
+void TapAllocator::Load(uint8_t slot_nr)
+{
+  Clear();
+  for (int i=0; i<slots_[slot_nr].size; i++) {
+    TapParameters p = slots_[slot_nr].taps[i];
+    Add(p.time, p.velocity, p.velocity_type, p.panning);
+  }
+}
+
+void TapAllocator::Save(uint8_t slot_nr) 
+{
+  Slot* slot = &slots_[slot_nr];
+
+  slot->size = busy_voices();
+
+  for(int i=0; i<busy_voices(); i++) {
+    int index = (oldest_voice_ + i) % kMaxTaps;
+    slot->taps[index].time = taps_[index].time();
+    slot->taps[index].velocity = taps_[index].velocity();
+    slot->taps[index].velocity_type = taps_[index].velocity_type();
+    slot->taps[index].panning = taps_[index].panning();
+  }
+}
+
+
 bool TapAllocator::Add(float time, float velocity,
                        VelocityType velocity_type,
-                       float pan)
+                       float panning)
 {
   if (writeable()) {
 
     taps_[next_voice_].fade_in(fade_time_);
     taps_[next_voice_].set_time(time);
     taps_[next_voice_].set_velocity(velocity, velocity_type);
-    taps_[next_voice_].set_panning(pan);
+    taps_[next_voice_].set_panning(panning);
 
     if (time > max_time_)
       max_time_ = time;
@@ -64,7 +89,7 @@ bool TapAllocator::Add(float time, float velocity,
   } else {
     // no taps left: queue and start fade out
     RemoveFirst();
-    TapParameter p = {time, velocity, velocity_type, pan};
+    TapParameters p = {time, velocity, velocity_type, panning};
     queue_.Overwrite(p);
     return false;
   }
@@ -110,8 +135,8 @@ bool TapAllocator::RemoveLast()
 void TapAllocator::Poll()
 {
   if (queue_.readable() && writeable()) {
-    TapParameter p = queue_.Read();
-    Add(p.time, p.velocity, p.velocity_type, p.pan);
+    TapParameters p = queue_.Read();
+    Add(p.time, p.velocity, p.velocity_type, p.panning);
   }
 }
 

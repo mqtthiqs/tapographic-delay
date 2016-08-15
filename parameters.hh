@@ -84,7 +84,6 @@ struct Parameters {
   float velocity_parameter;
   PanningMode panning_mode;
   bool quality;
-  uint8_t bank;
 
   // delay -> ui
   // TODO refactor this!

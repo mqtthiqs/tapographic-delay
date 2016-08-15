@@ -29,7 +29,7 @@
 #include "ui.hh"
 
 const int32_t kLongPressDuration = 300;
-const int32_t kVeryLongPressDuration = 2000;
+const int32_t kVeryLongPressDuration = 1001;
 
 using namespace stmlib;
 
@@ -63,11 +63,18 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
       buttons_.pressed_immediate(BUTTON_DELETE)) {
     cv_scaler_.Calibrate(&persistent_);
   }
+
+  current_slot_ = -1;           // means no active slot
 }
 
 void Ui::PingGateLed() {
-  if (ping_led_counter_ == 0)   // TODO necessary?
-    ping_led_counter_ = 3;
+  if (ping_gate_led_counter_ == 0)   // TODO necessary?
+    ping_gate_led_counter_ = 3;
+}
+
+void Ui::PingSaveLed() {
+  if (ping_save_led_counter_ == 0)   // TODO necessary?
+    ping_save_led_counter_ = 512;
 }
 
 
@@ -137,9 +144,20 @@ inline void Ui::PaintLeds() {
       leds_.set_rgb(i, color);
     }
 
+    if (current_slot_ >= 0) {
+      uint8_t bank = current_slot_ / 6;
+      uint8_t slot = current_slot_ % 6;
+      if (bank == bank_) {
+        LedColor blink = (ping_save_led_counter_ & 31) > 16 ?
+          COLOR_RED : COLOR_BLACK;
+        LedColor c = ping_save_led_counter_ > 0 ? blink : COLOR_GREEN;
+        leds_.set_rgb(slot, c);
+      }
+    }
+
     leds_.set(LED_TAP, parameters_->counter_running);
     leds_.set(LED_REPEAT, parameters_->repeat);
-    leds_.set(LED_DELETE, ping_led_counter_);
+    leds_.set(LED_DELETE, ping_gate_led_counter_);
   }
   break;
 
@@ -159,7 +177,7 @@ inline void Ui::PaintLeds() {
 
     leds_.set(LED_TAP, parameters_->counter_running);
     leds_.set(LED_REPEAT, parameters_->repeat);
-    leds_.set(LED_DELETE, ping_led_counter_);
+    leds_.set(LED_DELETE, ping_gate_led_counter_);
     break;
   }
 
@@ -181,8 +199,11 @@ inline void Ui::PaintLeds() {
   if ((system_clock.milliseconds() & 63) == 0)
     animation_counter_++;
 
-  if (ping_led_counter_ > 0)
-    ping_led_counter_--;
+  if (ping_gate_led_counter_ > 0)
+    ping_gate_led_counter_--;
+
+  if (ping_save_led_counter_ > 0)
+    ping_save_led_counter_--;
 
   float v = parameters_->last_tap_velocity;
   parameters_->last_tap_velocity = 0.0f;
@@ -219,7 +240,7 @@ void Ui::ParseSettingsCurrentPage() {
     parameters_->velocity_parameter = static_cast<float>(p) / 4.0f;
   } break;
   case PAGE_BANK: {
-    parameters_->bank = p;
+    bank_ = p;
   } break;
   case PAGE_PANNING_MODE: {
     parameters_->panning_mode = static_cast<PanningMode>(p);
@@ -302,13 +323,23 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_2:
     case BUTTON_3:
     case BUTTON_4:
-      if (e.data >= kLongPressDuration) {
-        mode_ = UI_MODE_SETTINGS;
-        settings_page_ = e.control_id;
-      }
-      break;
     case BUTTON_5:
     case BUTTON_6:
+      if (e.data >= kVeryLongPressDuration) {
+        int slot = bank_ * 6 + e.control_id;
+        current_slot_ = slot;
+        PingSaveLed();
+        delay_->Save(slot);
+      } else if (e.data >= kLongPressDuration) {
+        if (e.control_id <= BUTTON_4) {
+          mode_ = UI_MODE_SETTINGS;
+          settings_page_ = e.control_id;
+        }
+      } else {
+        int slot = bank_ * 6 + e.control_id;
+        current_slot_ = slot;
+        delay_->Load(slot);
+      }
       break;
     }
   }

@@ -32,6 +32,8 @@
 #include "tap.hh"
 #include "stmlib/utils/ring_buffer.h"
 
+const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
+
 class TapAllocator
 {
  public:
@@ -44,6 +46,9 @@ class TapAllocator
   bool RemoveLast();
   void Clear();
   void Poll();
+
+  void Save(uint8_t slot);
+  void Load(uint8_t slot);
 
   void set_fade_time(float fade_time) {
     fade_time_ = fade_time;
@@ -64,22 +69,28 @@ class TapAllocator
  private:
   void RecomputeMaxTime();
 
-
   Tap* taps_;
+
+  struct TapParameters {
+    float time;
+    float velocity;
+    VelocityType velocity_type;
+    float panning;
+  };
+
+  struct Slot {
+    uint8_t size;
+    TapParameters taps[kMaxTaps];
+  };
+
+  Slot slots_[kNumSlots];
 
   int8_t next_voice_;
   int8_t oldest_voice_;
   float fade_time_;
   float max_time_;
 
-  struct TapParameter {
-    float time;
-    float velocity;
-    VelocityType velocity_type;
-    float pan;
-  };
-
-  stmlib::RingBuffer<TapParameter, kMaxTaps> queue_;
+  stmlib::RingBuffer<TapParameters, kMaxTaps*4> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };
