@@ -47,7 +47,7 @@ class MultitapDelay
 
   void AddTap(Parameters *params);
   void Clear(Parameters *params);
-  void RemoveLastTap();
+  bool RemoveLastTap();
 
   void RepanTaps(PanningMode panning_mode);
 

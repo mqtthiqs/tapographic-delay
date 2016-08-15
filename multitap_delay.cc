@@ -88,6 +88,7 @@ void MultitapDelay::AddTap(Parameters *params) {
   }
 
   // for UI feedback
+  params->slot_modified = true;
   params->last_tap_velocity = params->velocity;
   params->last_tap_type =
     !success ? TAP_OVERWRITE :
@@ -97,8 +98,8 @@ void MultitapDelay::AddTap(Parameters *params) {
     TAP_FAIL;
 }
 
-void MultitapDelay::RemoveLastTap() {
-  tap_allocator_.RemoveLast();
+bool MultitapDelay::RemoveLastTap() {
+  return tap_allocator_.RemoveLast();
 }
 
 void MultitapDelay::Clear(Parameters *params) {

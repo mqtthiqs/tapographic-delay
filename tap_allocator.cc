@@ -47,8 +47,9 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
 void TapAllocator::Load(uint8_t slot_nr)
 {
   Clear();
-  for (int i=0; i<slots_[slot_nr].size; i++) {
-    TapParameters p = slots_[slot_nr].taps[i];
+  Slot slot = slots_[slot_nr];
+  for (int i=0; i<slot.size; i++) {
+    TapParameters p = slot.taps[i];
     Add(p.time, p.velocity, p.velocity_type, p.panning);
   }
 }

@@ -205,6 +205,11 @@ inline void Ui::PaintLeds() {
   if (ping_save_led_counter_ > 0)
     ping_save_led_counter_--;
 
+  if (parameters_->slot_modified) {
+    current_slot_ = -1;
+    parameters_->slot_modified = false;
+  }
+
   float v = parameters_->last_tap_velocity;
   parameters_->last_tap_velocity = 0.0f;
 
@@ -312,8 +317,11 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
         delay_->Clear(parameters_);
+        parameters_->slot_modified = true;
       } else {
-        delay_->RemoveLastTap();
+        if (delay_->RemoveLastTap()) {
+          parameters_->slot_modified = true;
+        }
       }
       break;
     case BUTTON_REPEAT:
