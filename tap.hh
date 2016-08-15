@@ -66,7 +66,7 @@ class Tap
   }
 
   float time() { return time_; }
-  bool active() { return fader_.volume() > 0.01f; }
+  bool active() { return fader_.volume() > 0.001f; }
   void fade_in(float length) { fader_.fade_in(length); }
   void fade_out(float length) { fader_.fade_out(length); }
 

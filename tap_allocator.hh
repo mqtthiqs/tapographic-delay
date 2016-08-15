@@ -40,7 +40,8 @@ class TapAllocator
 
   void Init(Tap taps[kMaxTaps]);
   bool Add(float time, float velocity, VelocityType velocity_type, float pan);
-  bool Remove();
+  bool RemoveFirst();
+  bool RemoveLast();
   void Clear();
   void Poll();
 
@@ -48,15 +49,26 @@ class TapAllocator
     fade_time_ = fade_time;
   }
 
+  bool full() { return (next_voice_ + 1) % kMaxTaps == oldest_voice_; }
+  bool empty() { return next_voice_ == oldest_voice_; }
+  uint8_t busy_voices() {
+    int busy = next_voice_ - oldest_voice_;
+    if (busy < 0) busy += kMaxTaps;
+    return busy;
+  }
   float max_time() { return max_time_; }
-  uint8_t busy_voices() { return busy_voices_; }
 
  private:
+  void RecomputeMaxTime();
+
+  bool writeable() {
+    return !full() && !taps_[next_voice_].active();
+  };
+
   Tap* taps_;
 
-  uint8_t busy_voices_;
-  uint8_t next_voice_;
-  uint8_t oldest_voice_;
+  int8_t next_voice_;
+  int8_t oldest_voice_;
   float fade_time_;
   float max_time_;
 

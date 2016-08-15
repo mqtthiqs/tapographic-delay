@@ -83,7 +83,7 @@ void MultitapDelay::AddTap(Parameters *params) {
 
     // in overwrite mode, remove oldest tap
     if (success && params->edit_mode == EDIT_OVERWRITE) {
-      tap_allocator_.Remove();
+      tap_allocator_.RemoveFirst();
     }
   }
 
@@ -97,8 +97,8 @@ void MultitapDelay::AddTap(Parameters *params) {
     TAP_FAIL;
 }
 
-void MultitapDelay::RemTap() {
-  tap_allocator_.Remove();
+void MultitapDelay::RemoveLastTap() {
+  tap_allocator_.RemoveLast();
 }
 
 void MultitapDelay::Clear(Parameters *params) {

@@ -292,7 +292,7 @@ void Ui::OnButtonReleased(const Event& e) {
       if (e.data >= kLongPressDuration) {
         delay_->Clear(parameters_);
       } else {
-        delay_->RemTap();
+        delay_->RemoveLastTap();
       }
       break;
     case BUTTON_REPEAT:
