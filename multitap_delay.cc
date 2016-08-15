@@ -179,6 +179,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float gain_increment = (gain_end - gain) / kBlockSize;
 
   float feedback_compensation = static_cast<float>(tap_allocator_.busy_voices());
+  if (feedback_compensation < 1.0f) feedback_compensation = 1.0f;
   feedback_compensation = fast_rsqrt_carmack(feedback_compensation);
   params->feedback *= feedback_compensation;
 
