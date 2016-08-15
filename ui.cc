@@ -52,7 +52,7 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-  parameters->counter_running = true; // TODO
+  // parameters->counter_running = true; // TODO
 
   mode_ = UI_MODE_SPLASH;
   ignore_releases_ = 0;
