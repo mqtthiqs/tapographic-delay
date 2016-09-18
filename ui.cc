@@ -29,7 +29,7 @@
 #include "ui.hh"
 
 const int32_t kLongPressDuration = 300;
-const int32_t kVeryLongPressDuration = 1001;
+const int32_t kVeryLongPressDuration = 1000;
 
 using namespace stmlib;
 
@@ -136,6 +136,18 @@ inline void Ui::PaintLeds() {
   }
   break;
 
+  case UI_MODE_CONFIRM_SAVE:
+  {
+    for (int i=0; i<6; i++) {
+      leds_.set_rgb(i, COLOR_BLACK);
+    }
+
+    uint8_t slot = current_slot_ % 6;
+    LedColor blink = animation_counter_ & 1 ? COLOR_RED : COLOR_BLACK;
+    leds_.set_rgb(slot, blink);
+  }
+  break;
+
   case UI_MODE_NORMAL:
   {
     for (int i=0; i<6; i++) {
@@ -148,9 +160,7 @@ inline void Ui::PaintLeds() {
       uint8_t bank = current_slot_ / 6;
       uint8_t slot = current_slot_ % 6;
       if (bank == bank_) {
-        LedColor blink = (ping_save_led_counter_ & 31) > 16 ?
-          COLOR_RED : COLOR_BLACK;
-        LedColor c = ping_save_led_counter_ > 0 ? blink : COLOR_GREEN;
+        LedColor c = ping_save_led_counter_ > 0 ? COLOR_RED : COLOR_GREEN;
         leds_.set_rgb(slot, c);
       }
     }
@@ -291,10 +301,23 @@ void Ui::OnButtonReleased(const Event& e) {
     return;
   }
 
+  if (mode_ == UI_MODE_CONFIRM_SAVE) {
+    if (e.control_id + 6 * bank_ == current_slot_) {
+        PingSaveLed();
+        delay_->Save(current_slot_);
+    }
+    mode_ = UI_MODE_NORMAL;
+    return;
+  }
+
   if (mode_ == UI_MODE_SETTINGS) {
     if (e.control_id <= BUTTON_6) {
+      if (e.data >= kVeryLongPressDuration) {
+        current_slot_ = bank_ * 6 + e.control_id;
+        mode_ = UI_MODE_CONFIRM_SAVE;
+      }
       // upper buttons
-      if (e.data >= kLongPressDuration && e.control_id <= BUTTON_4) {
+      else if (e.data >= kLongPressDuration && e.control_id <= BUTTON_4) {
         // long press -> change page
         settings_page_ = e.control_id;
       } else if (e.control_id <= settings_page_) {
@@ -311,7 +334,7 @@ void Ui::OnButtonReleased(const Event& e) {
     }
   }
 
-  // normal mode:
+  // normal mode (no else):
   if (mode_ == UI_MODE_NORMAL) {
     switch (e.control_id) {
     case BUTTON_DELETE:
@@ -333,20 +356,14 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_4:
     case BUTTON_5:
     case BUTTON_6:
-      if (e.data >= kVeryLongPressDuration) {
-        int slot = bank_ * 6 + e.control_id;
-        current_slot_ = slot;
-        PingSaveLed();
-        delay_->Save(slot);
-      } else if (e.data >= kLongPressDuration) {
+      if (e.data >= kLongPressDuration) {
         if (e.control_id <= BUTTON_4) {
           mode_ = UI_MODE_SETTINGS;
           settings_page_ = e.control_id;
         }
       } else {
-        int slot = bank_ * 6 + e.control_id;
-        current_slot_ = slot;
-        delay_->Load(parameters_, slot);
+        current_slot_ = bank_ * 6 + e.control_id;
+        delay_->Load(parameters_, current_slot_);
       }
       break;
     }
@@ -380,11 +397,16 @@ void Ui::DoEvents() {
     }
   }
 
-  if (queue_.idle_time() > 700) {
+  if (queue_.idle_time() > 1500 &&
+      mode_ == UI_MODE_CONFIRM_SAVE) {
+    mode_ = UI_MODE_NORMAL;
     queue_.Touch();
-    if (mode_ == UI_MODE_SETTINGS) {
-      mode_ = UI_MODE_NORMAL;
-      SaveSettings();
-    }
+  }
+
+  if (queue_.idle_time() > 800 &&
+      mode_ == UI_MODE_SETTINGS) {
+    mode_ = UI_MODE_NORMAL;
+    queue_.Touch();
+    SaveSettings();
   }
 }
