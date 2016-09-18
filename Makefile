@@ -46,7 +46,7 @@ BOOTLOADER     = mtd_bootloader
 PACKAGES       = . drivers stmlib/utils stmlib/system
 RESOURCES      = resources
 
-PGM_INTERFACE = stlink-v2-swd
+PGM_INTERFACE = stlink-v2-1-swd
 PGM_INTERFACE_TYPE = hla-swd
 
 include stmlib/makefile.inc
