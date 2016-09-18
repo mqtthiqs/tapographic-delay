@@ -45,11 +45,12 @@ SDRAM sdram;
 Ui ui;
 MultitapDelay delay;
 Dac dac;
+Codec codec;
 
 Parameters parameters;
 
 bool Panic() {
-  Stop();
+  codec.Stop();
   ui.Panic();
   while(1);
   return true;
@@ -98,7 +99,7 @@ void Init() {
   // TODO: the division by two avoids a HardFault occuring every 6
   // mins :(
   delay.Init(buffer, SDRAM_SIZE/sizeof(short) / 2);
-  Init(SAMPLE_RATE, &FillBuffer) || Panic();
+  codec.Init(SAMPLE_RATE, &FillBuffer) || Panic();
 
   ui.Start();
 }

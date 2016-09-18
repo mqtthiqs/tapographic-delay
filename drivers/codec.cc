@@ -1,3 +1,30 @@
+// Copyright 2015 Matthias Puech.
+//
+// Author: Matthias Puech (matthias.puech@gmail.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+// 
+// See http://creativecommons.org/licenses/MIT/ for more information.
+//
+// -----------------------------------------------------------------------------
+//
+// Codec driver
 
 #include "codec.hh"
 
@@ -93,11 +120,11 @@ do {							\
 #define CPEN	(1<<1)		/* Control Port Enable */
 #define FREEZE	(1<<2)		/* Freezes effects of register changes */
 #define MUTECAB	(1<<3)		/* Internal AND gate on AMUTEC and BMUTEC */
-#define LOOP	(1<<4)		/* Digital loopback (ADC->DAC) */  
+#define LOOP	(1<<4)		/* Digital loopback (ADC->DAC) */
 
-FillBufferCallback callback;
+Codec* Codec::instance_;
 
-void InitGPIO(void)
+void Codec::InitGPIO(void)
 {
 	/* Enable I2S and I2C GPIO clocks */
 	RCC_AHB1PeriphClockCmd(CODEC_I2C_GPIO_CLOCK | CODEC_I2S_GPIO_CLOCK, ENABLE);
@@ -153,7 +180,7 @@ void InitGPIO(void)
 	CODEC_RESET_LOW;
 }
 
-bool WriteRegister(uint8_t RegisterAddr, uint8_t RegisterValue)
+bool Codec::WriteRegister(uint8_t RegisterAddr, uint8_t RegisterValue)
 {
 	uint8_t Byte1 = RegisterAddr;
 	uint8_t Byte2 = RegisterValue;
@@ -191,7 +218,7 @@ bool WriteRegister(uint8_t RegisterAddr, uint8_t RegisterValue)
 	return true;
 }
 
-bool InitControlInterface(void)
+bool Codec::InitControlInterface(void)
 {
   // Enable I2C
 	I2C_InitTypeDef I2C_InitStructure;
@@ -324,8 +351,10 @@ void InitAudioDMA(void) {
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
 }
 
-bool Init(int32_t sample_rate, FillBufferCallback cb) {
-  callback = cb;
+bool Codec::Init(int32_t sample_rate, FillBufferCallback cb) {
+  callback_ = cb;
+  instance_ = this;
+
   InitGPIO();
 	InitAudioInterface(I2S_AudioFreq_48k);
 	InitAudioDMA();
@@ -334,16 +363,16 @@ bool Init(int32_t sample_rate, FillBufferCallback cb) {
   return true;
 };
 
-void Stop() {
+void Codec::Stop() {
   DMA_Cmd(AUDIO_I2S_DMA_STREAM, DISABLE);
   DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, DISABLE);
 }
 
-void Fill(int32_t offset) {
+void Codec::Fill(int32_t offset) {
   offset *= CODEC_BUFFER_SIZE * 2;
   volatile short* in = &rx_buffer[offset];
   volatile short* out = &tx_buffer[offset];
-  (*callback)((Frame*)(in), (Frame*)(out));
+  (*callback_)((Frame*)(in), (Frame*)(out));
 }
 
 extern "C" 
@@ -351,11 +380,11 @@ extern "C"
   void DMA1_Stream3_IRQHandler(void) {
     if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
       AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_TC;
-      Fill(1);
+      Codec::instance_->Fill(1);
     }
     if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_HT) {
       AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_IFCR = AUDIO_I2S_EXT_DMA_FLAG_HT;
-      Fill(0);
+      Codec::instance_->Fill(0);
     }
   }
 }
