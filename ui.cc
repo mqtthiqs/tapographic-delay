@@ -165,7 +165,7 @@ inline void Ui::PaintLeds() {
       }
     }
 
-    leds_.set(LED_TAP, parameters_->counter_running);
+    leds_.set(LED_TAP, delay_->counter_running());
     leds_.set(LED_REPEAT, parameters_->repeat);
     leds_.set(LED_DELETE, ping_gate_led_counter_);
   }
@@ -185,7 +185,7 @@ inline void Ui::PaintLeds() {
       }
     }
 
-    leds_.set(LED_TAP, parameters_->counter_running);
+    leds_.set(LED_TAP, delay_->counter_running());
     leds_.set(LED_REPEAT, parameters_->repeat);
     leds_.set(LED_DELETE, ping_gate_led_counter_);
     break;
@@ -339,7 +339,7 @@ void Ui::OnButtonReleased(const Event& e) {
     switch (e.control_id) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
-        delay_->Clear(parameters_);
+        delay_->Clear();
         parameters_->slot_modified = true;
       } else {
         if (delay_->RemoveLastTap()) {
@@ -363,7 +363,7 @@ void Ui::OnButtonReleased(const Event& e) {
         }
       } else {
         current_slot_ = bank_ * 6 + e.control_id;
-        delay_->Load(parameters_, current_slot_);
+        delay_->Load(current_slot_);
       }
       break;
     }

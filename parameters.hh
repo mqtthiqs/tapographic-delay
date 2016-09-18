@@ -88,7 +88,6 @@ struct Parameters {
   // delay -> ui
   // TODO refactor this!
   float last_tap_velocity;     // 0 if none; reset after read
-  bool counter_running;         // reset to false after read
   bool slot_modified;           // reset to false after read
   TapType last_tap_type;
 };

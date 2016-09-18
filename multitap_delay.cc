@@ -65,8 +65,8 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
 
 void MultitapDelay::AddTap(Parameters *params) {
   // first tap does not count, it just starts the counter
-  if (!params->counter_running) {
-    params->counter_running = true;
+  if (!counter_running_) {
+    counter_running_ = true;
     params->last_tap_velocity = 1.0f;
     params->last_tap_type = TAP_DRY;
     return;
@@ -104,8 +104,8 @@ bool MultitapDelay::RemoveLastTap() {
   return tap_allocator_.RemoveLast();
 }
 
-void MultitapDelay::Clear(Parameters *params) {
-  params->counter_running = false;
+void MultitapDelay::Clear() {
+  counter_running_ = false;
   tap_allocator_.Clear();
   counter_ = 0;
 }
@@ -148,7 +148,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   }
 
   // increment sample counter
-  if (params->counter_running) {
+  if (counter_running_) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
     if (params->edit_mode != EDIT_NORMAL &&
@@ -228,12 +228,12 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   std::fill(buf, buf+kBlockSize, empty);
 
   // gate is high at the beginning of the loop
-  bool gate = params->counter_running && counter_ < kBlockSize+1;
+  bool gate = counter_running_ && counter_ < kBlockSize+1;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
-    if (params->counter_running
+    if (counter_running_
         && taps_[i].active()
         && taps_[i].time() * params->scale < counter_
         && counter_ < taps_[i].time() * params->scale + 2000) {

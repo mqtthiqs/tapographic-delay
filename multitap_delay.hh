@@ -46,21 +46,19 @@ class MultitapDelay
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
   void AddTap(Parameters *params);
-  void Clear(Parameters *params);
+  void Clear();
   bool RemoveLastTap();
 
   void RepanTaps(PanningMode panning_mode);
 
-  void Load(Parameters *params, uint8_t slot) {
+  void Load(uint8_t slot) {
     tap_allocator_.Load(slot);
-    if (tap_allocator_.busy_voices() == 0) {
-      counter_ = 0;
-      params->counter_running = false;
-    } else {
-      params->counter_running = true;
-    }
+    counter_running_ = true;
+    counter_ = 0;
   };
   void Save(uint8_t slot) { tap_allocator_.Save(slot); };
+
+  bool counter_running() { return counter_running_; }
 
  private:
   template<bool quality, bool repeat_tap_on_output>
@@ -76,6 +74,7 @@ class MultitapDelay
   Svf dc_blocker_;
   Fader repeat_fader_;
   uint32_t counter_;
+  bool counter_running_;
 
   Parameters prev_params_;
 
