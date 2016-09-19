@@ -79,9 +79,7 @@ extern "C" {
     bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
     dac.Write(gate);
-    if (gate) {
-      ui.PingGateLed();
-    }
+    if (gate) ui.PingGateLed();
   }
 }
 

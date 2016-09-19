@@ -226,16 +226,21 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   FloatFrame empty = {0.0f, 0.0f};
   std::fill(buf, buf+kBlockSize, empty);
 
+  uint32_t rep_time = static_cast<uint32_t>(repeat_time);
+
   // gate is high at the beginning of the loop
-  bool gate = counter_running_ && counter_ < kBlockSize+1;
+  bool counter_reset = (counter_ % rep_time) < kBlockSize+1;
+  bool gate = counter_running_ && counter_reset;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
+    float time = taps_[i].time() * params->scale;
+    uint32_t counter_modulo = counter_ % rep_time;
     if (counter_running_
         && taps_[i].active()
-        && taps_[i].time() * params->scale < counter_
-        && counter_ < taps_[i].time() * params->scale + 2000) {
+        && time < counter_modulo
+        && counter_modulo < time + 2000) {
       gate = true;
     }
   }
