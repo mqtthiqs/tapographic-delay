@@ -127,6 +127,10 @@ void Ui::Poll() {
 
 inline void Ui::PaintLeds() {
 
+  leds_.set(LED_TAP, delay_->counter_running());
+  leds_.set(LED_REPEAT, parameters_->repeat);
+  leds_.set(LED_DELETE, ping_gate_led_counter_);
+
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
@@ -164,10 +168,6 @@ inline void Ui::PaintLeds() {
         leds_.set_rgb(slot, c);
       }
     }
-
-    leds_.set(LED_TAP, delay_->counter_running());
-    leds_.set(LED_REPEAT, parameters_->repeat);
-    leds_.set(LED_DELETE, ping_gate_led_counter_);
   }
   break;
 
@@ -185,9 +185,6 @@ inline void Ui::PaintLeds() {
       }
     }
 
-    leds_.set(LED_TAP, delay_->counter_running());
-    leds_.set(LED_REPEAT, parameters_->repeat);
-    leds_.set(LED_DELETE, ping_gate_led_counter_);
     break;
   }
 
