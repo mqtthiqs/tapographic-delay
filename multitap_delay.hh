@@ -38,7 +38,7 @@ using namespace stmlib;
 
 class MultitapDelay
 {
- public:
+public:
   MultitapDelay() { }
   ~MultitapDelay() { }
 
@@ -54,13 +54,12 @@ class MultitapDelay
   void Load(uint8_t slot) {
     tap_allocator_.Load(slot);
     counter_running_ = true;
-    counter_ = 0;
   };
   void Save(uint8_t slot) { tap_allocator_.Save(slot); };
 
   bool counter_running() { return counter_running_; }
 
- private:
+private:
   template<bool quality, bool repeat_tap_on_output>
   bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
   float ComputePanning(PanningMode panning_mode);
