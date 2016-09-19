@@ -249,7 +249,7 @@ bool Codec::InitControlInterface(void)
 	ASSERT(WriteRegister(CS4271_REG_DACMIX, ATAPI_aLbR));
 	ASSERT(WriteRegister(CS4271_REG_DACAVOL, 0));
 	ASSERT(WriteRegister(CS4271_REG_DACBVOL, 0));
-  ASSERT(WriteRegister(CS4271_REG_ADCCTRL, ADC_DIF_I2S | HPFDisableA | HPFDisableB));
+  ASSERT(WriteRegister(CS4271_REG_ADCCTRL, ADC_DIF_I2S));
 
   //Power Down disable
 	ASSERT(WriteRegister(CS4271_REG_MODECTRL2, CPEN))
