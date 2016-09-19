@@ -353,7 +353,11 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_4:
     case BUTTON_5:
     case BUTTON_6:
-      if (e.data >= kLongPressDuration) {
+      if (e.data >= kVeryLongPressDuration) {
+        current_slot_ = bank_ * 6 + e.control_id;
+        mode_ = UI_MODE_CONFIRM_SAVE;
+      }
+      else if (e.data >= kLongPressDuration) {
         if (e.control_id <= BUTTON_4) {
           mode_ = UI_MODE_SETTINGS;
           settings_page_ = e.control_id;
