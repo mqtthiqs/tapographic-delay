@@ -43,7 +43,7 @@ public:
   ~MultitapDelay() { }
 
   void Init(short* buffer, int32_t buffer_size);
-  bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+  void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
   void AddTap(Parameters *params);
   void Clear();
@@ -58,10 +58,13 @@ public:
   void Save(uint8_t slot) { tap_allocator_.Save(slot); };
 
   bool counter_running() { return counter_running_; }
+  bool counter_on_tap() { return counter_on_tap_; }
+  bool counter_reset() { return counter_reset_; }
+  
 
 private:
   template<bool quality, bool repeat_tap_on_output>
-  bool Process(Parameters *params, ShortFrame* input, ShortFrame* output);
+  void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
   float ComputePanning(PanningMode panning_mode);
 
   TapAllocator tap_allocator_;
@@ -73,7 +76,10 @@ private:
   Svf dc_blocker_;
   Fader repeat_fader_;
   uint32_t counter_;
+
   bool counter_running_;
+  bool counter_on_tap_;
+  bool counter_reset_;
 
   Parameters prev_params_;
 

@@ -117,7 +117,7 @@ void MultitapDelay::RepanTaps(PanningMode panning_mode) {
 }
 
 // Dispatch
-bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
+void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
   return params->quality ?
     (params->panning_mode == PANNING_LEFT ?
      Process<true, true>(params, input, output) :
@@ -128,7 +128,7 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 }
 
 template<bool quality, bool repeat_tap_on_output>
-bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
+void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
@@ -228,20 +228,19 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   uint32_t rep_time = static_cast<uint32_t>(repeat_time);
 
-  // gate is high at the beginning of the loop
-  bool counter_reset = (counter_ % rep_time) < kBlockSize+1;
-  bool gate = counter_running_ && counter_reset;
+  uint32_t counter_modulo = counter_ % rep_time;
+  counter_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
+  counter_on_tap_ = counter_reset_;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
     float time = taps_[i].time() * params->scale;
-    uint32_t counter_modulo = counter_ % rep_time;
     if (counter_running_
         && taps_[i].active()
         && time < counter_modulo
-        && counter_modulo < time + 2000) {
-      gate = true;
+        && counter_modulo < time + kBlockSize+1) {
+      counter_on_tap_ = true;
     }
   }
 
@@ -288,6 +287,4 @@ bool MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   }
 
   prev_params_ = *params;
-
-  return gate;
 };

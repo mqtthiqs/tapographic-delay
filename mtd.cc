@@ -76,10 +76,12 @@ extern "C" {
   void FillBuffer(Frame* input, Frame* output) {
     ui.ReadParameters();
     // dac.Write(true);            // TODO profiling
-    bool gate = delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
+    delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
-    dac.Write(gate);
-    if (gate) ui.PingGateLed();
+
+    bool on_tap = delay.counter_on_tap();
+    dac.Write(on_tap);
+    if (on_tap) ui.PingGateLed();
   }
 }
 
