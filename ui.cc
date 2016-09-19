@@ -69,7 +69,12 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
 
 void Ui::PingGateLed() {
   if (ping_gate_led_counter_ == 0)   // TODO necessary?
-    ping_gate_led_counter_ = 3;
+    ping_gate_led_counter_ = 8;
+}
+
+void Ui::PingResetLed() {
+  if (ping_reset_counter_ == 0)   // TODO necessary?
+    ping_reset_counter_ = 24;
 }
 
 void Ui::PingSaveLed() {
@@ -127,7 +132,8 @@ void Ui::Poll() {
 
 inline void Ui::PaintLeds() {
 
-  leds_.set(LED_TAP, delay_->counter_running());
+  bool tap = delay_->counter_running() ^ (ping_reset_counter_ > 0);
+  leds_.set(LED_TAP, tap);
   leds_.set(LED_REPEAT, parameters_->repeat);
   leds_.set(LED_DELETE, ping_gate_led_counter_);
 
@@ -205,6 +211,9 @@ inline void Ui::PaintLeds() {
   // Update state variables
   if ((system_clock.milliseconds() & 63) == 0)
     animation_counter_++;
+
+  if (ping_reset_counter_ > 0)
+    ping_reset_counter_--;
 
   if (ping_gate_led_counter_ > 0)
     ping_gate_led_counter_--;

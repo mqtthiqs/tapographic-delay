@@ -82,6 +82,7 @@ extern "C" {
     bool on_tap = delay.counter_on_tap();
     dac.Write(on_tap);
     if (on_tap) ui.PingGateLed();
+    if (delay.counter_reset()) ui.PingResetLed();
   }
 }
 

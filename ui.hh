@@ -61,8 +61,6 @@ class Ui {
   Ui() { }
   ~Ui() { }
 
-  void PingGateLed();
-
   void Init(MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
@@ -70,6 +68,10 @@ class Ui {
   void Panic();
 
   void ReadParameters() { cv_scaler_.Read(parameters_); }
+
+  void PingSaveLed();
+  void PingGateLed();
+  void PingResetLed();
 
  private:
   void OnButtonPressed(const stmlib::Event& e);
@@ -80,8 +82,6 @@ class Ui {
   void SaveSettings();
 
   void PaintLeds();
-
-  void PingSaveLed();
 
   stmlib::EventQueue<16> queue_;
 
@@ -106,6 +106,8 @@ class Ui {
 
   uint16_t ping_gate_led_counter_;
   uint16_t ping_save_led_counter_;
+  uint16_t ping_reset_counter_;
+
   float velocity_meter_;
   LedColor velocity_meter_color_;
 
