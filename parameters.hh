@@ -60,7 +60,7 @@ enum TapType {
   TAP_NORMAL,
   TAP_OVERWRITE,
   TAP_OVERDUB,
-  TAP_FAIL
+  TAP_FAIL,                     // TODO rename
 };
 
 struct Parameters {

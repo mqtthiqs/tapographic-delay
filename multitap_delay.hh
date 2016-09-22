@@ -31,6 +31,7 @@
 
 #include "parameters.hh"
 #include "tap_allocator.hh"
+#include "stmlib/utils/observer.h"
 
 #include "stmlib/dsp/filter.h"
 
@@ -58,9 +59,11 @@ public:
   void Save(uint8_t slot) { tap_allocator_.Save(slot); };
 
   bool counter_running() { return counter_running_; }
-  bool counter_on_tap() { return counter_on_tap_; }
-  bool counter_reset() { return counter_reset_; }
-  
+  bool counter_modulo_reset() { return counter_modulo_reset_; }
+  float counter_on_tap() { return counter_on_tap_; }
+  float counter_modulo_on_tap() { return counter_modulo_on_tap_; }
+
+  Observable<int> counter_reset_obs_;
 
 private:
   template<bool quality, bool repeat_tap_on_output>
@@ -78,8 +81,9 @@ private:
   uint32_t counter_;
 
   bool counter_running_;
-  bool counter_on_tap_;
-  bool counter_reset_;
+  float counter_on_tap_;        // 0 for no, x>0 for velocity x
+  float counter_modulo_on_tap_; // 0 for no, x>0 for velocity x
+  bool counter_modulo_reset_;
 
   Parameters prev_params_;
 

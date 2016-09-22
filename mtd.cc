@@ -79,10 +79,14 @@ extern "C" {
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
 
-    bool on_tap = delay.counter_on_tap();
+    // Update UI
+    bool on_tap = delay.counter_modulo_on_tap() > 0.0f;
     dac.Write(on_tap);
     if (on_tap) ui.PingGateLed();
-    if (delay.counter_reset()) ui.PingResetLed();
+    if (delay.counter_modulo_reset()) ui.PingResetLed();
+    if (delay.counter_on_tap() > 0.0f) {
+      ui.PingMeter(delay.counter_on_tap(), TAP_FAIL);
+    };
   }
 }
 

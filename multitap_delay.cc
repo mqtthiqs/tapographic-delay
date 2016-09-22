@@ -228,19 +228,26 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   uint32_t rep_time = static_cast<uint32_t>(repeat_time);
 
+  // TODO: rep time? what if quality?
   uint32_t counter_modulo = counter_ % rep_time;
-  counter_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
-  counter_on_tap_ = counter_reset_;
+  counter_modulo_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
+
+  if (counter_modulo_reset_) counter_reset_obs_.notify(42);
+
+  counter_modulo_on_tap_ = counter_modulo_reset_;
+  counter_on_tap_ = 0.0f;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
     float time = taps_[i].time() * params->scale;
-    if (counter_running_
-        && taps_[i].active()
-        && time < counter_modulo
-        && counter_modulo < time + kBlockSize+1) {
-      counter_on_tap_ = true;
+    if (counter_running_ && taps_[i].active()) {
+      if (time < counter_modulo && counter_modulo < time + kBlockSize+1) {
+        counter_modulo_on_tap_ = taps_[i].velocity();
+      }
+      if (time < counter_ && counter_ < time + kBlockSize+1) {
+        counter_on_tap_ = taps_[i].velocity();
+      }
     }
   }
 

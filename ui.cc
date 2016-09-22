@@ -82,6 +82,18 @@ void Ui::PingSaveLed() {
     ping_save_led_counter_ = 512;
 }
 
+void Ui::PingMeter(float velocity, TapType type)
+{
+  if (velocity > 0.0f) {
+    velocity_meter_ = velocity;
+    velocity_meter_color_ =
+      type == TAP_DRY ? COLOR_BLACK : // TODO
+      type == TAP_NORMAL ? COLOR_WHITE :
+      type == TAP_OVERWRITE ? COLOR_MAGENTA :
+      type == TAP_OVERDUB ? COLOR_YELLOW :
+      COLOR_RED;
+  }
+}
 
 void Ui::Start() {
   mode_ = UI_MODE_NORMAL;
@@ -226,19 +238,7 @@ inline void Ui::PaintLeds() {
     parameters_->slot_modified = false;
   }
 
-  float v = parameters_->last_tap_velocity;
-  parameters_->last_tap_velocity = 0.0f;
-
-  if (v > 0.0f) {
-    velocity_meter_ = v;
-    TapType t = parameters_->last_tap_type;
-    velocity_meter_color_ =
-      t == TAP_DRY ? COLOR_BLACK : // TODO
-      t == TAP_NORMAL ? COLOR_WHITE :
-      t == TAP_OVERWRITE ? COLOR_MAGENTA :
-      t == TAP_OVERDUB ? COLOR_YELLOW :
-      COLOR_RED;
-  } else if (velocity_meter_ > 0.0f) {
+  if (velocity_meter_ > 0.0f) {
     velocity_meter_ -= 0.01f;
   }
 }
