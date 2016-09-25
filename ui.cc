@@ -100,6 +100,13 @@ void Ui::PingSaveLed() {
 
 void Ui::PingMeter(TapType type, float velocity)
 {
+  // avoids a "crossed tap" to hide a "added tap" info: "crossed tap"
+  // pings are be ignored if another ping is already active
+  if (velocity_meter_ > 0.0f &&
+      type == TAP_CROSSED &&
+      velocity_meter_color_ != COLOR_BLUE)
+    return;
+
   if (velocity > 0.0f) {
     velocity_meter_ = velocity;
     velocity_meter_color_ =
