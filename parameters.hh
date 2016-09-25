@@ -32,7 +32,7 @@
 #include "stmlib/stmlib.h"
 
 const size_t kBlockSize = 128;
-const uint8_t kMaxTaps = 36;
+const uint8_t kMaxTaps = 35;
 
 typedef struct { short l; short r; } ShortFrame;
 typedef struct { float l; float r; } FloatFrame;
