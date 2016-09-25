@@ -31,7 +31,7 @@
 void TapAllocator::Init(Tap taps[kMaxTaps])
 {
   taps_ = taps;
-  fade_time_ = 1000.0f;
+  fade_time_ = 10000.0f;
 
   // // Dummy IR generation
   // for (size_t i=0; i<kMaxTaps; i++) {
@@ -66,7 +66,6 @@ void TapAllocator::Save(Slot* slot)
     slot->taps[i].panning = taps_[index].panning();
   }
 }
-
 
 bool TapAllocator::Add(float time, float velocity,
                        VelocityType velocity_type,
