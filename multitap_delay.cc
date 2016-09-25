@@ -295,8 +295,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
       output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
     } else {
-      output[i].l = SoftConvert(sample.l);
-      output[i].r = SoftConvert(sample.r);
+      output[i].l = SoftConvert(sample.l * 2.0f);
+      output[i].r = SoftConvert(sample.r * 2.0f);
     }
 
     drywet += drywet_increment;
