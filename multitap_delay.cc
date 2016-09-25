@@ -227,8 +227,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   uint32_t rep_time = static_cast<uint32_t>(repeat_time);
 
-  // TODO: rep time? what if quality?
-  uint32_t counter_modulo = counter_ % rep_time;
+  // TODO: rep time = 0? and what if quality?
+  uint32_t counter_modulo = rep_time ? counter_ % rep_time : counter_;
   counter_modulo_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
 
   // if (counter_modulo_reset_) counter_reset_obs_.notify(42);
@@ -274,6 +274,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l = dry * fade_out + sample.l * fade_in;
 
     // write to output buffer
+    // // TODO what if repeat_time changes or = 0?
     if (repeat_tap_on_output) {
       sample.r = buffer_.ReadHermite(repeat_time + repeat + kBlockSize - i) / buffer_headroom;
     } else {
