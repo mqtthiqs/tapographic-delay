@@ -103,7 +103,7 @@ class Ui {
   uint16_t animation_counter_;
   uint16_t ignore_releases_;
   uint8_t bank_;
-  uint8_t current_slot_;
+  int8_t current_slot_;
 
   class ResetObserver : public IObserver<int> {
     Ui *ui_;
