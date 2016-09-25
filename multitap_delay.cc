@@ -198,7 +198,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       int16_t repeat_sample = buffer_.ReadShort(last_repeat_time_) / buffer_headroom;
       repeat_fader_.Process(repeat_sample);
       int16_t dry_sample = input[i].l;
-      int16_t fb = static_cast<int32_t>(fb_sample * 32768.0f);
+      int32_t fb = static_cast<int32_t>(fb_sample * 32768.0f);
       int32_t s = gain * dry_sample + feedback * fb + repeat_sample;
       sample = Clip16(s);
     } else {
