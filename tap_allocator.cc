@@ -108,7 +108,7 @@ void TapAllocator::RecomputeMaxTime()
 bool TapAllocator::RemoveFirst()
 {
   if (!empty()) {
-    taps_[oldest_voice_].fade_out(fade_time_);
+    taps_[oldest_voice_].fade_out(fade_time_ + 1.0f);
     oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
     RecomputeMaxTime();
     return true;
@@ -122,7 +122,7 @@ bool TapAllocator::RemoveLast()
   if (!empty()) {
     next_voice_--;
     if (next_voice_ < 0) next_voice_ += kMaxTaps;
-    taps_[next_voice_].fade_out(fade_time_);
+    taps_[next_voice_].fade_out(fade_time_ + 1.0f);
     RecomputeMaxTime();
     return true;
   } else {
@@ -142,7 +142,7 @@ void TapAllocator::Clear()
 {
   for(int i=0; i<busy_voices(); i++) {
     int index = (oldest_voice_ + i) % kMaxTaps;
-    taps_[index].fade_out(fade_time_);
+    taps_[index].fade_out(fade_time_ + 1.0f);
   }
   queue_.Flush();
   max_time_ = 0.0f;
