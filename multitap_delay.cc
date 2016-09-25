@@ -46,7 +46,6 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   tap_allocator_.Init(taps_);
 
   buffer_.Clear();
-  Load(0);
 };
 
 float MultitapDelay::ComputePanning(PanningMode panning_mode)

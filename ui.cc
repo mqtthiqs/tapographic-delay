@@ -64,7 +64,9 @@ void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
     cv_scaler_.Calibrate(&persistent_);
   }
 
-  current_slot_ = -1;           // means no active slot
+  // load first slot on startup
+  current_slot_ = 0;
+  delay_->Load(persistent_.mutable_slot(current_slot_));
 }
 
 void Ui::PingGateLed() {
