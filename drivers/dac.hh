@@ -50,10 +50,25 @@ public:
 
     gpio_init.GPIO_Pin = GPIO_Pin_5;
     GPIO_Init(GPIOA, &gpio_init);
+
+    counter_ = 0;
   }
 
   void Write(bool v) {
     GPIO_WriteBit(GPIOA, GPIO_Pin_5, static_cast<BitAction>(v));
+  }
+
+  uint16_t counter_;
+
+  void Ping() { counter_ = 2; }
+
+  void Update() {
+    if (counter_ > 0) {
+      Write(true);
+      counter_--;
+    } else {
+      Write(false);
+    }
   }
 
 };

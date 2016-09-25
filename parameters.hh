@@ -55,14 +55,6 @@ enum PanningMode {
   PANNING_ALTERNATE,
 };
 
-enum TapType {
-  TAP_DRY,
-  TAP_NORMAL,
-  TAP_OVERWRITE,
-  TAP_OVERDUB,
-  TAP_FAIL,                     // TODO rename
-};
-
 struct Parameters {
   // ui -> delay
   float gain;
@@ -87,9 +79,7 @@ struct Parameters {
 
   // delay -> ui
   // TODO refactor this!
-  float last_tap_velocity;     // 0 if none; reset after read
   bool slot_modified;           // reset to false after read
-  TapType last_tap_type;
 };
 
 struct TapParameters {

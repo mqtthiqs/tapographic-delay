@@ -79,13 +79,12 @@ extern "C" {
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
 
-    // Update UI
-    bool on_tap = delay.counter_modulo_on_tap() > 0.0f;
-    dac.Write(on_tap);
-    if (on_tap) ui.PingGateLed();
-    if (delay.counter_on_tap() > 0.0f) {
-      ui.PingMeter(delay.counter_on_tap(), TAP_FAIL);
-    };
+    dac.Update();
+  }
+
+  void ping_gate_out() {
+    dac.Ping();
+    ui.PingGateLed();
   }
 }
 
@@ -97,8 +96,9 @@ void Init() {
   ui.Init(&delay, &parameters);
   sys.StartTimers();
 
-
   short* buffer = (short*)SDRAM_BASE;
+
+  delay.tap_modulo_observable_.set_observer(&ping_gate_out);
 
   // TODO: the division by two avoids a HardFault occuring every 6
   // mins :(

@@ -37,6 +37,15 @@
 
 using namespace stmlib;
 
+enum TapType {
+  TAP_DRY,
+  TAP_ADDED,
+  TAP_ADDED_OVERWRITE,
+  TAP_ADDED_OVERDUB,
+  TAP_CROSSED,
+  TAP_FAIL,
+};
+
 class MultitapDelay
 {
 public:
@@ -62,10 +71,10 @@ public:
   };
 
   bool counter_running() { return counter_running_; }
-  float counter_on_tap() { return counter_on_tap_; }
-  float counter_modulo_on_tap() { return counter_modulo_on_tap_; }
 
   Observable0 reset_observable_;
+  Observable0 tap_modulo_observable_;
+  Observable2<TapType, float> tap_observable_;
 
 private:
   template<bool quality, bool repeat_tap_on_output>
@@ -83,9 +92,6 @@ private:
   uint32_t counter_;
 
   bool counter_running_;
-  float counter_on_tap_;        // 0 for no, x>0 for velocity x
-  float counter_modulo_on_tap_; // 0 for no, x>0 for velocity x
-  bool counter_modulo_reset_;
 
   Parameters prev_params_;
 

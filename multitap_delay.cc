@@ -65,8 +65,7 @@ void MultitapDelay::AddTap(Parameters *params) {
   // first tap does not count, it just starts the counter
   if (!counter_running_) {
     counter_running_ = true;
-    params->last_tap_velocity = 1.0f;
-    params->last_tap_type = TAP_DRY;
+    tap_observable_.notify(TAP_DRY, 1.0f);
     return;
   }
 
@@ -89,13 +88,13 @@ void MultitapDelay::AddTap(Parameters *params) {
 
   // for UI feedback
   params->slot_modified = true;
-  params->last_tap_velocity = params->velocity;
-  params->last_tap_type =
-    !success ? TAP_OVERWRITE :
-    params->edit_mode == EDIT_NORMAL ? TAP_NORMAL :
-    params->edit_mode == EDIT_OVERWRITE ? TAP_OVERWRITE :
-    params->edit_mode == EDIT_OVERDUB ? TAP_OVERDUB :
+  TapType type =
+    !success ? TAP_ADDED_OVERWRITE :
+    params->edit_mode == EDIT_NORMAL ? TAP_ADDED :
+    params->edit_mode == EDIT_OVERWRITE ? TAP_ADDED_OVERWRITE :
+    params->edit_mode == EDIT_OVERDUB ? TAP_ADDED_OVERDUB :
     TAP_FAIL;
+  tap_observable_.notify(type, params->velocity);
 }
 
 bool MultitapDelay::RemoveLastTap() {
@@ -229,12 +228,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // TODO: rep time = 0? and what if quality?
   uint32_t counter_modulo = rep_time ? counter_ % rep_time : counter_;
-  counter_modulo_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
 
-  if (counter_modulo_reset_) reset_observable_.notify();
-
-  counter_modulo_on_tap_ = counter_modulo_reset_;
-  counter_on_tap_ = 0.0f;
+  bool counter_modulo_reset = counter_running_ && counter_modulo < kBlockSize+1;
+  float counter_on_tap = 0.0f;
+  bool counter_modulo_on_tap = counter_modulo_reset;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
@@ -242,12 +239,25 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     float time = taps_[i].time() * params->scale;
     if (counter_running_ && taps_[i].active()) {
       if (time < counter_modulo && counter_modulo < time + kBlockSize+1) {
-        counter_modulo_on_tap_ = taps_[i].velocity();
+        counter_modulo_on_tap = taps_[i].velocity();
       }
       if (time < counter_ && counter_ < time + kBlockSize+1) {
-        counter_on_tap_ = taps_[i].velocity();
+        counter_on_tap = taps_[i].velocity();
       }
     }
+  }
+
+  // notify UI of tap
+  if (counter_modulo_reset) {
+    reset_observable_.notify();
+  }
+
+  if (counter_on_tap > 0.0f) {
+    tap_observable_.notify(TAP_CROSSED, counter_on_tap);
+  }
+
+  if (counter_modulo_on_tap) {
+    tap_modulo_observable_.notify();
   }
 
   /* 3. Feed back, apply dry/wet, write to output */

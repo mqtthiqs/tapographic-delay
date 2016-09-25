@@ -39,12 +39,17 @@ void reset_observer() {
     Ui::instance_->PingResetLed();
 }
 
+void tap_observer(TapType type, float velocity) {
+  Ui::instance_->PingMeter(type, velocity);
+}
+
 void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_ = delay;
   parameters_ = parameters;
   instance_ = this;
 
   delay_->reset_observable_.set_observer(&reset_observer);
+  delay_->tap_observable_.set_observer(&tap_observer);
 
   leds_.Init();
   buttons_.Init();
@@ -93,15 +98,16 @@ void Ui::PingSaveLed() {
     ping_save_led_counter_ = 512;
 }
 
-void Ui::PingMeter(float velocity, TapType type)
+void Ui::PingMeter(TapType type, float velocity)
 {
   if (velocity > 0.0f) {
     velocity_meter_ = velocity;
     velocity_meter_color_ =
       type == TAP_DRY ? COLOR_BLACK : // TODO
-      type == TAP_NORMAL ? COLOR_WHITE :
-      type == TAP_OVERWRITE ? COLOR_MAGENTA :
-      type == TAP_OVERDUB ? COLOR_YELLOW :
+      type == TAP_ADDED ? COLOR_WHITE :
+      type == TAP_ADDED_OVERWRITE ? COLOR_MAGENTA :
+      type == TAP_ADDED_OVERDUB ? COLOR_YELLOW :
+      type == TAP_CROSSED ? COLOR_BLUE :
       COLOR_RED;
   }
 }
