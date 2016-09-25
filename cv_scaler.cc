@@ -187,7 +187,7 @@ void CvScaler::Read(Parameters* parameters) {
   CONSTRAIN(val, 0.0f, 1.0f);
   val = (val + 0.1f) / 1.1f;
   val = val * val * val * val;
-  val *= 500000.0f;
+  val *= 600000.0f;
   parameters->morph = val;
 
   // tap & velocity
