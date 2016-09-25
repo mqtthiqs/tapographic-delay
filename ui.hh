@@ -106,6 +106,7 @@ class Ui {
   uint16_t ignore_releases_;
   uint8_t bank_;
   int8_t current_slot_;
+  int8_t save_candidate_slot_;
 
   uint16_t ping_gate_led_counter_;
   uint16_t ping_save_led_counter_;

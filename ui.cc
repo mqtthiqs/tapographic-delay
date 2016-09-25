@@ -188,7 +188,7 @@ inline void Ui::PaintLeds() {
       leds_.set_rgb(i, COLOR_BLACK);
     }
 
-    uint8_t slot = current_slot_ % 6;
+    uint8_t slot = save_candidate_slot_ % 6;
     LedColor blink = animation_counter_ & 1 ? COLOR_RED : COLOR_BLACK;
     leds_.set_rgb(slot, blink);
   }
@@ -196,18 +196,29 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
+
+    // Tap-meter
     for (int i=0; i<6; i++) {
       int color = i <= velocity_meter_ * 6.0f ?
         velocity_meter_color_ : COLOR_BLACK;
       leds_.set_rgb(i, color);
     }
 
+    // Current slot
     if (current_slot_ >= 0) {
       uint8_t bank = current_slot_ / 6;
       uint8_t slot = current_slot_ % 6;
       if (bank == bank_) {
-        LedColor c = ping_save_led_counter_ > 0 ? COLOR_RED : COLOR_GREEN;
-        leds_.set_rgb(slot, c);
+        leds_.set_rgb(slot, COLOR_GREEN);
+      }
+    }
+
+    // Save candidate
+    if (save_candidate_slot_ >= 0) {
+      uint8_t bank = save_candidate_slot_ / 6;
+      uint8_t slot = save_candidate_slot_ % 6;
+      if (bank == bank_ && ping_save_led_counter_ > 0) {
+        leds_.set_rgb(slot, COLOR_RED);
       }
     }
   }
@@ -332,10 +343,11 @@ void Ui::OnButtonReleased(const Event& e) {
   }
 
   if (mode_ == UI_MODE_CONFIRM_SAVE) {
-    if (e.control_id + 6 * bank_ == current_slot_) {
+    if (e.control_id + 6 * bank_ == save_candidate_slot_) {
         PingSaveLed();
-        delay_->Save(persistent_.mutable_slot(current_slot_));
-        persistent_.SaveSlot(current_slot_);
+        delay_->Save(persistent_.mutable_slot(save_candidate_slot_));
+        persistent_.SaveSlot(save_candidate_slot_);
+        current_slot_ = save_candidate_slot_;
     }
     mode_ = UI_MODE_NORMAL;
     return;
@@ -344,8 +356,8 @@ void Ui::OnButtonReleased(const Event& e) {
   if (mode_ == UI_MODE_SETTINGS) {
     if (e.control_id <= BUTTON_6) {
       if (e.data >= kVeryLongPressDuration) {
-        current_slot_ = bank_ * 6 + e.control_id;
         mode_ = UI_MODE_CONFIRM_SAVE;
+        save_candidate_slot_ = bank_ * 6 + e.control_id;
       }
       // upper buttons
       else if (e.data >= kLongPressDuration && e.control_id <= BUTTON_4) {
@@ -388,7 +400,7 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_5:
     case BUTTON_6:
       if (e.data >= kVeryLongPressDuration) {
-        current_slot_ = bank_ * 6 + e.control_id;
+        save_candidate_slot_ = bank_ * 6 + e.control_id;
         mode_ = UI_MODE_CONFIRM_SAVE;
       }
       else if (e.data >= kLongPressDuration) {
