@@ -74,6 +74,8 @@ class Ui {
   void PingResetLed();
   void PingMeter(float velocity, TapType tap_type);
 
+  static Ui* instance_;
+
  private:
   void OnButtonPressed(const stmlib::Event& e);
   void OnButtonReleased(const stmlib::Event& e);
@@ -104,14 +106,6 @@ class Ui {
   uint16_t ignore_releases_;
   uint8_t bank_;
   int8_t current_slot_;
-
-  class ResetObserver : public IObserver<int> {
-    Ui *ui_;
-    void Init(Ui *ui) { ui_ = ui; }
-    void update(int i) {
-      ui_->PingResetLed();
-    }
-  };
 
   uint16_t ping_gate_led_counter_;
   uint16_t ping_save_led_counter_;

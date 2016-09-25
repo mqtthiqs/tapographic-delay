@@ -33,9 +33,18 @@ const int32_t kVeryLongPressDuration = 1000;
 
 using namespace stmlib;
 
-void Ui::Init(MultitapDelay* mtd, Parameters* parameters) {
-  delay_ = mtd;
+Ui* Ui::instance_;
+
+void reset_observer() {
+    Ui::instance_->PingResetLed();
+}
+
+void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
+  delay_ = delay;
   parameters_ = parameters;
+  instance_ = this;
+
+  delay_->reset_observable_.set_observer(&reset_observer);
 
   leds_.Init();
   buttons_.Init();

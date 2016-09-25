@@ -62,11 +62,10 @@ public:
   };
 
   bool counter_running() { return counter_running_; }
-  bool counter_modulo_reset() { return counter_modulo_reset_; }
   float counter_on_tap() { return counter_on_tap_; }
   float counter_modulo_on_tap() { return counter_modulo_on_tap_; }
 
-  Observable<int> counter_reset_obs_;
+  Observable0 reset_observable_;
 
 private:
   template<bool quality, bool repeat_tap_on_output>

@@ -231,7 +231,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   uint32_t counter_modulo = rep_time ? counter_ % rep_time : counter_;
   counter_modulo_reset_ = counter_running_ && counter_modulo < kBlockSize+1;
 
-  // if (counter_modulo_reset_) counter_reset_obs_.notify(42);
+  if (counter_modulo_reset_) reset_observable_.notify();
 
   counter_modulo_on_tap_ = counter_modulo_reset_;
   counter_on_tap_ = 0.0f;
