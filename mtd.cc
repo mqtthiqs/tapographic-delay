@@ -93,16 +93,14 @@ void Init() {
   system_clock.Init();
   sdram.Init();
   dac.Init();
+  // TODO: the division by two avoids a HardFault occuring every 6
+  // mins :(
+  delay.Init((short*)SDRAM_BASE, SDRAM_SIZE/sizeof(short) / 2);
   ui.Init(&delay, &parameters);
   sys.StartTimers();
 
-  short* buffer = (short*)SDRAM_BASE;
-
   delay.tap_modulo_observable_.set_observer(&ping_gate_out);
 
-  // TODO: the division by two avoids a HardFault occuring every 6
-  // mins :(
-  delay.Init(buffer, SDRAM_SIZE/sizeof(short) / 2);
   codec.Init(SAMPLE_RATE, &FillBuffer) || Panic();
 
   ui.Start();
