@@ -62,10 +62,10 @@ public:
     CONSTRAIN(data_.settings[2], 0, 2);
     CONSTRAIN(data_.settings[3], 0, 1);
 
-    if (!bank0_.ParsimoniousLoad(&slots_[0], 6 * sizeof(Slot), &token_[0]) ||
-        !bank1_.ParsimoniousLoad(&slots_[1], 6 * sizeof(Slot), &token_[1]) ||
-        !bank2_.ParsimoniousLoad(&slots_[2], 6 * sizeof(Slot), &token_[2]) ||
-        !bank3_.ParsimoniousLoad(&slots_[3], 6 * sizeof(Slot), &token_[3])) {
+    if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
+        !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
+        !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
+        !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
 
       // clear slots
       memset(slots_, 0, sizeof(slots_));
