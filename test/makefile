@@ -25,6 +25,7 @@ $(BUILD_DIR):
 $(BUILD_DIR)%.o: %.cc
 	g++ -c -DTEST -g -Wall -Werror -I. \
 	-DSAMPLE_RATE=$(SAMPLE_RATE) \
+	-fno-exceptions -fno-rtti \
 	$< -o $@
 
 $(BUILD_DIR)%.d: %.cc

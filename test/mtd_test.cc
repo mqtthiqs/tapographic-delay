@@ -72,21 +72,12 @@ MultitapDelay delay;
 
 Parameters params;
 
+void reset_observer() {
+  printf("Reset!\n");
+}
+
 void TestDSP() {
   size_t duration = 20;
-
-  params.velocity = 1.0f;
-  params.gain = 1.0f;
-  params.feedback = 0.0f;
-  params.drywet = 0.0f;
-  params.morph = 0.1f;          // > 0.0f otherwise clicks
-  params.scale = 1.0f;
-  params.modulation_amount = 0.0f;
-  params.modulation_frequency = 0.0f;
-  params.repeat = false;
-  params.edit_mode = EDIT_NORMAL;
-  params.panning_mode = PANNING_ALTERNATE;
-  params.velocity_type = VELOCITY_AMP;
 
   FILE* fp_in = fopen("audio/ericderr.wav", "rb");
   FILE* fp_out = fopen("mtd.wav", "wb");
@@ -95,9 +86,24 @@ void TestDSP() {
   write_wav_header(fp_out, remaining_samples, 2);
   fseek(fp_in, 48, SEEK_SET);
 
+  delay.reset_observable_.set_observer(&reset_observer);
+
   while (remaining_samples) {
     ShortFrame input[kBlockSize];
     ShortFrame output[kBlockSize];
+
+    params.velocity = 1.0f;
+    params.gain = 1.0f;
+    params.feedback = 0.0f;
+    params.drywet = 1.0f;
+    params.morph = 0.01f;          // > 0.0f otherwise clicks
+    params.scale = 0.3f;
+    params.modulation_amount = 0.0f;
+    params.modulation_frequency = 0.0f;
+    params.repeat = false;
+    params.edit_mode = EDIT_NORMAL;
+    params.panning_mode = PANNING_ALTERNATE;
+    params.velocity_type = VELOCITY_AMP;
     
     if (fread(
           input,
