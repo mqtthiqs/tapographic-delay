@@ -57,7 +57,7 @@ public:
 
   void AddTap(Parameters *params);
   void Clear();
-  bool RemoveLastTap();
+  void RemoveLastTap();
 
   void RepanTaps(PanningMode panning_mode);
 
@@ -73,6 +73,7 @@ public:
   bool counter_running() { return counter_running_; }
 
   Observable0 reset_observable_;
+  Observable0 slot_modified_observable_;
   Observable0 tap_modulo_observable_;
   Observable2<TapType, float> tap_observable_;
 

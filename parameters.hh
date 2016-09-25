@@ -56,7 +56,6 @@ enum PanningMode {
 };
 
 struct Parameters {
-  // ui -> delay
   float gain;
   float scale;
   float feedback;
@@ -76,10 +75,6 @@ struct Parameters {
   float velocity_parameter;
   PanningMode panning_mode;
   bool quality;
-
-  // delay -> ui
-  // TODO refactor this!
-  bool slot_modified;           // reset to false after read
 };
 
 struct TapParameters {

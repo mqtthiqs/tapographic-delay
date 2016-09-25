@@ -87,7 +87,6 @@ void MultitapDelay::AddTap(Parameters *params) {
   }
 
   // for UI feedback
-  params->slot_modified = true;
   TapType type =
     !success ? TAP_ADDED_OVERWRITE :
     params->edit_mode == EDIT_NORMAL ? TAP_ADDED :
@@ -95,16 +94,20 @@ void MultitapDelay::AddTap(Parameters *params) {
     params->edit_mode == EDIT_OVERDUB ? TAP_ADDED_OVERDUB :
     TAP_FAIL;
   tap_observable_.notify(type, params->velocity);
+  slot_modified_observable_.notify();
 }
 
-bool MultitapDelay::RemoveLastTap() {
-  return tap_allocator_.RemoveLast();
+void MultitapDelay::RemoveLastTap() {
+  if (tap_allocator_.RemoveLast()) {
+    slot_modified_observable_.notify();
+  }
 }
 
 void MultitapDelay::Clear() {
   counter_running_ = false;
   tap_allocator_.Clear();
   counter_ = 0;
+  slot_modified_observable_.notify();
 }
 
 void MultitapDelay::RepanTaps(PanningMode panning_mode) {

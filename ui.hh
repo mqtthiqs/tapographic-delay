@@ -73,6 +73,7 @@ class Ui {
   void PingGateLed();
   void PingResetLed();
   void PingMeter(TapType tap_type, float velocity);
+  void SlotModified();
 
   static Ui* instance_;
 

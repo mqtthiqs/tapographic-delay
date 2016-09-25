@@ -43,6 +43,10 @@ void tap_observer(TapType type, float velocity) {
   Ui::instance_->PingMeter(type, velocity);
 }
 
+void slot_modified_observer() {
+  Ui::instance_->SlotModified();
+}
+
 void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_ = delay;
   parameters_ = parameters;
@@ -50,6 +54,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
 
   delay_->reset_observable_.set_observer(&reset_observer);
   delay_->tap_observable_.set_observer(&tap_observer);
+  delay_->slot_modified_observable_.set_observer(&slot_modified_observer);
 
   leds_.Init();
   buttons_.Init();
@@ -96,6 +101,10 @@ void Ui::PingResetLed() {
 void Ui::PingSaveLed() {
   if (ping_save_led_counter_ == 0)   // TODO necessary?
     ping_save_led_counter_ = 512;
+}
+
+void Ui::SlotModified() {
+  current_slot_ = -1;
 }
 
 void Ui::PingMeter(TapType type, float velocity)
@@ -268,11 +277,6 @@ inline void Ui::PaintLeds() {
   if (ping_save_led_counter_ > 0)
     ping_save_led_counter_--;
 
-  if (parameters_->slot_modified) {
-    current_slot_ = -1;
-    parameters_->slot_modified = false;
-  }
-
   if (velocity_meter_ > 0.0f) {
     velocity_meter_ -= 0.01f;
   }
@@ -383,11 +387,8 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
         delay_->Clear();
-        parameters_->slot_modified = true;
       } else {
-        if (delay_->RemoveLastTap()) {
-          parameters_->slot_modified = true;
-        }
+        delay_->RemoveLastTap();
       }
       break;
     case BUTTON_REPEAT:
