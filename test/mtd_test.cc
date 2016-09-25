@@ -76,15 +76,16 @@ void TestDSP() {
   size_t duration = 20;
 
   params.velocity = 1.0f;
+  params.gain = 1.0f;
   params.feedback = 0.0f;
-  params.drywet = 1.0f;
-  params.morph = 0.0f;
+  params.drywet = 0.0f;
+  params.morph = 0.1f;          // > 0.0f otherwise clicks
   params.scale = 1.0f;
-  params.modulation_amount = 0.0001f;
-  params.modulation_frequency = 0.0001f;
+  params.modulation_amount = 0.0f;
+  params.modulation_frequency = 0.0f;
   params.repeat = false;
   params.edit_mode = EDIT_NORMAL;
-  params.panning_mode = PANNING_LEFT;
+  params.panning_mode = PANNING_ALTERNATE;
   params.velocity_type = VELOCITY_AMP;
 
   FILE* fp_in = fopen("audio/ericderr.wav", "rb");
