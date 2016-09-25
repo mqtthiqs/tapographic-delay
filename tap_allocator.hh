@@ -31,9 +31,6 @@
 
 #include "tap.hh"
 #include "stmlib/utils/ring_buffer.h"
-#include "stmlib/system/storage.h"
-
-const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
 
 class TapAllocator
 {
@@ -48,8 +45,8 @@ class TapAllocator
   void Clear();
   void Poll();
 
-  void Save(uint8_t slot);
-  void Load(uint8_t slot);
+  void Save(Slot* slot);
+  void Load(Slot* slot);
 
   void set_fade_time(float fade_time) {
     fade_time_ = fade_time;
@@ -57,7 +54,7 @@ class TapAllocator
 
   bool full() { return (next_voice_ + 1) % kMaxTaps == oldest_voice_; }
   // the pool is writeable if it is not full, and if the last voice
-  // has finished faded out
+  // has finished fading out
   bool writeable() { return !full() && !taps_[next_voice_].active(); };
   bool empty() { return next_voice_ == oldest_voice_; }
   uint8_t busy_voices() {
@@ -72,32 +69,12 @@ class TapAllocator
 
   Tap* taps_;
 
-  struct TapParameters {
-    float time;
-    float velocity;
-    VelocityType velocity_type;
-    float panning;
-  };
-
-  struct Slot {
-    uint8_t size;
-    TapParameters taps[kMaxTaps];
-  };
-
-  Slot slots_[kNumSlots];
-
   int8_t next_voice_;
   int8_t oldest_voice_;
   float fade_time_;
   float max_time_;
 
   stmlib::RingBuffer<TapParameters, kMaxTaps*4> queue_;
-
-  stmlib::Storage<8> bank0_;
-  stmlib::Storage<9> bank1_;
-  stmlib::Storage<10> bank2_;
-  stmlib::Storage<11> bank3_;
-  uint16_t token_[4];
 
   DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };

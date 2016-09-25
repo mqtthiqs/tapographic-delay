@@ -278,7 +278,7 @@ void Ui::SaveSettings()
   for (int i=0; i<4; i++) {
     persistent_.mutable_data()->settings[i] = settings_item_[i];
   }
-  persistent_.Save();
+  persistent_.SaveSettings();
 }
 
 void Ui::OnButtonPressed(const Event& e) {
@@ -310,7 +310,8 @@ void Ui::OnButtonReleased(const Event& e) {
   if (mode_ == UI_MODE_CONFIRM_SAVE) {
     if (e.control_id + 6 * bank_ == current_slot_) {
         PingSaveLed();
-        delay_->Save(current_slot_);
+        delay_->Save(persistent_.mutable_slot(current_slot_));
+        persistent_.SaveSlot(current_slot_);
     }
     mode_ = UI_MODE_NORMAL;
     return;
@@ -373,7 +374,7 @@ void Ui::OnButtonReleased(const Event& e) {
         }
       } else {
         current_slot_ = bank_ * 6 + e.control_id;
-        delay_->Load(current_slot_);
+        delay_->Load(persistent_.mutable_slot(current_slot_));
       }
       break;
     }

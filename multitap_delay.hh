@@ -52,11 +52,14 @@ public:
 
   void RepanTaps(PanningMode panning_mode);
 
-  void Load(uint8_t slot) {
+  void Load(Slot* slot) {
     tap_allocator_.Load(slot);
     counter_running_ = true;
   };
-  void Save(uint8_t slot) { tap_allocator_.Save(slot); };
+
+  void Save(Slot* slot) {
+    tap_allocator_.Save(slot);
+  };
 
   bool counter_running() { return counter_running_; }
   bool counter_modulo_reset() { return counter_modulo_reset_; }

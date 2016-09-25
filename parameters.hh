@@ -92,4 +92,16 @@ struct Parameters {
   TapType last_tap_type;
 };
 
+struct TapParameters {
+  float time;
+  float velocity;
+  VelocityType velocity_type;
+  float panning;
+};
+
+struct Slot {
+  uint8_t size;
+  TapParameters taps[kMaxTaps];
+};
+
 #endif  // MTD_DSP_PARAMETERS_H_

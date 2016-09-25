@@ -84,7 +84,6 @@ void TestDSP() {
   params.modulation_frequency = 0.0001f;
   params.repeat = false;
   params.edit_mode = EDIT_NORMAL;
-  params.quantize = QUANTIZE_NONE;
   params.panning_mode = PANNING_LEFT;
   params.velocity_type = VELOCITY_AMP;
 
