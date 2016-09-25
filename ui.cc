@@ -1,6 +1,7 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2016 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech <matthias.puech@gmail.com>
+// Based on code by: Olivier Gillet <ol.gillet@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -258,7 +259,7 @@ inline void Ui::PaintLeds() {
       int page = settings_page_;
       int item = settings_item_[settings_page_];
       if (i == settings_page_) {
-        leds_.set_rgb(i, COLOR_BLUE);
+        leds_.set_rgb(i, COLOR_MAGENTA);
       } else if (i == page + item + 1) {
         leds_.set_rgb(i, COLOR_CYAN);
       } else {
