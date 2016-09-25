@@ -63,7 +63,12 @@ public:
 
   void Load(Slot* slot) {
     tap_allocator_.Load(slot);
-    counter_running_ = true;
+    if (slot->size > 0) {
+      counter_running_ = true;
+    } else { // bank IR
+      counter_ = 0;
+      counter_running_ = false;
+    }
   };
 
   void Save(Slot* slot) {
