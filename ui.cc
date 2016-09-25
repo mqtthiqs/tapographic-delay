@@ -83,9 +83,17 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
     cv_scaler_.Calibrate(&persistent_);
   }
 
+  current_slot_ = -1;
+
   // load first slot on startup
-  current_slot_ = 0;
-  delay_->Load(persistent_.mutable_slot(current_slot_));
+  LoadSlot(0);
+  sample_counter_to_next_slot_ = 10000.0f; // default fade time
+}
+
+void Ui::LoadSlot(uint8_t slot) {
+  next_slot_ = slot;
+  sample_counter_to_next_slot_ = parameters_->morph;
+  delay_->Load(persistent_.mutable_slot(next_slot_));
 }
 
 void Ui::PingGateLed() {
@@ -105,6 +113,7 @@ void Ui::PingSaveLed() {
 
 void Ui::SlotModified() {
   current_slot_ = -1;
+  next_slot_ = -1;
 }
 
 void Ui::PingMeter(TapType type, float velocity)
@@ -198,7 +207,7 @@ inline void Ui::PaintLeds() {
     }
 
     uint8_t slot = save_candidate_slot_ % 6;
-    LedColor blink = animation_counter_ & 1 ? COLOR_RED : COLOR_BLACK;
+    LedColor blink = animation_counter_ & 2 ? COLOR_RED : COLOR_BLACK;
     leds_.set_rgb(slot, blink);
   }
   break;
@@ -219,6 +228,16 @@ inline void Ui::PaintLeds() {
       uint8_t slot = current_slot_ % 6;
       if (bank == bank_) {
         leds_.set_rgb(slot, COLOR_GREEN);
+      }
+    }
+
+    // Next slot
+    if (next_slot_ >= 0) {
+      uint8_t bank = next_slot_ / 6;
+      uint8_t slot = next_slot_ % 6;
+      LedColor blink = (animation_counter_ % 4) == 0 ? COLOR_GREEN : COLOR_BLACK;
+      if (bank == bank_) {
+        leds_.set_rgb(slot, blink);
       }
     }
 
@@ -253,7 +272,7 @@ inline void Ui::PaintLeds() {
   case UI_MODE_PANIC:
   {
     for (int i=0; i<kNumLeds; i++){
-      leds_.set(i, (animation_counter_ & 7) < 1);
+      leds_.set(i, (animation_counter_ & 8) < 1);
     }
   }
   break;
@@ -265,7 +284,7 @@ inline void Ui::PaintLeds() {
   leds_.Write();
 
   // Update state variables
-  if ((system_clock.milliseconds() & 63) == 0)
+  if ((system_clock.milliseconds() & 15) == 0)
     animation_counter_++;
 
   if (ping_reset_counter_ > 0)
@@ -410,8 +429,7 @@ void Ui::OnButtonReleased(const Event& e) {
           settings_page_ = e.control_id;
         }
       } else {
-        current_slot_ = bank_ * 6 + e.control_id;
-        delay_->Load(persistent_.mutable_slot(current_slot_));
+        LoadSlot(bank_ * 6 + e.control_id);
       }
       break;
     }

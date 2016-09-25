@@ -67,7 +67,21 @@ class Ui {
   void Start();
   void Panic();
 
-  void ReadParameters() { cv_scaler_.Read(parameters_); }
+  void ReadParameters() {
+    cv_scaler_.Read(parameters_);
+
+    // this also counts the blocks processed
+    if (sample_counter_to_next_slot_ > 0.0f) {
+      // decrement counter
+      sample_counter_to_next_slot_ -= kBlockSize;
+
+      // if it reaches 0, switch to current slot
+      if (sample_counter_to_next_slot_ <= 0.0f) {
+        current_slot_ = next_slot_;
+        next_slot_ = -1;
+      }
+    }
+  }
 
   void PingSaveLed();
   void PingGateLed();
@@ -84,8 +98,8 @@ class Ui {
   void ParseSettings();
   void ParseSettingsCurrentPage();
   void SaveSettings();
-
   void PaintLeds();
+  void LoadSlot(uint8_t slot);
 
   stmlib::EventQueue<16> queue_;
 
@@ -107,6 +121,8 @@ class Ui {
   uint16_t ignore_releases_;
   uint8_t bank_;
   int8_t current_slot_;
+  int8_t next_slot_;
+  float sample_counter_to_next_slot_;
   int8_t save_candidate_slot_;
 
   uint16_t ping_gate_led_counter_;
