@@ -224,11 +224,12 @@ void CvScaler::Read(Parameters* parameters) {
 
   /////////////
 
+  // TODO
   // repeat
   if (gate_input_.rising_edge(GATE_INPUT_REPEAT)) {
-    parameters->repeat = true;
+    // delay_->ToggleRepeat();
   } else if (gate_input_.falling_edge(GATE_INPUT_REPEAT)) {
-    parameters->repeat = false;
+    // delay_->ToggleRepeat();
   }
 
   ///////////

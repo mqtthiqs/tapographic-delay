@@ -48,6 +48,19 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   buffer_.Clear();
 };
 
+void MultitapDelay::SetRepeat(bool state) {
+  if (state) {
+    repeat_ = true;
+    repeat_fader_.fade_in(prev_params_.morph + 1.0f);
+    // sample repeat time (for high quality setting) // TODO check
+    float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
+    last_repeat_time_ = static_cast<uint32_t>(repeat_time);
+  } else {
+    repeat_ = false;
+    repeat_fader_.fade_out(prev_params_.morph);
+  }
+}
+
 float MultitapDelay::ComputePanning(PanningMode panning_mode)
 {
     float panning = 1.0f;
@@ -136,20 +149,20 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 template<bool quality, bool repeat_tap_on_output>
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
+  float buffer_headroom = quality ? 1.0f : 0.5f;
+
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
 
-  float buffer_headroom = quality ? 1.0f : 0.5f;
-
+  // TODO refactor (direct call)
   // add tap if needed
   if (params->tap) {
     AddTap(params);
   }
 
-  // reset repeat_time if needed
-  if (repeat_time > buffer_.size() ||
-      repeat_time < 100) {
-    repeat_time = 0;
+  // disable Repeat if repeat_time too small (e.g. on clear)
+  if (repeat_time < 1.0f) {
+    SetRepeat(false);
   }
 
   // increment sample counter
@@ -166,19 +179,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   tap_allocator_.set_fade_time(params->morph);
   tap_allocator_.Poll();
 
-  // TODO bug: what if we turn it on while repeat_time_ < 100?
-  // fade in/out the repeat buffer
-  if (repeat_time // only if repeat time > 100
-      && params->repeat
-      && !prev_params_.repeat) {
-    repeat_fader_.fade_in(params->morph);
-    last_repeat_time_ = static_cast<uint32_t>(repeat_time); // sample repeat time
-  } else if (!params->repeat
-             && prev_params_.repeat) {
-    repeat_fader_.fade_out(params->morph);
-  } else {
-    repeat_fader_.Prepare();
-  }
+  repeat_fader_.Prepare();
 
   /* 1. Write (dry+repeat+feedback) to buffer */
 

@@ -189,7 +189,7 @@ inline void Ui::PaintLeds() {
 
   bool tap = delay_->counter_running() ^ (ping_reset_counter_ > 0);
   leds_.set(LED_TAP, tap);
-  leds_.set(LED_REPEAT, parameters_->repeat);
+  leds_.set(LED_REPEAT, delay_->repeat());
   leds_.set(LED_DELETE, ping_gate_led_counter_);
 
   switch (mode_) {
@@ -412,7 +412,7 @@ void Ui::OnButtonReleased(const Event& e) {
       }
       break;
     case BUTTON_REPEAT:
-      parameters_->repeat = !parameters_->repeat;
+      delay_->SetRepeat(!delay_->repeat());
       break;
     case BUTTON_1:
     case BUTTON_2:

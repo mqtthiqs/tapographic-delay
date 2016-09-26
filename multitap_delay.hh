@@ -58,7 +58,7 @@ public:
   void AddTap(Parameters *params);
   void Clear();
   void RemoveLastTap();
-
+  void SetRepeat(bool state);
   void RepanTaps(PanningMode panning_mode);
 
   void Load(Slot* slot) {
@@ -76,6 +76,7 @@ public:
   };
 
   bool counter_running() { return counter_running_; }
+  bool repeat() { return repeat_; }
 
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
@@ -97,6 +98,7 @@ private:
   Fader repeat_fader_;
   uint32_t counter_;
 
+  bool repeat_;
   bool counter_running_;
 
   Parameters prev_params_;

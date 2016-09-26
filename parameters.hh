@@ -66,7 +66,6 @@ struct Parameters {
 
   float velocity;
   bool tap;
-  bool repeat;
 
   EditMode edit_mode;
   VelocityType velocity_type;
