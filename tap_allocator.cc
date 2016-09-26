@@ -40,9 +40,6 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
   //   float velocity = (t+1) / (kMaxTaps+1);
   //   Add(time, velocity, VELOCITY_AMP, Random::GetFloat());
   // }
-  // TODO make default IRs
-
-  // TODO sanitize slots
 }
 
 void TapAllocator::Load(Slot* slot)

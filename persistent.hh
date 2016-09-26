@@ -62,6 +62,7 @@ public:
     CONSTRAIN(data_.settings[2], 0, 2);
     CONSTRAIN(data_.settings[3], 0, 1);
 
+    // TODO sanitize slots
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
@@ -69,6 +70,7 @@ public:
 
       // clear slots
       memset(slots_, 0, sizeof(slots_));
+      // TODO make default IRs
 
       bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
       bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
