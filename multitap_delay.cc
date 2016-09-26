@@ -72,6 +72,14 @@ void MultitapDelay::AddTap(Parameters *params) {
   float time = static_cast<float>(counter_);
   float pan = ComputePanning(params->panning_mode);
 
+  TapType type =
+    params->edit_mode == EDIT_NORMAL ||
+    // if it's the first tap, then notify it as "normal"
+    tap_allocator_.max_time() == 0.0f ? TAP_ADDED :
+    params->edit_mode == EDIT_OVERWRITE ? TAP_ADDED_OVERWRITE :
+    params->edit_mode == EDIT_OVERDUB ? TAP_ADDED_OVERDUB :
+    TAP_FAIL;
+
   // add tap
   bool success = false;
   if (time < buffer_.size()) {
@@ -86,13 +94,10 @@ void MultitapDelay::AddTap(Parameters *params) {
     }
   }
 
-  // for UI feedback
-  TapType type =
-    !success ? TAP_ADDED_OVERWRITE :
-    params->edit_mode == EDIT_NORMAL ? TAP_ADDED :
-    params->edit_mode == EDIT_OVERWRITE ? TAP_ADDED_OVERWRITE :
-    params->edit_mode == EDIT_OVERDUB ? TAP_ADDED_OVERDUB :
-    TAP_FAIL;
+  // if we ran out of taps
+  if (!success) type = TAP_ADDED_OVERWRITE;
+
+  // UI feedback
   tap_observable_.notify(type, params->velocity);
   slot_modified_observable_.notify();
 }
