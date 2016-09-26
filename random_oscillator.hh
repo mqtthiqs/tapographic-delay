@@ -65,7 +65,7 @@ class RandomOscillator
         value_ - (1.0f + value_) * rnd;
     }
 
-    float sin = Interpolate(lut_raised_cos, phase_, LUT_RAISED_COS_SIZE-1);
+    float sin = raised_cosine(phase_);
     return value_ + (next_value_ - value_) * sin;
   }
 
@@ -75,6 +75,11 @@ class RandomOscillator
   float value_;
   float next_value_;
   bool direction_;
+
+  float raised_cosine(float x) {
+    x -= 0.5f;
+    return 2 * x - 2 * x * fabs(x) + 0.5f;
+  }
 };
 
 #endif
