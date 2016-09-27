@@ -48,7 +48,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   buffer_.Clear();
 };
 
-void MultitapDelay::SetRepeat(bool state) {
+void MultitapDelay::set_repeat(bool state) {
   if (state) {
     repeat_ = true;
     repeat_fader_.fade_in(prev_params_.morph + 1.0f);
@@ -60,6 +60,11 @@ void MultitapDelay::SetRepeat(bool state) {
     repeat_fader_.fade_out(prev_params_.morph);
   }
 }
+
+void MultitapDelay::set_clocked(bool state) {
+  clocked_ = state;
+}
+
 
 float MultitapDelay::ComputePanning(PanningMode panning_mode)
 {
@@ -162,7 +167,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // disable Repeat if repeat_time too small (e.g. on clear)
   if (repeat_time < 1.0f) {
-    SetRepeat(false);
+    set_repeat(false);
   }
 
   // increment sample counter
@@ -196,9 +201,9 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_end = params->feedback;
   float feedback_increment = (feedback_end - feedback) / kBlockSize;
 
-  float repeat = 0.0f;
-  float repeat_end = tap_allocator_.max_time() * params->scale;
-  float repeat_increment = (repeat_end - repeat_time) / kBlockSize;
+  float repeat_time_accum = 0.0f;
+  float repeat_time_end = tap_allocator_.max_time() * params->scale;
+  float repeat_time_increment = (repeat_time_end - repeat_time) / kBlockSize;
 
   for (size_t i=0; i<kBlockSize; i++) {
     float fb_sample = feedback_buffer_[i];
@@ -212,7 +217,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       sample = Clip16(s);
     } else {
       // addition is done here to avoid rounding errors in the increment
-      float repeat_sample = buffer_.ReadHermite(repeat_time + repeat) / buffer_headroom;
+      float repeat_sample = buffer_.ReadHermite(repeat_time + repeat_time_accum) / buffer_headroom;
       repeat_fader_.Process(repeat_sample);
       float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
       float dither = (Random::GetFloat() - 0.5f) / 8192.0f;
@@ -224,7 +229,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     buffer_.Write(sample);
     gain += gain_increment;
     feedback += feedback_increment;
-    repeat += repeat_increment;
+    repeat_time_accum += repeat_time_increment;
   }
 
   /* 2. Read and sum taps from buffer */
@@ -275,7 +280,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float drywet_end = params->drywet;
   float drywet_increment = (drywet_end - drywet) / kBlockSize;
 
-  repeat = 0.0f;
+  repeat_time_accum = 0.0f;
 
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
@@ -295,7 +300,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     // write to output buffer
     // // TODO what if repeat_time changes or = 0?
     if (repeat_tap_on_output) {
-      sample.r = buffer_.ReadHermite(repeat_time + repeat + kBlockSize - i) / buffer_headroom;
+      sample.r = buffer_.ReadHermite(repeat_time + repeat_time_accum + kBlockSize - i) / buffer_headroom;
     } else {
       sample.r = dry * fade_out + sample.r * fade_in;
     }
@@ -309,7 +314,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     }
 
     drywet += drywet_increment;
-    repeat += repeat_increment;
+    repeat_time_accum += repeat_time_increment;
   }
 
   prev_params_ = *params;

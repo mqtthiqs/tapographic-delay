@@ -412,7 +412,7 @@ void Ui::OnButtonReleased(const Event& e) {
       }
       break;
     case BUTTON_REPEAT:
-      delay_->SetRepeat(!delay_->repeat());
+      delay_->set_repeat(!delay_->repeat());
       break;
     case BUTTON_1:
     case BUTTON_2:

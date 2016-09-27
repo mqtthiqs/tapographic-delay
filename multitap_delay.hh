@@ -58,8 +58,10 @@ public:
   void AddTap(Parameters *params);
   void Clear();
   void RemoveLastTap();
-  void SetRepeat(bool state);
   void RepanTaps(PanningMode panning_mode);
+
+  void set_repeat(bool state);
+  void set_clocked(bool state);
 
   void Load(Slot* slot) {
     tap_allocator_.Load(slot);
@@ -92,14 +94,17 @@ private:
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
   float feedback_buffer_[kBlockSize];   /* max block size */
-  uint32_t last_repeat_time_;
-  bool pan_state_;
   Svf dc_blocker_;
   Fader repeat_fader_;
   uint32_t counter_;
 
+  uint32_t last_repeat_time_;
+
   bool repeat_;
+  bool clocked_;
   bool counter_running_;
+
+  bool pan_state_;
 
   Parameters prev_params_;
 
