@@ -190,7 +190,8 @@ inline void Ui::PaintLeds() {
   bool tap = delay_->counter_running() ^ (ping_reset_counter_ > 0);
   leds_.set(LED_TAP, tap);
   leds_.set(LED_REPEAT, delay_->repeat());
-  leds_.set(LED_DELETE, ping_gate_led_counter_);
+  bool del = delay_->clocked()  ^ (ping_gate_led_counter_ > 0);
+  leds_.set(LED_DELETE, del);
 
   switch (mode_) {
   case UI_MODE_SPLASH:
@@ -406,13 +407,17 @@ void Ui::OnButtonReleased(const Event& e) {
     switch (e.control_id) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
-        delay_->Clear();
+        delay_->set_clocked(!delay_->clocked());
       } else {
         delay_->RemoveLastTap();
       }
       break;
     case BUTTON_REPEAT:
-      delay_->set_repeat(!delay_->repeat());
+      if (e.data >= kLongPressDuration) {
+        delay_->Clear();
+      } else {
+        delay_->set_repeat(!delay_->repeat());
+      }
       break;
     case BUTTON_1:
     case BUTTON_2:
