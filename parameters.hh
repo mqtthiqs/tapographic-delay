@@ -63,9 +63,10 @@ struct Parameters {
   float modulation_frequency;
   float morph;
   float drywet;
+  float clock_ratio;
 
   float velocity;
-  bool tap;
+  bool tap;                     // TODO refactor (direct call)
 
   EditMode edit_mode;
   VelocityType velocity_type;

@@ -56,6 +56,7 @@ class CvScaler {
 
   Average<32> average_[ADC_CHANNEL_LAST];
   Average<256> average_scale_;
+  Average<64> average_clock_ratio_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
   bool taptrig_armed_;

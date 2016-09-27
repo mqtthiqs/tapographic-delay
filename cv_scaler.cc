@@ -37,6 +37,10 @@ using namespace std;
 
 const float kPotDeadZoneSize = 0.01f;
 const float kScalePotNotchSize = 0.05f;
+const float kClockRatios[16] = {
+  1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
+  1.0f,
+  2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 16.0f };
 
 void CvScaler::Init() {
   adc_.Init();
@@ -101,6 +105,10 @@ void CvScaler::Read(Parameters* parameters) {
   val = CropDeadZone(adc_.float_value(ADC_MORPH_POT));
   scaled_values[ADC_MORPH_POT] = val;
 
+  // clock ratio
+  val = CropDeadZone(adc_.float_value(ADC_SCALE_POT));
+  float scaled_clock_ratio = val;
+
   /* 2. Offset and scale CVs */
 
   for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
@@ -112,7 +120,6 @@ void CvScaler::Read(Parameters* parameters) {
       // unipolar CVs
       scaled_values[i] = adc_.float_value(i); // -0.5..0.5
     }
-
   }
 
   /* 3. Filter pots and CVs */
@@ -121,6 +128,8 @@ void CvScaler::Read(Parameters* parameters) {
     float value = scaled_values[i];
     average_[i].Process(value);
   }
+
+  average_clock_ratio_.Process(scaled_clock_ratio);
 
   /* 4. Add CV and pot, constrain, and write to parameters */
 
@@ -189,6 +198,14 @@ void CvScaler::Read(Parameters* parameters) {
   val = val * val * val * val;
   val *= 600000.0f;
   parameters->morph = val;
+
+  // clock ratio
+  val =
+    average_clock_ratio_.value() +
+    average_[ADC_SCALE_CV].value();
+  CONSTRAIN(val, 0.0f, 1.0f);
+  val *= 15.0f;
+  parameters->clock_ratio = kClockRatios[static_cast<int>(val)];
 
   // tap & velocity
 
