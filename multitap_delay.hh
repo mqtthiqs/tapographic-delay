@@ -79,6 +79,7 @@ public:
 
   bool counter_running() { return counter_running_; }
   bool repeat() { return repeat_; }
+  bool clocked() { return clocked_; }
 
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
@@ -99,6 +100,9 @@ private:
   uint32_t counter_;
 
   uint32_t last_repeat_time_;
+  uint32_t clock_counter_;
+  float clock_period_;
+  float clocked_scale_;
 
   bool repeat_;
   bool clocked_;

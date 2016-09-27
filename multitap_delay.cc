@@ -156,13 +156,26 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   float buffer_headroom = quality ? 1.0f : 0.5f;
 
+  if (clocked_) {
+    float clocked_scale = clock_period_
+      / tap_allocator_.max_time()
+      * params->clock_ratio;
+    ONE_POLE(clocked_scale_, clocked_scale, 0.1f);
+    params->scale = clocked_scale_;
+  }
+
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
 
   // TODO refactor (direct call)
   // add tap if needed
   if (params->tap) {
-    AddTap(params);
+    if (clocked_) {
+      clock_period_ = static_cast<float>(clock_counter_);
+      clock_counter_ = 0;
+    } else {
+      AddTap(params);
+    }
   }
 
   // disable Repeat if repeat_time too small (e.g. on clear)
@@ -318,4 +331,5 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   }
 
   prev_params_ = *params;
+  clock_counter_ += kBlockSize;
 };
