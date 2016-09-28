@@ -83,8 +83,7 @@ void MultitapDelay::AddTap(Parameters *params) {
 
   // ignore taps
   if (clocked_) {
-    // TODO ignore clocks that are too far from last one
-    clock_period_ = static_cast<float>(clock_counter_);
+    clock_period_.Process(static_cast<float>(clock_counter_));
     clock_counter_ = 0;
     return;
   }
@@ -166,11 +165,12 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float buffer_headroom = quality ? 1.0f : 0.5f;
 
   if (clocked_) {
-    float clocked_scale = clock_period_
+    SLEW(clock_period_smoothed_, clock_period_.value(), 5000.0f);
+      float clocked_scale = clock_period_smoothed_
       / tap_allocator_.max_time()
       * params->clock_ratio;
-    ONE_POLE(clocked_scale_, clocked_scale, 0.02f);
-    params->scale = clocked_scale_;
+    ONE_POLE(clocked_scale_, clocked_scale, 0.1f);
+    params->scale = clocked_scale_; // warning: overwrite params
   }
 
   // repeat time, in samples
@@ -206,7 +206,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_compensation = static_cast<float>(tap_allocator_.busy_voices());
   if (feedback_compensation < 1.0f) feedback_compensation = 1.0f;
   feedback_compensation = fast_rsqrt_carmack(feedback_compensation);
-  params->feedback *= feedback_compensation;
+  params->feedback *= feedback_compensation; // warning: overwrite params
 
   float feedback = prev_params_.feedback;
   float feedback_end = params->feedback;

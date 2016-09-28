@@ -32,6 +32,7 @@
 #include "parameters.hh"
 #include "tap_allocator.hh"
 #include "stmlib/utils/observer.h"
+#include "average.hh"
 
 #include "stmlib/dsp/filter.h"
 
@@ -101,7 +102,8 @@ private:
 
   uint32_t last_repeat_time_;
   uint32_t clock_counter_;
-  float clock_period_;
+  Average<8> clock_period_;
+  float clock_period_smoothed_;
   float clocked_scale_;
 
   bool repeat_;
