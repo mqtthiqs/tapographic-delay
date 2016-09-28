@@ -122,7 +122,7 @@
 #define CODEC_TIMEOUT             ((uint32_t)0x1000)
 #define CODEC_LONG_TIMEOUT             ((uint32_t)(300 * CODEC_TIMEOUT))
 
-#define CODEC_BUFFER_SIZE 128
+#define CODEC_BUFFER_SIZE 64
 
 typedef struct {
   short l;
