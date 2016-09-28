@@ -61,7 +61,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
   persistent_.Init();
-  cv_scaler_.Init();
+  cv_scaler_.Init(delay_);
 
   // copy and initialize settings
   for (int i=0; i<4; i++) {

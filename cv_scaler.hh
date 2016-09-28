@@ -37,6 +37,7 @@
 #include "drivers/gate_input.hh"
 #include "parameters.hh"
 #include "persistent.hh"
+#include "multitap_delay.hh"
 
 using namespace stmlib;
 
@@ -45,7 +46,7 @@ class CvScaler {
   CvScaler() { }
   ~CvScaler() { }
   
-  void Init();
+  void Init(MultitapDelay* delay);
   void Read(Parameters* parameters);
   void Calibrate(Persistent* persistent);
 
@@ -53,6 +54,7 @@ class CvScaler {
 
   Adc adc_;
   GateInput gate_input_;
+  MultitapDelay* delay_;
 
   Average<32> average_[ADC_CHANNEL_LAST];
   Average<256> average_scale_;

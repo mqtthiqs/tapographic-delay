@@ -42,7 +42,8 @@ const float kClockRatios[16] = {
   1.0f,
   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 16.0f };
 
-void CvScaler::Init() {
+void CvScaler::Init(MultitapDelay* delay) {
+  delay_ = delay;
   adc_.Init();
   gate_input_.Init();
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
@@ -211,13 +212,12 @@ void CvScaler::Read(Parameters* parameters) {
 
   // from external source:
   float taptrig = scaled_values[ADC_TAPTRIG_CV];
-  bool ext_tap;
+  bool tap = false;
+
   if (taptrig > 0.2f && taptrig_armed_) {
-    ext_tap = true;
+    tap = true;
     parameters->velocity = scaled_values[ADC_VEL_CV];
     taptrig_armed_ = false;
-  } else {
-    ext_tap = false;
   }
 
   if (taptrig < 0.1f) {
@@ -228,25 +228,24 @@ void CvScaler::Read(Parameters* parameters) {
   float deriv = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
 
   if (deriv > 0.01f && tapfsr_armed_) {
-    parameters->tap = true;
+    tap = true;
     tapfsr_armed_ = false;
     parameters->velocity = scaled_values[ADC_FSR_CV];
-  } else {
-    parameters->tap = ext_tap;
   }
 
   if (deriv < 0.005f) {
     tapfsr_armed_ = true;
   }
 
+  if (tap)
+    delay_->AddTap(parameters);
+
   /////////////
 
-  // TODO
   // repeat
-  if (gate_input_.rising_edge(GATE_INPUT_REPEAT)) {
-    // delay_->ToggleRepeat();
-  } else if (gate_input_.falling_edge(GATE_INPUT_REPEAT)) {
-    // delay_->ToggleRepeat();
+  if (gate_input_.rising_edge(GATE_INPUT_REPEAT) ||
+      gate_input_.falling_edge(GATE_INPUT_REPEAT)) {
+    delay_->set_repeat(!delay_->repeat());
   }
 
   ///////////

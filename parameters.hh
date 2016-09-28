@@ -66,7 +66,6 @@ struct Parameters {
   float clock_ratio;
 
   float velocity;
-  bool tap;                     // TODO refactor (direct call)
 
   EditMode edit_mode;
   VelocityType velocity_type;

@@ -80,6 +80,15 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
 }
 
 void MultitapDelay::AddTap(Parameters *params) {
+
+  // ignore taps
+  if (clocked_) {
+    // TODO ignore clocks that are too far from last one
+    clock_period_ = static_cast<float>(clock_counter_);
+    clock_counter_ = 0;
+    return;
+  }
+
   // first tap does not count, it just starts the counter
   if (!counter_running_) {
     counter_running_ = true;
@@ -166,17 +175,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
-
-  // TODO refactor (direct call)
-  // add tap if needed
-  if (params->tap) {
-    if (clocked_) {
-      clock_period_ = static_cast<float>(clock_counter_);
-      clock_counter_ = 0;
-    } else {
-      AddTap(params);
-    }
-  }
 
   // disable Repeat if repeat_time too small (e.g. on clear)
   if (repeat_time < 1.0f) {
