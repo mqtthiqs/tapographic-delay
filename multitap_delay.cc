@@ -268,10 +268,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
     float time = taps_[i].time() * params->scale;
     if (counter_running_ && taps_[i].active()) {
-      if (time < counter_modulo && counter_modulo < time + kBlockSize+1) {
+      if (time <= counter_modulo && counter_modulo < time + kBlockSize+1) {
         counter_modulo_on_tap = taps_[i].velocity();
       }
-      if (time < counter_ && counter_ < time + kBlockSize+1) {
+      if (time <= counter_ && counter_ < time + kBlockSize+1) {
         counter_on_tap = taps_[i].velocity();
       }
     }
