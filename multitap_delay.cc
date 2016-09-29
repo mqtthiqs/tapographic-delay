@@ -130,11 +130,16 @@ void MultitapDelay::RemoveLastTap() {
   if (tap_allocator_.RemoveLast()) {
     slot_modified_observable_.notify();
   }
+
+  if(tap_allocator_.max_time() <= 0.0f) {
+    counter_running_ = false;
+    counter_ = 0;
+  }
 }
 
 void MultitapDelay::Clear() {
-  counter_running_ = false;
   tap_allocator_.Clear();
+  counter_running_ = false;
   counter_ = 0;
   slot_modified_observable_.notify();
 }
