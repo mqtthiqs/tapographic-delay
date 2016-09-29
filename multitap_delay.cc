@@ -167,6 +167,13 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   float buffer_headroom = quality ? 1.0f : 0.5f;
 
+  // When no taps active, turn off clocked and repeat
+  if (tap_allocator_.max_time() <= 0.0f) {
+    set_clocked(false);
+    set_repeat(false);
+  }
+
+  // compute IR scale to fit into clock period
   if (clocked_) {
     SLEW(clock_period_smoothed_, clock_period_.value(), 5000.0f);
       float clocked_scale = clock_period_smoothed_
@@ -178,11 +185,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // repeat time, in samples
   float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
-
-  // disable Repeat if repeat_time too small (e.g. on clear)
-  if (repeat_time < 1.0f) {
-    set_repeat(false);
-  }
 
   // increment sample counter
   if (counter_running_) {
