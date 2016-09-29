@@ -171,7 +171,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     SLEW(clock_period_smoothed_, clock_period_.value(), 5000.0f);
       float clocked_scale = clock_period_smoothed_
       / tap_allocator_.max_time()
-      * params->clock_ratio;
+      / params->clock_ratio;
     ONE_POLE(clocked_scale_, clocked_scale, 0.1f);
     params->scale = clocked_scale_; // warning: overwrite params
   }
