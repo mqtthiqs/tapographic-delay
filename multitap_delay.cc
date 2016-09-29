@@ -190,7 +190,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   if (counter_running_) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
-    if (params->edit_mode != EDIT_NORMAL &&
+    if ((params->edit_mode != EDIT_NORMAL || clocked_) &&
         counter_ > repeat_time) {
       counter_ -= repeat_time;
     }
