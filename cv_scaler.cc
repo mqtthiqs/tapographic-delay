@@ -191,14 +191,23 @@ void CvScaler::Read(Parameters* parameters) {
   parameters->drywet = val;
 
   // morph
-  val =
-    average_[ADC_MORPH_POT].value() +
-    average_[ADC_MORPH_CV].value();
+  val = average_[ADC_MORPH_POT].value();
   CONSTRAIN(val, 0.0f, 1.0f);
   val = (val + 0.1f) / 1.1f;
   val = val * val * val * val;
   val *= 600000.0f;
   parameters->morph = val;
+
+  // clock
+  float clock = scaled_values[ADC_CLOCK_CV];
+  if (clock > 0.2f && clock_armed_) {
+    delay_->ClockTick();
+    clock_armed_ = false;
+  }
+
+  if (clock < 0.1f) {
+    clock_armed_ = true;
+  }
 
   // clock ratio
   val =

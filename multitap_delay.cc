@@ -79,14 +79,12 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
     return panning;
 }
 
-void MultitapDelay::AddTap(Parameters *params) {
+void MultitapDelay::ClockTick() {
+  clock_period_.Process(static_cast<float>(clock_counter_));
+  clock_counter_ = 0;
+}
 
-  // ignore taps
-  if (clocked_) {
-    clock_period_.Process(static_cast<float>(clock_counter_));
-    clock_counter_ = 0;
-    return;
-  }
+void MultitapDelay::AddTap(Parameters *params) {
 
   // first tap does not count, it just starts the counter
   if (!counter_running_) {

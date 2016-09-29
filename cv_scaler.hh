@@ -63,6 +63,7 @@ class CvScaler {
   OnePole fsr_filter_;
   bool taptrig_armed_;
   bool tapfsr_armed_;
+  bool clock_armed_;
   float freq_lp_;
   float amount_lp_;
 

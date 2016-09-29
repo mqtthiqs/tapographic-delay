@@ -45,7 +45,7 @@ enum AdcChannel {
   ADC_FEEDBACK_CV,
   ADC_MODULATION_CV,
   ADC_DRYWET_CV,
-  ADC_MORPH_CV,
+  ADC_CLOCK_CV,
   ADC_FSR_CV,
   ADC_VEL_CV,
   ADC_TAPTRIG_CV,
@@ -177,7 +177,7 @@ public:
     ADC_RegularChannelConfig(ADC3, ADC_Channel_7, ADC_FEEDBACK_CV-5, ADC_SampleTime_480Cycles); //PF9
     ADC_RegularChannelConfig(ADC3, ADC_Channel_6, ADC_MODULATION_CV-5, ADC_SampleTime_480Cycles); //PF8
     ADC_RegularChannelConfig(ADC3, ADC_Channel_5, ADC_DRYWET_CV-5, ADC_SampleTime_480Cycles); //PF7
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_1, ADC_MORPH_CV-5, ADC_SampleTime_480Cycles); //PA1
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_1, ADC_CLOCK_CV-5, ADC_SampleTime_480Cycles); //PA1
     ADC_RegularChannelConfig(ADC3, ADC_Channel_3, ADC_FSR_CV-5, ADC_SampleTime_480Cycles); //PA3
     ADC_RegularChannelConfig(ADC3, ADC_Channel_4, ADC_VEL_CV-5, ADC_SampleTime_480Cycles); //PF6
     ADC_RegularChannelConfig(ADC3, ADC_Channel_2, ADC_TAPTRIG_CV-5, ADC_SampleTime_480Cycles); //PA2

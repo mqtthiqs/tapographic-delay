@@ -60,6 +60,7 @@ public:
   void Clear();
   void RemoveLastTap();
   void RepanTaps(PanningMode panning_mode);
+  void ClockTick();
 
   void set_repeat(bool state);
   void set_clocked(bool state);
