@@ -72,7 +72,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-  // parameters->counter_running = true; // TODO
 
   mode_ = UI_MODE_SPLASH;
   ignore_releases_ = 0;
@@ -187,7 +186,8 @@ void Ui::Poll() {
 
 inline void Ui::PaintLeds() {
 
-  bool tap = delay_->counter_running() ^ (ping_reset_counter_ > 0);
+  bool counter = delay_->counter_running() && parameters_->edit_mode != EDIT_OFF;
+  bool tap = counter ^ (ping_reset_counter_ > 0);
   leds_.set(LED_TAP, tap);
   leds_.set(LED_REPEAT, delay_->repeat());
   bool del = delay_->clocked()  ^ (ping_gate_led_counter_ > 0);

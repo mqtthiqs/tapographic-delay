@@ -86,6 +86,11 @@ void MultitapDelay::ClockTick() {
 
 void MultitapDelay::AddTap(Parameters *params) {
 
+  // inhibit tap add completely
+  if (params->edit_mode == EDIT_OFF) {
+    return;
+  }
+
   // first tap does not count, it just starts the counter
   if (!counter_running_) {
     counter_running_ = true;
@@ -100,7 +105,6 @@ void MultitapDelay::AddTap(Parameters *params) {
     params->edit_mode == EDIT_NORMAL ||
     // if it's the first tap, then notify it as "normal"
     tap_allocator_.max_time() == 0.0f ? TAP_ADDED :
-    params->edit_mode == EDIT_OVERWRITE ? TAP_ADDED_OVERWRITE :
     params->edit_mode == EDIT_OVERDUB ? TAP_ADDED_OVERDUB :
     TAP_FAIL;
 
@@ -111,11 +115,6 @@ void MultitapDelay::AddTap(Parameters *params) {
                                  params->velocity,
                                  params->velocity_type,
                                  pan);
-
-    // in overwrite mode, remove oldest tap
-    if (success && params->edit_mode == EDIT_OVERWRITE) {
-      tap_allocator_.RemoveFirst();
-    }
   }
 
   // if we ran out of taps
