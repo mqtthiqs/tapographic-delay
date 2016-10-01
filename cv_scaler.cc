@@ -174,7 +174,7 @@ void CvScaler::Read(Parameters* parameters) {
   float amount = val;
   amount *= amount * amount;
   // offset avoids null frequency (NaN samples)
-  float freq = (1.0f - val) * 0.6f + 0.0000001f;
+  float freq = (1.0f - val) * 0.4f + 0.0000001f;
   freq *= freq * freq * freq;
 
   ONE_POLE(freq_lp_, freq, 0.03f);
