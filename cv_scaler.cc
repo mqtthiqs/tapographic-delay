@@ -66,7 +66,7 @@ inline float CropDeadZone(float x) {
 }
 
 
-void CvScaler::Read(Parameters* parameters) {
+void CvScaler::Read(Parameters* parameters, bool sequencer_mode) {
 
   float scaled_values[ADC_CHANNEL_LAST];
 
@@ -246,8 +246,13 @@ void CvScaler::Read(Parameters* parameters) {
     tapfsr_armed_ = true;
   }
 
-  if (tap)
-    delay_->AddTap(parameters);
+  if (tap) {
+    if (sequencer_mode) {
+      delay_->sequencer_step(parameters->velocity);
+    } else {
+      delay_->AddTap(parameters);
+    }
+  }
 
   /////////////
 

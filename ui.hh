@@ -69,9 +69,9 @@ class Ui {
   void Panic();
 
   void ReadParameters() {
-    cv_scaler_.Read(parameters_);
+    cv_scaler_.Read(parameters_, sequencer_mode_);
 
-    // this also counts the blocks processed
+    // this function also counts the blocks processed, so:
     if (sample_counter_to_next_slot_ > 0.0f) {
       // decrement counter
       sample_counter_to_next_slot_ -= kBlockSize;
@@ -89,6 +89,8 @@ class Ui {
   void PingResetLed();
   void PingMeter(TapType tap_type, float velocity);
   void SlotModified();
+
+  void SequencerStep(float morph_time);
 
   static Ui* instance_;
 
@@ -132,6 +134,8 @@ class Ui {
 
   float velocity_meter_;
   LedColor velocity_meter_color_;
+
+  bool sequencer_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };

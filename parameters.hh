@@ -55,6 +55,12 @@ enum PanningMode {
   PANNING_ALTERNATE,
 };
 
+enum SequencerDirection {
+  DIRECTION_FORWARD,
+  DIRECTION_WALK,
+  DIRECTION_RANDOM,
+};
+
 struct Parameters {
   float gain;
   float scale;
@@ -69,6 +75,7 @@ struct Parameters {
 
   EditMode edit_mode;
   VelocityType velocity_type;
+  SequencerDirection sequencer_direction;
 
   // Settings
   float velocity_parameter;

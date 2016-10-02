@@ -83,10 +83,15 @@ public:
   bool repeat() { return repeat_; }
   bool clocked() { return clocked_; }
 
+  void sequencer_step(float morph_time) {
+    step_observable_.notify(morph_time);
+  }
+
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
   Observable0 tap_modulo_observable_;
   Observable2<TapType, float> tap_observable_;
+  Observable1<float> step_observable_;
 
 private:
   template<bool quality, bool repeat_tap_on_output>

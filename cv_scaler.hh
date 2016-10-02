@@ -47,7 +47,7 @@ class CvScaler {
   ~CvScaler() { }
   
   void Init(MultitapDelay* delay);
-  void Read(Parameters* parameters);
+  void Read(Parameters* parameters, bool sequencer_mode);
   void Calibrate(Persistent* persistent);
 
  private:

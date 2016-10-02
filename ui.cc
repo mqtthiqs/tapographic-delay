@@ -28,9 +28,10 @@
 // User interface.
 
 #include "ui.hh"
+#include "stmlib/utils/random.h"
 
 const int32_t kLongPressDuration = 300;
-const int32_t kVeryLongPressDuration = 1000;
+const int32_t kVeryLongPressDuration = 1200;
 
 using namespace stmlib;
 
@@ -48,6 +49,10 @@ void slot_modified_observer() {
   Ui::instance_->SlotModified();
 }
 
+void step_observer(float morph_time) {
+  Ui::instance_->SequencerStep(morph_time);
+}
+
 void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_ = delay;
   parameters_ = parameters;
@@ -56,6 +61,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_->reset_observable_.set_observer(&reset_observer);
   delay_->tap_observable_.set_observer(&tap_observer);
   delay_->slot_modified_observable_.set_observer(&slot_modified_observer);
+  delay_->step_observable_.set_observer(&step_observer);
 
   leds_.Init();
   buttons_.Init();
@@ -78,8 +84,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   velocity_meter_ = -1.0f;
 
   // calibration
-  if (buttons_.pressed_immediate(BUTTON_REPEAT) &&
-      buttons_.pressed_immediate(BUTTON_DELETE)) {
+  if (buttons_.pressed_immediate(BUTTON_DELETE)) {
     cv_scaler_.Calibrate(&persistent_);
   }
 
@@ -94,6 +99,24 @@ void Ui::LoadSlot(uint8_t slot) {
   next_slot_ = slot;
   sample_counter_to_next_slot_ = parameters_->morph;
   delay_->Load(persistent_.mutable_slot(next_slot_));
+}
+
+void Ui::SequencerStep(float morph_time) {
+  int current = next_slot_ < 0 ? current_slot_ : next_slot_;
+
+  if (current < 0) {
+    LoadSlot(6 * bank_ + 0);
+  } else {
+    uint8_t next =
+      parameters_->sequencer_direction == DIRECTION_FORWARD ?
+      current + 1 :
+      parameters_->sequencer_direction == DIRECTION_WALK ?
+      Random::GetWord() & 1 ? current + 1 : current - 1 :
+      parameters_->sequencer_direction == DIRECTION_RANDOM ?
+      Random::GetWord() : 0;
+    next = next % 6;
+    LoadSlot(6 * bank_ + next);
+  }
 }
 
 void Ui::PingGateLed() {
@@ -217,10 +240,12 @@ inline void Ui::PaintLeds() {
   case UI_MODE_NORMAL:
   {
 
+    LedColor background = sequencer_mode_ ? COLOR_RED : COLOR_BLACK;
+
     // Tap-meter
     for (int i=0; i<6; i++) {
       int color = i <= velocity_meter_ * 6.0f ?
-        velocity_meter_color_ : COLOR_BLACK;
+        velocity_meter_color_ : background;
       leds_.set_rgb(i, color);
     }
 
@@ -406,7 +431,15 @@ void Ui::OnButtonReleased(const Event& e) {
   if (mode_ == UI_MODE_NORMAL) {
     switch (e.control_id) {
     case BUTTON_DELETE:
-      if (e.data >= kLongPressDuration) {
+      if (e.data >= kVeryLongPressDuration) {
+        if (buttons_.pressed(BUTTON_REPEAT)) {
+          if (sequencer_mode_) {
+          sequencer_mode_ = false;
+          } else {
+          sequencer_mode_ = true;
+          }
+        }
+      } else if (e.data >= kLongPressDuration) {
         delay_->set_clocked(!delay_->clocked());
       } else {
         delay_->RemoveLastTap();
@@ -414,7 +447,9 @@ void Ui::OnButtonReleased(const Event& e) {
       break;
     case BUTTON_REPEAT:
       if (e.data >= kLongPressDuration) {
-        delay_->Clear();
+        if (!sequencer_mode_) {
+          delay_->Clear();
+        }
       } else {
         delay_->set_repeat(!delay_->repeat());
       }
@@ -447,6 +482,7 @@ void Ui::OnSwitchSwitched(const stmlib::Event& e) {
     switch (e.control_id) {
     case SWITCH_EDIT:
       parameters_->edit_mode = static_cast<EditMode>(e.data);
+      parameters_->sequencer_direction = static_cast<SequencerDirection>(e.data);
       break;
     case SWITCH_VELO:
       parameters_->velocity_type = static_cast<VelocityType>(e.data);
