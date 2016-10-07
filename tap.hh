@@ -97,10 +97,10 @@ class Tap
 
     /* set filter parameters */
     if (velocity_type == VELOCITY_LP) {
-      float f = velocity * velocity * velocity / 2.0f;
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
-      filter_.set_f_q<FREQUENCY_FAST>(f, 0.6f);
+      float f = velocity * velocity * velocity / 8.0f;
+      filter_.set_f_q<FREQUENCY_FAST>(f, 0.75f);
     } else if (velocity_type == VELOCITY_BP) {
       float f = velocity * velocity * velocity / 6.0f;
       float q = params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f;
@@ -108,7 +108,7 @@ class Tap
     } else if (velocity_type == VELOCITY_AMP) {
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
-      velocity *= velocity;
+      velocity *= velocity * velocity;
     }
 
     /* compute random LFO */
@@ -152,7 +152,7 @@ class Tap
 
       /* apply velocity */
       if (velocity_type == VELOCITY_AMP) {
-        sample *= velocity * velocity;
+        sample *= velocity;
       } else if (velocity_type == VELOCITY_LP) {
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
       } else if (velocity_type == VELOCITY_BP) {
