@@ -39,8 +39,6 @@
 using namespace stmlib;
 
 System sys;
-// TODO cleanup codec
-// Codec codec;
 SDRAM sdram;
 Ui ui;
 MultitapDelay delay;

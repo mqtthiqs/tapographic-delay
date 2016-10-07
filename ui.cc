@@ -212,7 +212,11 @@ inline void Ui::PaintLeds() {
   bool counter = delay_->counter_running() && parameters_->edit_mode != EDIT_OFF;
   bool tap = counter ^ (ping_reset_counter_ > 0);
   leds_.set(LED_TAP, tap);
-  leds_.set(LED_REPEAT, delay_->repeat());
+  bool blink = (animation_counter_ % 4) == 0;
+  bool repeat =
+    delay_->repeat() <= 0.0f ? false :
+    delay_->repeat() < 1.0f ? blink : true;
+  leds_.set(LED_REPEAT, repeat);
   bool del = delay_->clocked()  ^ (ping_gate_led_counter_ > 0);
   leds_.set(LED_DELETE, del);
 
@@ -451,7 +455,8 @@ void Ui::OnButtonReleased(const Event& e) {
           delay_->Clear();
         }
       } else {
-        delay_->set_repeat(!delay_->repeat());
+        bool repeat = delay_->repeat() > 0.0f;
+        delay_->set_repeat(!repeat);
       }
       break;
     case BUTTON_1:

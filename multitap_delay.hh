@@ -80,7 +80,7 @@ public:
   };
 
   bool counter_running() { return counter_running_; }
-  bool repeat() { return repeat_; }
+  float repeat() { return repeat_fader_.volume(); }
   bool clocked() { return clocked_; }
 
   void sequencer_step(float morph_time) {
@@ -112,7 +112,6 @@ private:
   float clock_period_smoothed_;
   float clocked_scale_;
 
-  bool repeat_;
   bool clocked_;
   bool counter_running_;
 

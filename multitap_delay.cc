@@ -50,13 +50,11 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
 
 void MultitapDelay::set_repeat(bool state) {
   if (state) {
-    repeat_ = true;
     repeat_fader_.fade_in(prev_params_.morph + 1.0f);
     // sample repeat time (for high quality setting) // TODO check
     float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
     last_repeat_time_ = static_cast<uint32_t>(repeat_time);
   } else {
-    repeat_ = false;
     repeat_fader_.fade_out(prev_params_.morph);
   }
 }
