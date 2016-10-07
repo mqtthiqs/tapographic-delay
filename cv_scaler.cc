@@ -248,7 +248,10 @@ void CvScaler::Read(Parameters* parameters, bool sequencer_mode) {
 
   if (tap) {
     if (sequencer_mode) {
-      delay_->sequencer_step(parameters->velocity);
+      float val = 1.0f - parameters->velocity;
+      val = val * val * val;
+      val *= 100000.0f;
+      delay_->sequencer_step(val + parameters->morph);
     } else {
       delay_->AddTap(parameters);
     }

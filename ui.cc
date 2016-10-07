@@ -104,6 +104,8 @@ void Ui::LoadSlot(uint8_t slot) {
 void Ui::SequencerStep(float morph_time) {
   int current = next_slot_ < 0 ? current_slot_ : next_slot_;
 
+  parameters_->morph = morph_time;
+
   if (current < 0) {
     LoadSlot(6 * bank_ + 0);
   } else {
