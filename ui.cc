@@ -439,15 +439,7 @@ void Ui::OnButtonReleased(const Event& e) {
   if (mode_ == UI_MODE_NORMAL) {
     switch (e.control_id) {
     case BUTTON_DELETE:
-      if (e.data >= kVeryLongPressDuration) {
-        if (buttons_.pressed(BUTTON_REPEAT)) {
-          if (sequencer_mode_) {
-          sequencer_mode_ = false;
-          } else {
-          sequencer_mode_ = true;
-          }
-        }
-      } else if (e.data >= kLongPressDuration) {
+      if (e.data >= kLongPressDuration) {
         delay_->set_clocked(!delay_->clocked());
       } else {
         delay_->RemoveLastTap();
@@ -470,8 +462,14 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_5:
     case BUTTON_6:
       if (e.data >= kVeryLongPressDuration) {
-        save_candidate_slot_ = bank_ * 6 + e.control_id;
-        mode_ = UI_MODE_CONFIRM_SAVE;
+        if ((e.control_id == BUTTON_5 && buttons_.pressed(BUTTON_6)) ||
+            (e.control_id == BUTTON_6 && buttons_.pressed(BUTTON_5))) {
+          sequencer_mode_ = !sequencer_mode_;
+          ignore_releases_ = 1;
+        } else {
+          save_candidate_slot_ = bank_ * 6 + e.control_id;
+          mode_ = UI_MODE_CONFIRM_SAVE;
+        }
       }
       else if (e.data >= kLongPressDuration) {
         if (e.control_id <= BUTTON_4) {
