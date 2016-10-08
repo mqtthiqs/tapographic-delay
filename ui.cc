@@ -331,7 +331,7 @@ inline void Ui::PaintLeds() {
     ping_save_led_counter_--;
 
   if (velocity_meter_ > 0.0f) {
-    velocity_meter_ -= 0.01f;
+    velocity_meter_ -= 0.005f;
   }
 }
 
