@@ -487,16 +487,14 @@ void Ui::OnButtonReleased(const Event& e) {
 }
 
 void Ui::OnSwitchSwitched(const stmlib::Event& e) {
-  if (mode_ == UI_MODE_NORMAL) {
-    switch (e.control_id) {
-    case SWITCH_EDIT:
-      parameters_->edit_mode = static_cast<EditMode>(e.data);
-      parameters_->sequencer_direction = static_cast<SequencerDirection>(e.data);
-      break;
-    case SWITCH_VELO:
-      parameters_->velocity_type = static_cast<VelocityType>(e.data);
-      break;
-    }
+  switch (e.control_id) {
+  case SWITCH_EDIT:
+    parameters_->edit_mode = static_cast<EditMode>(e.data);
+    parameters_->sequencer_direction = static_cast<SequencerDirection>(e.data);
+    break;
+  case SWITCH_VELO:
+    parameters_->velocity_type = static_cast<VelocityType>(e.data);
+    break;
   }
 }
 
