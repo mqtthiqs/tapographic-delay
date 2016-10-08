@@ -136,6 +136,7 @@ class Ui {
   LedColor velocity_meter_color_;
 
   bool sequencer_mode_;
+  bool settings_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };

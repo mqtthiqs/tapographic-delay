@@ -384,6 +384,7 @@ void Ui::OnButtonPressed(const Event& e) {
     if (pressed != -1) {
       // double press
       mode_ = UI_MODE_SETTINGS;
+      settings_changed_ = true;
       ignore_releases_ = 2;
       settings_page_ = pressed;
       settings_item_[pressed] = e.control_id - pressed - 1;
@@ -412,7 +413,7 @@ void Ui::OnButtonReleased(const Event& e) {
 
   if (mode_ == UI_MODE_SETTINGS) {
     if (e.control_id <= BUTTON_6) {
-      if (e.data >= kVeryLongPressDuration) {
+      if (e.data >= kVeryLongPressDuration && !settings_changed_) {
         mode_ = UI_MODE_CONFIRM_SAVE;
         save_candidate_slot_ = bank_ * 6 + e.control_id;
       }
@@ -519,9 +520,10 @@ void Ui::DoEvents() {
     queue_.Touch();
   }
 
-  if (queue_.idle_time() > 800 &&
+  if (queue_.idle_time() > 1000 &&
       mode_ == UI_MODE_SETTINGS) {
     mode_ = UI_MODE_NORMAL;
+    settings_changed_ = false;
     queue_.Touch();
     SaveSettings();
   }
