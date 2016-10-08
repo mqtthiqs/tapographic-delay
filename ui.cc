@@ -245,14 +245,15 @@ inline void Ui::PaintLeds() {
 
   case UI_MODE_NORMAL:
   {
-
-    LedColor background = sequencer_mode_ ? COLOR_RED : COLOR_BLACK;
-
     // Tap-meter
     for (int i=0; i<6; i++) {
-      int color = i <= velocity_meter_ * 6.0f ?
-        velocity_meter_color_ : background;
-      leds_.set_rgb(i, color);
+      if (sequencer_mode_) {
+        leds_.set_rgb(i, COLOR_BLUE);
+      } else {
+        int color = i <= velocity_meter_ * 6.0f ?
+          velocity_meter_color_ : COLOR_BLACK;
+        leds_.set_rgb(i, color);
+      }
     }
 
     // Current slot
