@@ -57,7 +57,7 @@ class CvScaler {
   MultitapDelay* delay_;
 
   Average<32> average_[ADC_CHANNEL_LAST];
-  Average<256> average_scale_;
+  Average<128> average_scale_;
   Average<64> average_clock_ratio_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;

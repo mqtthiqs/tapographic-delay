@@ -36,7 +36,7 @@
 using namespace std;
 
 const float kPotDeadZoneSize = 0.01f;
-const float kScalePotNotchSize = 0.05f;
+const float kScalePotNotchSize = 0.03f;
 const float kClockRatios[16] = {
   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
   1.0f,
@@ -147,14 +147,13 @@ void CvScaler::Read(Parameters* parameters, bool sequencer_mode) {
   val *= val;
   val *= 4.0f;
 
-  if (fabs(val - scale_hy_) > 0.02f) {
-    scale_hy_ = val;
+  average_scale_.Process(val);
+
+  if (fabs(val - scale_hy_) > 0.01f) {
+    scale_hy_ = average_scale_.value();
   }
 
-  average_scale_.Process(scale_hy_);
-
-  float scale_av = average_scale_.value();
-  ONE_POLE(scale_lp_, scale_av, 0.02f);
+  ONE_POLE(scale_lp_, scale_hy_, 0.02f);
   parameters->scale = scale_lp_;
 
   // feedback
