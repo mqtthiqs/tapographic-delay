@@ -43,7 +43,7 @@ UPLOAD_COMMAND  = upload_combo_jtag
 # Packages to build
 TARGET         = mtd
 BOOTLOADER     = mtd_bootloader
-PACKAGES       = . drivers stmlib/utils stmlib/system
+PACKAGES       = . drivers stmlib/utils stmlib/system stmlib/dsp
 RESOURCES      = resources
 
 PGM_INTERFACE = stlink-v2-1-swd

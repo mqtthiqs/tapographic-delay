@@ -28,6 +28,7 @@
 
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
+#include "stmlib/dsp/units.h"
 
 #include "parameters.hh"
 #include "audio_buffer.hh"
@@ -40,6 +41,10 @@
 using namespace stmlib;
 
 const float kTimeLfoAmplitude = 0.5f;
+const float kA440 = 440.0f / SAMPLE_RATE;
+// Warning: at high frequency and low Q, filter becomes unstable
+const float kCutoffLowestNote = 30.0f;
+const float kCutoffNrOctaves = 7.5f;
 
 class Tap
 {
@@ -61,6 +66,7 @@ class Tap
     velocity_ = velocity;
     velocity_type_ = velo_type;
   }
+
   inline void set_panning(float panning) {
     panning_ = panning;
   }
@@ -100,10 +106,10 @@ class Tap
     if (velocity_type == VELOCITY_LP) {
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
-      float f = velocity * velocity * velocity / 8.0f;
-      filter_.set_f_q<FREQUENCY_FAST>(f, 0.75f);
+      float f = SemitonesToRatio(velocity * 12 * kCutoffNrOctaves - 69 + kCutoffLowestNote) * kA440;
+      filter_.set_f_q<FREQUENCY_FAST>(f, 1.0f);
     } else if (velocity_type == VELOCITY_BP) {
-      float f = velocity * velocity * velocity / 6.0f;
+      float f = SemitonesToRatio(velocity * 12 * kCutoffNrOctaves - 69 + kCutoffLowestNote) * kA440;
       float q = params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f;
       filter_.set_f_q<FREQUENCY_FAST>(f, q);
     } else if (velocity_type == VELOCITY_AMP) {
