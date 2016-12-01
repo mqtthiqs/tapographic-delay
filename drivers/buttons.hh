@@ -112,7 +112,7 @@ class Buttons {
   }
 
   inline bool pressed_immediate(uint8_t index) const {
-    return GPIO_ReadInputDataBit(button_pins[index].gpio, button_pins[index].pin);
+    return !GPIO_ReadInputDataBit(button_pins[index].gpio, button_pins[index].pin);
   }
 
 
