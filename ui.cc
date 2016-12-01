@@ -248,7 +248,7 @@ inline void Ui::PaintLeds() {
     // Tap-meter
     for (int i=0; i<6; i++) {
       if (sequencer_mode_) {
-        leds_.set_rgb(i, COLOR_BLUE);
+        leds_.set_rgb(i, COLOR_RED);
       } else {
         int color = i <= velocity_meter_ * 6.0f ?
           velocity_meter_color_ : COLOR_BLACK;
