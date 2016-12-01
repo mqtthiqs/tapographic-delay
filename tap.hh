@@ -29,6 +29,7 @@
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/units.h"
+#include "stmlib/dsp/rsqrt.h"
 
 #include "parameters.hh"
 #include "audio_buffer.hh"
@@ -106,10 +107,12 @@ class Tap
     if (velocity_type == VELOCITY_LP) {
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
-      float f = SemitonesToRatio(velocity * 12 * kCutoffNrOctaves - 69 + kCutoffLowestNote) * kA440;
+      float f = SemitonesToRatio(velocity * 12.0f * kCutoffNrOctaves
+                                 - 69.0f + kCutoffLowestNote) * kA440;
       filter_.set_f_q<FREQUENCY_FAST>(f, 1.0f);
     } else if (velocity_type == VELOCITY_BP) {
-      float f = SemitonesToRatio(velocity * 12 * kCutoffNrOctaves - 69 + kCutoffLowestNote) * kA440;
+      float f = SemitonesToRatio(velocity * 12.0f * kCutoffNrOctaves
+                                 - 69.0f + kCutoffLowestNote) * kA440;
       float q = params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f;
       filter_.set_f_q<FREQUENCY_FAST>(f, q);
     } else if (velocity_type == VELOCITY_AMP) {
@@ -164,6 +167,7 @@ class Tap
         sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
       } else if (velocity_type == VELOCITY_BP) {
         sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
+        sample *= fast_rsqrt_carmack(params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f);
       }
 
       /* write to buffer */
