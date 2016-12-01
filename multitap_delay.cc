@@ -196,8 +196,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   tap_allocator_.set_fade_time(params->morph);
   tap_allocator_.Poll();
 
-  repeat_fader_.Prepare();
-
   /* 1. Write (dry+repeat+feedback) to buffer */
 
   float gain = prev_params_.gain;
@@ -239,6 +237,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       sample = Clip16(static_cast<int32_t>(s * 32768.0f));
     }
 
+    repeat_fader_.Prepare();
     buffer_.Write(sample);
     gain += gain_increment;
     feedback += feedback_increment;
