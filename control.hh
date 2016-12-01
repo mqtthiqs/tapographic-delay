@@ -46,15 +46,16 @@ class Control {
   Control() { }
   ~Control() { }
   
-  void Init(MultitapDelay* delay);
+  void Init(MultitapDelay* delay, CalibrationData* calibration_data);
   void Read(Parameters* parameters, bool sequencer_mode);
-  void Calibrate(Persistent* persistent);
+  void Calibrate();
 
  private:
 
   Adc adc_;
   GateInput gate_input_;
   MultitapDelay* delay_;
+  CalibrationData* calibration_data_;
 
   Average<32> average_[ADC_CHANNEL_LAST];
   Average<128> average_scale_;

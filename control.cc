@@ -42,8 +42,9 @@ const float kClockRatios[16] = {
   1.0f,
   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 16.0f };
 
-void Control::Init(MultitapDelay* delay) {
+void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   delay_ = delay;
+  calibration_data_ = calibration_data;
   adc_.Init();
   gate_input_.Init();
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
@@ -56,9 +57,11 @@ void Control::Init(MultitapDelay* delay) {
   scale_hy_ = 1.0f;
 }
 
-void Control::Calibrate(Persistent* persistent)
+void Control::Calibrate()
 {
-  // TODO
+  for(size_t i=ADC_SCALE_CV; i<=ADC_DRYWET_CV; i++) {
+    calibration_data_->offset[i-ADC_SCALE_CV] = 0.5f - adc_.float_value(i);
+  }
 }
 
 inline float CropDeadZone(float x) {
@@ -115,8 +118,9 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
     // TODO calibrate CV
     if (i < ADC_FSR_CV) {
-      // bipolar CVs
-      scaled_values[i] = 0.5f - adc_.float_value(i); // -0.5..0.5
+      // bipolar CVs with calibrated zero
+      scaled_values[i] = 0.5f - adc_.float_value(i)  // -0.5..0.5
+        + calibration_data_->offset[i-ADC_SCALE_CV];
     } else {
       // unipolar CVs
       scaled_values[i] = adc_.float_value(i); // -0.5..0.5

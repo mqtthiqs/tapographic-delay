@@ -67,7 +67,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
   persistent_.Init();
-  control_.Init(delay_);
+  control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
   // copy and initialize settings
   for (int i=0; i<4; i++) {
@@ -85,7 +85,8 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
 
   // calibration
   if (buttons_.pressed_immediate(BUTTON_DELETE)) {
-    control_.Calibrate(&persistent_);
+    control_.Calibrate();
+    persistent_.SaveData();
   }
 
   current_slot_ = -1;
@@ -370,7 +371,7 @@ void Ui::SaveSettings()
   for (int i=0; i<4; i++) {
     persistent_.mutable_data()->settings[i] = settings_item_[i];
   }
-  persistent_.SaveSettings();
+  persistent_.SaveData();
 }
 
 void Ui::OnButtonPressed(const Event& e) {

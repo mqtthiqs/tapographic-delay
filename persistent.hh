@@ -34,6 +34,10 @@
 
 const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
 
+struct CalibrationData {
+  float offset[4];
+};
+
 class Persistent 
 {
 public:
@@ -42,18 +46,19 @@ public:
 
   struct Data {
     uint8_t settings[4];
+    CalibrationData calibration_data;
   };
 
   void Init() {
     if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
-      // for (size_t i = 0; i < ADC_CHANNEL_NUM_OFFSETS; ++i) {
-      //   data_.calibration_data.offset[i] = 0.505f;
-      // }
+      for (size_t i=0; i<4; i++) {
+        data_.calibration_data.offset[i] = 0.5f;
+      }
       data_.settings[0] = 2;      // velocity parameter (0-4)
       data_.settings[1] = 0;      // bank (0-3)
       data_.settings[2] = 1;      // panning mode (0-2)
       data_.settings[3] = 0;      // quality (0-1)
-      SaveSettings();
+      SaveData();
     }
 
     // sanitize settings
@@ -79,7 +84,7 @@ public:
     }
   }
 
-  void SaveSettings() {
+  void SaveData() {
     settings_storage_.ParsimoniousSave(data_, &settings_token_);
   }
 
