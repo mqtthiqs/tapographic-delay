@@ -48,7 +48,7 @@ class RandomOscillator
   }
 
   inline void set_slope(float slope) {
-    phase_increment_ = 1.0f / fabs(next_value_ - value_) * slope;
+    phase_increment_ = slope / fabs(next_value_ - value_);
     if (phase_increment_ > 1.0f)
       phase_increment_ = 1.0f;
   }
