@@ -67,7 +67,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
   persistent_.Init();
-  cv_scaler_.Init(delay_);
+  control_.Init(delay_);
 
   // copy and initialize settings
   for (int i=0; i<4; i++) {
@@ -85,7 +85,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
 
   // calibration
   if (buttons_.pressed_immediate(BUTTON_DELETE)) {
-    cv_scaler_.Calibrate(&persistent_);
+    control_.Calibrate(&persistent_);
   }
 
   current_slot_ = -1;

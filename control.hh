@@ -41,10 +41,10 @@
 
 using namespace stmlib;
 
-class CvScaler {
+class Control {
  public:
-  CvScaler() { }
-  ~CvScaler() { }
+  Control() { }
+  ~Control() { }
   
   void Init(MultitapDelay* delay);
   void Read(Parameters* parameters, bool sequencer_mode);
@@ -67,7 +67,7 @@ class CvScaler {
   float freq_lp_;
   float amount_lp_;
 
-  DISALLOW_COPY_AND_ASSIGN(CvScaler);
+  DISALLOW_COPY_AND_ASSIGN(Control);
 };
 
 #endif

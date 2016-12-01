@@ -38,7 +38,7 @@
 #include "drivers/switches.hh"
 #include "parameters.hh"
 #include "multitap_delay.hh"
-#include "cv_scaler.hh"
+#include "control.hh"
 #include "persistent.hh"
 
 enum UiMode {
@@ -69,7 +69,7 @@ class Ui {
   void Panic();
 
   void ReadParameters() {
-    cv_scaler_.Read(parameters_, sequencer_mode_);
+    control_.Read(parameters_, sequencer_mode_);
 
     // this function also counts the blocks processed, so:
     if (sample_counter_to_next_slot_ > 0.0f) {
@@ -107,7 +107,7 @@ class Ui {
   stmlib::EventQueue<16> queue_;
 
   Persistent persistent_;
-  CvScaler cv_scaler_;
+  Control control_;
   MultitapDelay* delay_;
   Parameters* parameters_;
   

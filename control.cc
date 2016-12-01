@@ -24,9 +24,9 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Calibration settings.
+// Knob and CV Controls.
 
-#include "cv_scaler.hh"
+#include "control.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -42,7 +42,7 @@ const float kClockRatios[16] = {
   1.0f,
   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 16.0f };
 
-void CvScaler::Init(MultitapDelay* delay) {
+void Control::Init(MultitapDelay* delay) {
   delay_ = delay;
   adc_.Init();
   gate_input_.Init();
@@ -56,7 +56,7 @@ void CvScaler::Init(MultitapDelay* delay) {
   scale_hy_ = 1.0f;
 }
 
-void CvScaler::Calibrate(Persistent* persistent)
+void Control::Calibrate(Persistent* persistent)
 {
   // TODO
 }
@@ -66,7 +66,7 @@ inline float CropDeadZone(float x) {
 }
 
 
-void CvScaler::Read(Parameters* parameters, bool sequencer_mode) {
+void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   float scaled_values[ADC_CHANNEL_LAST];
 
