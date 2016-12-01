@@ -29,7 +29,6 @@
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/rsqrt.h"
-
 #include "multitap_delay.hh"
 
 using namespace stmlib;
@@ -208,7 +207,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_compensation = static_cast<float>(tap_allocator_.total_volumes());
   if (feedback_compensation < 1.0f) feedback_compensation = 1.0f;
   feedback_compensation = fast_rsqrt_carmack(feedback_compensation);
-  params->feedback *= feedback_compensation; // warning: overwrite params
+  ONE_POLE(feedback_compensation_, feedback_compensation, 0.05f);
+  params->feedback *= feedback_compensation_; // warning: overwrite params
 
   float feedback = prev_params_.feedback;
   float feedback_end = params->feedback;

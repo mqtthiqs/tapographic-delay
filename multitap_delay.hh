@@ -101,7 +101,8 @@ private:
   TapAllocator tap_allocator_;
   Tap taps_[kMaxTaps];
   AudioBuffer buffer_;
-  float feedback_buffer_[kBlockSize];   /* max block size */
+  float feedback_buffer_[kBlockSize];
+  float feedback_compensation_;
   Svf dc_blocker_;
   Fader repeat_fader_;
   uint32_t counter_;
