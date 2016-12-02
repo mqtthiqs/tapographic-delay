@@ -317,6 +317,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       sample.r = dry * fade_out + sample.r * fade_in;
     }
 
+    // offset for the input
+    sample.l -= 3500.0f / 32768.0f;
+    sample.r -= 3500.0f / 32768.0f;
+
     if (quality) {
       output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
       output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
