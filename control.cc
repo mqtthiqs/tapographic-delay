@@ -152,8 +152,12 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val *= val;
   val *= 4.0f;
 
-  if (fabs(val - scale_hy_) > 0.01f) {
-    scale_hy_ = val;
+  const float kScaleHysteresis = 0.02f;
+
+  if (val - scale_hy_ > kScaleHysteresis) {
+    scale_hy_ = val - kScaleHysteresis;
+  } else if (val - scale_hy_ < -kScaleHysteresis) {
+    scale_hy_ = val + kScaleHysteresis;
   }
 
   average_scale_.Process(scale_hy_);
