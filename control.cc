@@ -60,12 +60,14 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
 void Control::Calibrate()
 {
   for(size_t i=ADC_SCALE_CV; i<=ADC_DRYWET_CV; i++) {
-    calibration_data_->offset[i-ADC_SCALE_CV] = 0.5f - adc_.float_value(i);
+    calibration_data_->offset[i-ADC_SCALE_CV] = adc_.float_value(i);
   }
 }
 
 inline float CropDeadZone(float x) {
-  return x * (1.0f + 2.0f * kPotDeadZoneSize) - kPotDeadZoneSize;
+  x = x * (1.0f + 2.0f * kPotDeadZoneSize) - kPotDeadZoneSize;
+  CONSTRAIN(x, 0.0f, 1.0f);
+  return x;
 }
 
 
@@ -90,7 +92,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     val -= kScalePotNotchSize;
   } else {
     val = 0.5f;
-  } // TODO: go all the way to 0..1
+  }
   scaled_values[ADC_SCALE_POT] = val;
 
   // feedback
@@ -116,14 +118,12 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   /* 2. Offset and scale CVs */
 
   for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
-    // TODO calibrate CV
     if (i < ADC_FSR_CV) {
       // bipolar CVs with calibrated zero
-      scaled_values[i] = 0.5f - adc_.float_value(i)  // -0.5..0.5
-        + calibration_data_->offset[i-ADC_SCALE_CV];
+      scaled_values[i] = adc_.float_value(i) - calibration_data_->offset[i-ADC_SCALE_CV];
     } else {
       // unipolar CVs
-      scaled_values[i] = adc_.float_value(i); // -0.5..0.5
+      scaled_values[i] = adc_.float_value(i);
     }
   }
 
