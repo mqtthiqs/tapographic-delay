@@ -34,6 +34,7 @@
 #include <stm32f4xx_conf.h>
 
 enum AdcChannel {
+  // pots
   ADC_SCALE_POT,
   ADC_FEEDBACK_POT,
   ADC_MODULATION_POT,
@@ -41,10 +42,13 @@ enum AdcChannel {
   ADC_MORPH_POT,
   ADC_GAIN_POT,
 
+  // bipolar CV
   ADC_SCALE_CV,
   ADC_FEEDBACK_CV,
   ADC_MODULATION_CV,
   ADC_DRYWET_CV,
+
+  // unipolar CV
   ADC_CLOCK_CV,
   ADC_FSR_CV,
   ADC_VEL_CV,
@@ -191,6 +195,10 @@ public:
     ADC_Cmd(ADC3, ENABLE);
 
     Convert();
+
+    for(int i=0; i<1000000; i++) {
+      __asm("nop");
+    }
   }
 
   inline void DeInit() {
