@@ -152,13 +152,14 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val *= val;
   val *= 4.0f;
 
-  average_scale_.Process(val);
-
   if (fabs(val - scale_hy_) > 0.01f) {
-    scale_hy_ = average_scale_.value();
+    scale_hy_ = val;
   }
 
-  ONE_POLE(scale_lp_, scale_hy_, 0.02f);
+  average_scale_.Process(scale_hy_);
+  val = average_scale_.value();
+
+  ONE_POLE(scale_lp_, val, 0.01f);
   parameters->scale = scale_lp_;
 
   // feedback
