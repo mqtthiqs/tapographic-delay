@@ -28,12 +28,15 @@ F_CPU          = 180000000L
 SYSCLOCK       = SYSCLK_FREQ_180MHz
 FAMILY         = f4xx
 MCU            = STM32F427_437xx -DHAS_FMC
+SAMPLE_RATE    = 48000
 
 # Preferred upload command
 UPLOAD_COMMAND  = upload_jtag
 
 # Packages to build
 TARGET         = mtd_bootloader
-PACKAGES       = bootloader drivers stmlib/utils stmlib/system
+PACKAGES       = bootloader drivers \
+		 stmlib/utils stmlib/system \
+		 stm_audio_bootloader/qpsk
 
 include stmlib/makefile.inc

@@ -50,11 +50,7 @@ PGM_INTERFACE_TYPE = hla-swd
 
 include stmlib/makefile.inc
 
-upload_dld:
-	openocd \
-	-f $(OPENOCD_SCRIPTS_PATH)interface_$(PGM_INTERFACE).cfg \
-	-f $(OPENOCD_SCRIPTS_PATH)stm32$(FAMILY)_$(PGM_INTERFACE_TYPE).cfg \
-	-f $(OPENOCD_SCRIPTS_PATH)prelude_$(FAMILY).cfg \
-	-c "flash write_bank 0 resources/dld.bin 0x0000000" \
-	-c "verify_image resources/dld.bin" \
-	-f $(OPENOCD_SCRIPTS_PATH)postlude.cfg
+wav:  $(TARGET_BIN)
+	python stm_audio_bootloader/qpsk/encoder.py \
+		-t stm32f4 -s 48000 -b 12000 -c 6000 -p 256 \
+		$(TARGET_BIN)
