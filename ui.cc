@@ -30,7 +30,7 @@
 #include "ui.hh"
 #include "stmlib/utils/random.h"
 
-const int32_t kLongPressDuration = 300;
+const int32_t kLongPressDuration = 400;
 const int32_t kVeryLongPressDuration = 1200;
 
 using namespace stmlib;
