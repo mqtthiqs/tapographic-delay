@@ -33,7 +33,7 @@
 
 #include <stm32f4xx_conf.h>
 
-const uint8_t kNumLeds = 21;
+const uint8_t kNumLeds = 26;
 
 enum LedColor {
   COLOR_BLACK,
@@ -65,9 +65,14 @@ enum LedNames {
   LED_BUT6_R,
   LED_BUT6_G,
   LED_BUT6_B,
-  LED_DELETE,
-  LED_REPEAT,
+  LED_DELETE_R,
+  LED_DELETE_G,
+  LED_DELETE_B,
+  LED_REPEAT_R,
+  LED_REPEAT_G,
+  LED_REPEAT_B,
   LED_TAP,
+  OUT_VELNORM,                  // normalization for Vel (not an LED)
 };
 
 static uint16_t const LED_Pins[kNumLeds] = {
@@ -90,8 +95,13 @@ static uint16_t const LED_Pins[kNumLeds] = {
     GPIO_Pin_9,
     GPIO_Pin_8,
     GPIO_Pin_10,
+    GPIO_Pin_3,
+    GPIO_Pin_7,
+    GPIO_Pin_12,
+    GPIO_Pin_10,
     GPIO_Pin_12,
     GPIO_Pin_0,
+    GPIO_Pin_9,
 };
 
 static uint16_t const LED_PinSources[kNumLeds] = {
@@ -114,8 +124,13 @@ static uint16_t const LED_PinSources[kNumLeds] = {
     GPIO_PinSource9,
     GPIO_PinSource8,
     GPIO_PinSource10,
+    GPIO_PinSource3,
+    GPIO_PinSource7,
+    GPIO_PinSource12,
+    GPIO_PinSource10,
     GPIO_PinSource12,
     GPIO_PinSource0,
+    GPIO_PinSource9,
 };
 
 static GPIO_TypeDef* const LED_GPIOs[kNumLeds] = {
@@ -137,9 +152,14 @@ static GPIO_TypeDef* const LED_GPIOs[kNumLeds] = {
 		GPIOA,
 		GPIOA,
     GPIOA,
-    GPIOC,
-    GPIOC,
-    GPIOA,
+    GPIOC,                      // del R
+    GPIOD,                      // del G
+    GPIOD,                      // del B
+    GPIOC,                      // rep R
+    GPIOG,                      // rep G
+    GPIOG,                      // rep B
+    GPIOA,                      // tap
+    GPIOB,                      // vel norm
 };
 
 class Leds {
@@ -180,14 +200,37 @@ class Leds {
     }
   }
 
+  void Clear() {
+    for (int i=0; i<kNumLeds; i++) {
+      values_[i] = false;
+    }
+  }
+
   void set(uint8_t channel, bool value) {
-    values_[channel] = value;
+    if (channel >= LED_DELETE_R &&
+        channel <= LED_REPEAT_B) {
+      values_[channel] = !value;
+    } else {
+      values_[channel] = value;
+    }
   }
 
   void set_rgb(uint8_t channel, uint8_t color) {
     for (int i=0; i<3; i++) {
       set(channel * 3 + i, (color >> i) & 1);
     }
+  }
+
+  void set_repeat(uint8_t color) {
+    set(LED_REPEAT_R, (color >> 0) & 1);
+    set(LED_REPEAT_G, (color >> 1) & 1);
+    set(LED_REPEAT_B, (color >> 2) & 1);
+  }
+
+  void set_delete(uint8_t color) {
+    set(LED_DELETE_R, (color >> 0) & 1);
+    set(LED_DELETE_G, (color >> 1) & 1);
+    set(LED_DELETE_B, (color >> 2) & 1);
   }
 
  private:

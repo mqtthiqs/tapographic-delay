@@ -219,9 +219,11 @@ inline void Ui::PaintLeds() {
   bool repeat =
     delay_->repeat() <= 0.0f ? false :
     delay_->repeat() < 1.0f ? blink : true;
-  leds_.set(LED_REPEAT, repeat);
+  leds_.set_repeat(repeat ? COLOR_WHITE : COLOR_BLACK);
   bool del = delay_->clocked()  ^ (ping_gate_led_counter_ > 0);
-  leds_.set(LED_DELETE, del);
+  leds_.set_delete(del ? COLOR_WHITE : COLOR_BLACK);
+
+  leds_.set(OUT_VELNORM, false);
 
   switch (mode_) {
   case UI_MODE_SPLASH:
