@@ -172,7 +172,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     average_[ADC_FEEDBACK_POT].value() +
     average_[ADC_FEEDBACK_CV].value();
   CONSTRAIN(val, 0.0f, 1.0f);
-  val *= 1.1f;
+  val *= 1.3f;
   parameters->feedback = val;
 
   // modulation
