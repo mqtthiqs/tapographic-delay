@@ -257,9 +257,9 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   if (tap) {
     if (sequencer_mode) {
-      float val = 1.0f - parameters->velocity;
-      val = val * val * val;
-      val *= 100000.0f;
+      float val = parameters->velocity;
+      val *= val;
+      val *= 200000.0f;
       delay_->sequencer_step(val + parameters->morph);
     } else {
       delay_->AddTap(parameters);

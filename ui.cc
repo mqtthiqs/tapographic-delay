@@ -223,7 +223,10 @@ inline void Ui::PaintLeds() {
   bool del = delay_->clocked()  ^ (ping_gate_led_counter_ > 0);
   leds_.set_delete(del ? COLOR_WHITE : COLOR_BLACK);
 
-  leds_.set(OUT_VELNORM, false);
+  // with jumper on High, velocity normalled to High if not in
+  // sequencer mode; in sequencer mode (where it controls Morph
+  // speed), it is normalled to 0.
+  leds_.set(OUT_VELNORM, !sequencer_mode_);
 
   switch (mode_) {
   case UI_MODE_SPLASH:
