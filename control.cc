@@ -52,7 +52,8 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   }
   fsr_filter_.Init();
   fsr_filter_.set_f<FREQUENCY_FAST>(0.01f);
-  average_scale_.Process(1.0f);
+  average_scale_.Init();
+  average_clock_ratio_.Init();
   scale_lp_ = 1.0f;
   scale_hy_ = 1.0f;
 }
