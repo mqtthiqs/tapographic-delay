@@ -30,6 +30,7 @@
 #define PERSISTENT_H_
 
 #include "parameters.hh"
+#include "resources.h"
 #include "stmlib/system/storage.h"
 
 const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
@@ -68,19 +69,50 @@ public:
     CONSTRAIN(data_.settings[3], 0, 1);
 
     // TODO sanitize slots
-    if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
+    if (/*TODO*/ true || !bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
         !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
 
       // clear slots
       memset(slots_, 0, sizeof(slots_));
-      // TODO make default IRs
 
-      bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
-      bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
-      bank2_.ParsimoniousSave(&slots_[2], 6 * sizeof(Slot), &token_[2]);
-      bank3_.ParsimoniousSave(&slots_[3], 6 * sizeof(Slot), &token_[3]);
+      int kNumSlots = 1;        // TODO
+      for (int slot=0; slot<kNumSlots; slot++) {
+        slots_[slot].size = lut_preset_sizes[slot];
+        // int slot_idx = ;
+
+        for (int tap=0; tap<slots_[slot].size; tap++) {
+          int index = tap + kMaxTaps * slot;
+          TapParameters *t = &slots_[slot].taps[tap];
+          t->time = lut_preset_times[index];
+          t->velocity = lut_preset_velos[index];
+          t->velocity_type = static_cast<VelocityType>(lut_preset_types[index]);
+          t->panning = lut_preset_pans[tap];
+        }
+      }
+
+      // Slot s;
+      // float optimal[6] = {1.0, 0.30086703, 0.545568, 0.11772496, 0.750073, 0.398813414};
+
+      // for (int i=0; i<6; i++) {
+      //   s.taps[i].velocity_type = VELOCITY_LP;
+      //   s.taps[i].velocity = 0.4f;
+      //   s.taps[i].panning = 0.5f;
+      //   s.taps[i].time = optimal[i] * SAMPLE_RATE;
+      // }
+
+      // for (int i=0; i<6; i++) {
+      //   s.size = i+1;
+      //   slots_[i] = s;
+      // }
+
+      // save new slots
+                                // TODO uncomment
+      // bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
+      // bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
+      // bank2_.ParsimoniousSave(&slots_[2], 6 * sizeof(Slot), &token_[2]);
+      // bank3_.ParsimoniousSave(&slots_[3], 6 * sizeof(Slot), &token_[3]);
     }
   }
 

@@ -28,9 +28,10 @@
 #
 # Lookup table definitions.
 
-import scipy.signal
-import numpy
-import pylab
+import numpy as np
+
+import os
+sample_rate = int(os.environ["SAMPLE_RATE"])
 
 lookup_tables = []
 int16_lookup_tables = []
@@ -40,10 +41,61 @@ XFade table
 ----------------------------------------------------------------------------"""
 
 size = 17
-t = numpy.arange(0, size) / float(size-1)
+t = np.arange(0, size) / float(size-1)
 t = 1.04 * t - 0.02
 t[t < 0] = 0
 t[t >= 1] = 1
-t *= numpy.pi / 2
-lookup_tables.append(('xfade_in', numpy.sin(t) * (2 ** -0.5)))
-lookup_tables.append(('xfade_out', numpy.cos(t) * (2 ** -0.5)))
+t *= np.pi / 2
+lookup_tables.append(('xfade_in', np.sin(t) * (2 ** -0.5)))
+lookup_tables.append(('xfade_out', np.cos(t) * (2 ** -0.5)))
+
+"""----------------------------------------------------------------------------
+Factory presets
+----------------------------------------------------------------------------"""
+
+VEL_AMP=0
+VEL_LP=1
+VEL_BP=2
+
+maxtaps = 32
+
+slots = []
+
+# Bank 1: long bouncings
+length = 7 # seconds
+size = 15
+
+t = (np.arange(float(size))+1)/float(size)
+
+slots.append({
+    'size': size,
+    'times': t*t*t*sample_rate*length,
+    'velos': t,
+    'types': np.repeat([VEL_AMP], size),
+    'pans': np.resize([0,1], size),
+})
+
+# Formatting and writing to table
+
+def pad(a):
+    return np.append(a, np.repeat([0], maxtaps - len(a)))
+
+# TODO
+times = []
+velos = []
+pans = []
+types = []
+sizes = []
+
+for slot in slots:
+    sizes.append(slot['size'])
+    times.extend(pad(slot['times']))
+    velos.extend(pad(slot['velos']))
+    types.extend(pad(slot['types']))
+    pans.extend(pad(slot['pans']))
+
+lookup_tables.append(('preset_times', times))
+lookup_tables.append(('preset_velos', velos))
+lookup_tables.append(('preset_pans', pans))
+int16_lookup_tables.append(('preset_types', types))
+int16_lookup_tables.append(('preset_sizes', sizes))

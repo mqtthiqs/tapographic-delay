@@ -32,14 +32,6 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
 {
   taps_ = taps;
   fade_time_ = 10000.0f;
-
-  // // Dummy IR generation
-  // for (size_t i=0; i<kMaxTaps; i++) {
-  //   float t = static_cast<float>(i) + 1.0f;
-  //   float time = t * t * t * SAMPLE_RATE * 0.005f / kMaxTaps + 500.0f;
-  //   float velocity = (t+1) / (kMaxTaps+1);
-  //   Add(time, velocity, VELOCITY_AMP, Random::GetFloat());
-  // }
 }
 
 void TapAllocator::Load(Slot* slot)
