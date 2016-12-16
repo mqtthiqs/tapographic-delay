@@ -366,7 +366,7 @@ void Ui::ParseSettingsCurrentPage() {
     delay_->RepanTaps(parameters_->panning_mode);
   } break;
   case PAGE_QUALITY: {
-    parameters_->quality = p;
+    parameters_->quality = !p;
   } break;
   }
 }
