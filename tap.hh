@@ -107,9 +107,6 @@ class Tap
     if (velocity_type == VELOCITY_LP) {
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
-      float f = SemitonesToRatio(velocity * 12.0f * kCutoffNrOctaves
-                                 - 69.0f + kCutoffLowestNote) * kA440;
-      filter_.set_f_q<FREQUENCY_FAST>(f, 1.0f);
     } else if (velocity_type == VELOCITY_BP) {
       float f = SemitonesToRatio(velocity * 12.0f * kCutoffNrOctaves
                                  - 69.0f + kCutoffLowestNote) * kA440;
@@ -164,7 +161,10 @@ class Tap
       if (velocity_type == VELOCITY_AMP) {
         sample *= velocity;
       } else if (velocity_type == VELOCITY_LP) {
-        sample = filter_.Process<FILTER_MODE_LOW_PASS>(sample);
+        ONE_POLE(lp_filter1_, sample, velocity);
+        ONE_POLE(lp_filter2_, lp_filter1_, velocity);
+        ONE_POLE(lp_filter3_, lp_filter2_, velocity);
+        sample = lp_filter3_;
       } else if (velocity_type == VELOCITY_BP) {
         sample = filter_.Process<FILTER_MODE_BAND_PASS>(sample);
         sample *= fast_rsqrt_carmack(params->velocity_parameter * params->velocity_parameter * 20.0f + 1.0f);
@@ -183,6 +183,7 @@ class Tap
  private:
 
   NaiveSvf filter_;
+  float lp_filter1_, lp_filter2_, lp_filter3_;
 
   VelocityType velocity_type_;
   float time_;
