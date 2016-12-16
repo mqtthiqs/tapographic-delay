@@ -129,7 +129,7 @@ void Ui::PingGateLed() {
 
 void Ui::PingResetLed() {
   if (ping_reset_counter_ == 0)   // TODO necessary?
-    ping_reset_counter_ = 24;
+    ping_reset_counter_ = 48;
 }
 
 void Ui::PingSaveLed() {
