@@ -77,10 +77,8 @@ public:
       // clear slots
       memset(slots_, 0, sizeof(slots_));
 
-      int kNumSlots = 1;        // TODO
       for (int slot=0; slot<kNumSlots; slot++) {
         slots_[slot].size = lut_preset_sizes[slot];
-        // int slot_idx = ;
 
         for (int tap=0; tap<slots_[slot].size; tap++) {
           int index = tap + kMaxTaps * slot;
@@ -88,24 +86,9 @@ public:
           t->time = lut_preset_times[index];
           t->velocity = lut_preset_velos[index];
           t->velocity_type = static_cast<VelocityType>(lut_preset_types[index]);
-          t->panning = lut_preset_pans[tap];
+          t->panning = lut_preset_pans[index];
         }
       }
-
-      // Slot s;
-      // float optimal[6] = {1.0, 0.30086703, 0.545568, 0.11772496, 0.750073, 0.398813414};
-
-      // for (int i=0; i<6; i++) {
-      //   s.taps[i].velocity_type = VELOCITY_LP;
-      //   s.taps[i].velocity = 0.4f;
-      //   s.taps[i].panning = 0.5f;
-      //   s.taps[i].time = optimal[i] * SAMPLE_RATE;
-      // }
-
-      // for (int i=0; i<6; i++) {
-      //   s.size = i+1;
-      //   slots_[i] = s;
-      // }
 
       // save new slots
                                 // TODO uncomment
