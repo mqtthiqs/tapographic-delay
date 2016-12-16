@@ -142,7 +142,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   // gain
   val = average_[ADC_GAIN_POT].value();
   CONSTRAIN(val, 0.0f, 1.0f);
-  val *= 2.0f;
+  val *= 3.0f;
   parameters->gain = val;
 
   // scale
