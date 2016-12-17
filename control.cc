@@ -36,7 +36,8 @@
 using namespace std;
 
 const float kPotDeadZoneSize = 0.01f;
-const float kScalePotNotchSize = 0.03f;
+const float kScalePotNotchSize = 0.07f;
+const float kScaleHysteresis = 0.03f;
 const float kClockRatios[16] = {
   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
   1.0f,
@@ -80,40 +81,32 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   float val;
 
   // gain
-  val = CropDeadZone(adc_.float_value(ADC_GAIN_POT));
+  val = adc_.float_value(ADC_GAIN_POT);
   val *= val;          // quadratic
   scaled_values[ADC_GAIN_POT] = val;
 
   // scale
-  val = CropDeadZone(adc_.float_value(ADC_SCALE_POT));
-  // flat zone at noon
-  if (val < 0.5f - kScalePotNotchSize) {
-    val += kScalePotNotchSize;
-  } else if (val > 0.5f + kScalePotNotchSize) {
-    val -= kScalePotNotchSize;
-  } else {
-    val = 0.5f;
-  }
+  val = adc_.float_value(ADC_SCALE_POT);
   scaled_values[ADC_SCALE_POT] = val;
 
   // feedback
-  val = CropDeadZone(adc_.float_value(ADC_FEEDBACK_POT));
+  val = adc_.float_value(ADC_FEEDBACK_POT);
   scaled_values[ADC_FEEDBACK_POT] = val;
 
   // modulation
-  val = CropDeadZone(adc_.float_value(ADC_MODULATION_POT));
+  val = adc_.float_value(ADC_MODULATION_POT);
   scaled_values[ADC_MODULATION_POT] = val;
 
   // drywet
-  val = CropDeadZone(adc_.float_value(ADC_DRYWET_POT));
+  val = adc_.float_value(ADC_DRYWET_POT);
   scaled_values[ADC_DRYWET_POT] = val;
 
   // morph
-  val = CropDeadZone(adc_.float_value(ADC_MORPH_POT));
+  val = adc_.float_value(ADC_MORPH_POT);
   scaled_values[ADC_MORPH_POT] = val;
 
   // clock ratio
-  val = CropDeadZone(adc_.float_value(ADC_SCALE_POT));
+  val = adc_.float_value(ADC_SCALE_POT);
   float scaled_clock_ratio = val;
 
   /* 2. Offset and scale CVs */
@@ -141,7 +134,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   // gain
   val = average_[ADC_GAIN_POT].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   val *= 3.0f;
   parameters->gain = val;
 
@@ -149,19 +142,27 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val =
     average_[ADC_SCALE_POT].value() +
     average_[ADC_SCALE_CV].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   val *= val;
   val *= 4.0f;
-
-  const float kScaleHysteresis = 0.02f;
 
   if (val - scale_hy_ > kScaleHysteresis) {
     scale_hy_ = val - kScaleHysteresis;
   } else if (val - scale_hy_ < -kScaleHysteresis) {
     scale_hy_ = val + kScaleHysteresis;
   }
+  val = scale_hy_;
 
-  average_scale_.Process(scale_hy_);
+  // flat zone at noon
+  if (val < 1.0f - kScalePotNotchSize) {
+    val += kScalePotNotchSize;
+  } else if (val > 1.0f + kScalePotNotchSize) {
+    val -= kScalePotNotchSize;
+  } else {
+    val = 1.0f;
+  }
+
+  average_scale_.Process(val);
   val = average_scale_.value();
 
   ONE_POLE(scale_lp_, val, 0.01f);
@@ -171,7 +172,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val =
     average_[ADC_FEEDBACK_POT].value() +
     average_[ADC_FEEDBACK_CV].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   val *= 1.3f;
   parameters->feedback = val;
 
@@ -179,8 +180,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val =
     average_[ADC_MODULATION_POT].value() +
     average_[ADC_MODULATION_CV].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
-
+  val = CropDeadZone(val);
   float amount = val;
   amount *= amount * amount;
   // offset avoids null frequency (NaN samples)
@@ -197,12 +197,12 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val =
     average_[ADC_DRYWET_POT].value() +
     average_[ADC_DRYWET_CV].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   parameters->drywet = val;
 
   // morph
   val = average_[ADC_MORPH_POT].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   val = (val + 0.1f) / 1.1f;
   val = val * val * val * val;
   val *= 600000.0f;
@@ -223,7 +223,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   val =
     average_clock_ratio_.value() +
     average_[ADC_SCALE_CV].value();
-  CONSTRAIN(val, 0.0f, 1.0f);
+  val = CropDeadZone(val);
   val *= 15.0f;
   parameters->clock_ratio = kClockRatios[static_cast<int>(val)];
 
