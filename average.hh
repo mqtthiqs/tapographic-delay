@@ -31,9 +31,8 @@
 
 #include <algorithm>
 
-#include "stmlib/stmlib.h"
+const int32_t kResolution = 65536;
 
-/* SIZE must be a power of 2 */
 template<int SIZE>
 class Average {
  public:
@@ -41,23 +40,24 @@ class Average {
   ~Average() { }
   
   void Init() {
-    last = 0.0f;
+    last = 0;
     cursor = 0;
-    std::fill(history, history+SIZE, 0.0f);
+    std::fill(history, history+SIZE, 0);
   }
 
   void Process(float x) {
-    last += x - history[(cursor+1) % SIZE];
-    history[cursor++ % SIZE] = x;
+    int32_t input = static_cast<int32_t>(x * kResolution);
+    history[cursor++ % SIZE] = input;
+    last += input - history[cursor % SIZE];
   }
 
   float value() {
-    return last / (SIZE-1);      
+    return (float)last / (SIZE-1) / kResolution;
   }
-    
+
  private:
-  float last;
-  float history[SIZE];
+  int32_t last;
+  int32_t history[SIZE];
   size_t cursor;    
 
   DISALLOW_COPY_AND_ASSIGN(Average);
