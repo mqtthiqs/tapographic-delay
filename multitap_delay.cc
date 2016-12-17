@@ -77,7 +77,7 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
 }
 
 void MultitapDelay::ClockTick() {
-  clock_period_.Process(static_cast<float>(clock_counter_));
+  clock_period_.Process(clock_counter_);
   clock_counter_ = 0;
 }
 
@@ -171,10 +171,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // compute IR scale to fit into clock period
   if (clocked_) {
-    SLEW(clock_period_smoothed_, clock_period_.value(), 5000.0f);
+    ONE_POLE(clock_period_smoothed_, clock_period_.value(), 0.002f);
       float clocked_scale = clock_period_smoothed_
       / tap_allocator_.max_time()
-      / params->clock_ratio;
+      * params->clock_ratio;
     ONE_POLE(clocked_scale_, clocked_scale, 0.1f);
     params->scale = clocked_scale_; // warning: overwrite params
   }

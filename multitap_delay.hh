@@ -109,7 +109,7 @@ private:
 
   uint32_t last_repeat_time_;
   uint32_t clock_counter_;
-  Average<8> clock_period_;
+  Average<4> clock_period_;
   float clock_period_smoothed_;
   float clocked_scale_;
 
