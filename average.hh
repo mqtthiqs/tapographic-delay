@@ -31,8 +31,6 @@
 
 #include <algorithm>
 
-const int32_t kResolution = 65536;
-
 template<int SIZE>
 class Average {
  public:
@@ -45,14 +43,14 @@ class Average {
     std::fill(history, history+SIZE, 0);
   }
 
-  void Process(float x) {
-    int32_t input = static_cast<int32_t>(x * kResolution);
+  void Process(int32_t x) {
+    int32_t input = x;
     history[cursor++ % SIZE] = input;
     last += input - history[cursor % SIZE];
   }
 
-  float value() {
-    return (float)last / (SIZE-1) / kResolution;
+  int32_t value() {
+    return last / (SIZE-1);
   }
 
  private:
@@ -61,6 +59,28 @@ class Average {
   size_t cursor;    
 
   DISALLOW_COPY_AND_ASSIGN(Average);
+};
+
+const int32_t kResolution = 65536;
+
+template<int SIZE>
+class FAverage {
+public:
+  FAverage() { }
+  ~FAverage() { }
+
+  void Init() { a.Init(); }
+
+  void Process(float x) {
+    a.Process(static_cast<int32_t>(x * kResolution));
+  }
+
+  float value() {
+    return static_cast<float>(a.value()) / kResolution;
+  }
+private:
+  Average<SIZE> a;
+  DISALLOW_COPY_AND_ASSIGN(FAverage);
 };
 
 #endif

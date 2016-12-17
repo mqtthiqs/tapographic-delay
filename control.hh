@@ -57,9 +57,9 @@ class Control {
   MultitapDelay* delay_;
   CalibrationData* calibration_data_;
 
-  Average<32> average_[ADC_CHANNEL_LAST];
-  Average<128> average_scale_;
-  Average<64> average_clock_ratio_;
+  FAverage<32> average_[ADC_CHANNEL_LAST];
+  FAverage<128> average_scale_;
+  FAverage<64> average_clock_ratio_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
   bool taptrig_armed_;
