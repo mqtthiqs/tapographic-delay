@@ -37,11 +37,13 @@ class Average {
   Average() { }
   ~Average() { }
   
-  void Init() {
-    last = 0;
+  void Init(int32_t x) {
+    last = x * (SIZE-1);
     cursor = 0;
-    std::fill(history, history+SIZE, 0);
+    std::fill(history, history+SIZE, x);
   }
+
+  void Init() { Init(0); }
 
   void Process(int32_t x) {
     int32_t input = x;
