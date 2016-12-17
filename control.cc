@@ -112,7 +112,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   /* 2. Offset and scale CVs */
 
   for (int i=ADC_SCALE_CV; i<ADC_CHANNEL_LAST; i++) {
-    if (i < ADC_FSR_CV) {
+    if (i < ADC_CLOCK_CV) {
       // bipolar CVs with calibrated zero
       scaled_values[i] = calibration_data_->offset[i-ADC_SCALE_CV] - adc_.float_value(i);
       scaled_values[i] *= 1.05f;
