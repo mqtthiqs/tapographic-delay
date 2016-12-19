@@ -40,43 +40,43 @@ class Fader {
   ~Fader() { }
 
   void Init() {
-    envelope_ = 0.0f;
-    envelope_increment_ = 0.0f;
+    volume_ = 0.0f;
+    volume_increment_ = 0.0f;
   }
 
-  inline float volume() { return envelope_; }
+  inline float volume() { return volume_; }
 
   inline void fade_in(float length) {
-    envelope_increment_ = 1.0f / length;
+    volume_increment_ = 1.0f / length;
   }
 
   inline void fade_out(float length) {
-    envelope_increment_ = -1.0f / length;
+    volume_increment_ = -1.0f / length;
   }
 
   inline void Prepare() {
-    if (envelope_ < 0.0f) {
-      envelope_ = 0.0f;
-      envelope_increment_ = 0.0f;
-    } else if (envelope_ > 1.0f) {
-      envelope_ = 1.0f;
-      envelope_increment_ = 0.0f;
+    if (volume_ < 0.0f) {
+      volume_ = 0.0f;
+      volume_increment_ = 0.0f;
+    } else if (volume_ > 1.0f) {
+      volume_ = 1.0f;
+      volume_increment_ = 0.0f;
     }
   }
 
   inline void Process(float &sample) {
-    sample *= envelope_;
-    envelope_ += envelope_increment_;
+    sample *= volume_;
+    volume_ += volume_increment_;
   }
 
   inline void Process(short &sample) {
-    sample *= envelope_;
-    envelope_ += envelope_increment_;
+    sample *= volume_;
+    volume_ += volume_increment_;
   }
 
  private:
-  float envelope_;
-  float envelope_increment_;
+  float volume_;
+  float volume_increment_;
 
   DISALLOW_COPY_AND_ASSIGN(Fader);
 };
