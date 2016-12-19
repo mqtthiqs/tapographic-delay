@@ -134,7 +134,7 @@ slots.append({
 
 # 5
 length = 3
-size = 12
+size = 16
 
 t = normalize(np.add.accumulate(np.power(0.99, np.arange(1.0, size+1))))
 v = normalize(np.power(1.2, np.arange(1.0, size+1)))
@@ -144,15 +144,15 @@ slots.append({
     'times': t * sample_rate * length,
     'velos': v,
     'types': np.repeat([VEL_AMP], size),
-    'pans': normalize(np.arange(0.0, size)),
+    'pans': np.random.uniform(size=size),
 })
 
 # 6
-length = 7
+length = 3
 size = 16
 
 t = normalize(np.add.accumulate(np.power(1.005, np.arange(1.0, size+1))))
-v1 = normalize(np.power(0.7, np.arange(1.0, size/2+1)))
+v1 = normalize(np.power(0.5, np.arange(1.0, size/2)))
 v2 = v1[::-1]
 v = normalize(np.append(v1, v2))
 
