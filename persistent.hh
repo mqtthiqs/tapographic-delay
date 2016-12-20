@@ -69,7 +69,7 @@ public:
     CONSTRAIN(data_.settings[3], 0, 1);
 
     // TODO sanitize slots
-    if (/*TODO*/ true || !bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
+    if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
         !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
@@ -91,11 +91,10 @@ public:
       }
 
       // save new slots
-                                // TODO uncomment
-      // bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
-      // bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
-      // bank2_.ParsimoniousSave(&slots_[2], 6 * sizeof(Slot), &token_[2]);
-      // bank3_.ParsimoniousSave(&slots_[3], 6 * sizeof(Slot), &token_[3]);
+      bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
+      bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
+      bank2_.ParsimoniousSave(&slots_[2], 6 * sizeof(Slot), &token_[2]);
+      bank3_.ParsimoniousSave(&slots_[3], 6 * sizeof(Slot), &token_[3]);
     }
   }
 
