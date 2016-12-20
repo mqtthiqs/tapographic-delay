@@ -49,10 +49,12 @@ class Fader {
 
   inline void fade_in(float length) {
     volume_increment_ = 1.0f / length;
+    if (volume_ < 0.0f) volume_ = 0.0f;
   }
 
   inline void fade_out(float length) {
     volume_increment_ = -1.0f / length;
+    if (volume_ > 1.0f) volume_ = 1.0f;
   }
 
   inline void Prepare() {
