@@ -54,9 +54,8 @@ class TapAllocator
 
   float total_volumes() {
     float sum = 0.0f;
-    for(int i=0; i<busy_voices(); i++) {
-      int index = (oldest_voice_ + i) % kMaxTaps;
-      sum += taps_[index].volume();
+    for(int i=0; i<kMaxTaps; i++) {
+      sum += taps_[i].volume();
     }
     return sum;
   }
