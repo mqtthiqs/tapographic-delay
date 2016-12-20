@@ -79,6 +79,8 @@ public:
     tap_allocator_.Save(slot);
   };
 
+  void Poll() { tap_allocator_.Poll(); }
+
   bool counter_running() { return counter_running_; }
   float repeat() { return repeat_fader_.volume(); }
   bool clocked() { return clocked_; }

@@ -108,6 +108,7 @@ int main(void) {
   Init();
   while(1) {
     ui.DoEvents();
+    delay.Poll();
     /* TODO: enable this in the final version to save energy */
     // __WFI();
   }

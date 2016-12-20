@@ -199,7 +199,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // set fade time
   tap_allocator_.set_fade_time(params->morph);
-  tap_allocator_.Poll();
 
   /* 1. Write (dry+repeat+feedback) to buffer */
 
