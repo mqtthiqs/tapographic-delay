@@ -55,6 +55,7 @@ class Tap
 
   void Init() {
     lfo_.Init();
+    fader_.Init();
     previous_lfo_sample_ = 0.0f;
     time_ = kBlockSize;
     velocity_ = 0.0f;
