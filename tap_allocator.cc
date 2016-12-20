@@ -138,7 +138,6 @@ void TapAllocator::Clear()
   }
   queue_.Flush();
   max_time_ = 0.0f;
-  oldest_voice_ = 0;
-  next_voice_ = 0;
+  oldest_voice_ = next_voice_;
   count_voices_ = 0;
 }
