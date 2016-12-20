@@ -52,14 +52,6 @@ class TapAllocator
     fade_time_ = fade_time;
   }
 
-  // the pool is writeable if it is not full, and if the last voice
-  // has finished fading out
-  uint8_t busy_voices() {
-    int busy = next_voice_ - oldest_voice_;
-    if (busy < 0) busy += kMaxTaps;
-    return busy;
-  }
-
   float total_volumes() {
     float sum = 0.0f;
     for(int i=0; i<busy_voices(); i++) {
@@ -72,15 +64,19 @@ class TapAllocator
   float max_time() { return max_time_; }
 
  private:
+  // the pool is writeable if it is not full, and if the last voice
+  // has finished fading out
   bool writeable() { return !full() && !taps_[next_voice_].active(); };
-  bool empty() { return next_voice_ == oldest_voice_; }
-  bool full() { return (next_voice_ + 1) % kMaxTaps == oldest_voice_; }
+  bool empty() { return count_voices_ == 0; }
+  bool full() { return count_voices_ == kMaxTaps; }
+  uint8_t count_voices() { return count_voices_; }
   void RecomputeMaxTime();
 
   Tap* taps_;
 
   int8_t next_voice_;
   int8_t oldest_voice_;
+  int8_t count_voices_;
   float fade_time_;
   float max_time_;
 

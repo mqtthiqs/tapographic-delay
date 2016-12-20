@@ -45,9 +45,9 @@ void TapAllocator::Load(Slot* slot)
 
 void TapAllocator::Save(Slot* slot)
 {
-  slot->size = busy_voices();
+  slot->size = count_voices();
 
-  for(int i=0; i<busy_voices(); i++) {
+  for(int i=0; i<count_voices(); i++) {
     int index = (oldest_voice_ + i) % kMaxTaps;
     slot->taps[i].time = taps_[index].time();
     slot->taps[i].velocity = taps_[index].velocity();
@@ -71,10 +71,11 @@ bool TapAllocator::Add(float time, float velocity,
       max_time_ = time;
 
     next_voice_ = (next_voice_ + 1) % kMaxTaps;
+    count_voices_++;
 
     return true;
   } else {
-    // no taps left: queue and start fade out
+    // no taps left: queue and start fading out first voice
     RemoveFirst();
     TapParameters p = {time, velocity, velocity_type, panning};
     queue_.Overwrite(p);
@@ -85,7 +86,7 @@ bool TapAllocator::Add(float time, float velocity,
 void TapAllocator::RecomputeMaxTime()
 {
   float max = 0.0f;
-  for(int i=0; i<busy_voices(); i++) {
+  for(int i=0; i<count_voices(); i++) {
     int index = (oldest_voice_ + i) % kMaxTaps;
     float time = taps_[index].time();
     if (time > max) max = time;
@@ -99,6 +100,7 @@ bool TapAllocator::RemoveFirst()
   if (!empty()) {
     taps_[oldest_voice_].fade_out(fade_time_ + 1.0f);
     oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
+    count_voices_--;
     RecomputeMaxTime();
     return true;
   } else {
@@ -112,6 +114,7 @@ bool TapAllocator::RemoveLast()
     next_voice_--;
     if (next_voice_ < 0) next_voice_ += kMaxTaps;
     taps_[next_voice_].fade_out(fade_time_ + 1.0f);
+    count_voices_--;
     RecomputeMaxTime();
     return true;
   } else {
@@ -121,7 +124,7 @@ bool TapAllocator::RemoveLast()
 
 void TapAllocator::Poll()
 {
-  if (queue_.readable() && writeable()) {
+  while (queue_.readable() && writeable()) {
     TapParameters p = queue_.Read();
     Add(p.time, p.velocity, p.velocity_type, p.panning);
   }
@@ -129,11 +132,13 @@ void TapAllocator::Poll()
 
 void TapAllocator::Clear()
 {
-  for(int i=0; i<busy_voices(); i++) {
+  for(int i=0; i<count_voices(); i++) {
     int index = (oldest_voice_ + i) % kMaxTaps;
     taps_[index].fade_out(fade_time_ + 1.0f);
   }
   queue_.Flush();
   max_time_ = 0.0f;
-  oldest_voice_ = next_voice_;
+  oldest_voice_ = 0;
+  next_voice_ = 0;
+  count_voices_ = 0;
 }
