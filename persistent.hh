@@ -94,10 +94,10 @@ public:
       }
 
       // save new slots
-      bank0_.ParsimoniousSave(&slots_[0], 6 * sizeof(Slot), &token_[0]);
-      bank1_.ParsimoniousSave(&slots_[1], 6 * sizeof(Slot), &token_[1]);
-      bank2_.ParsimoniousSave(&slots_[2], 6 * sizeof(Slot), &token_[2]);
-      bank3_.ParsimoniousSave(&slots_[3], 6 * sizeof(Slot), &token_[3]);
+      bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
+      bank1_.ParsimoniousSave(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]);
+      bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
+      bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
     }
   }
 
