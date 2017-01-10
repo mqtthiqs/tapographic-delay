@@ -63,9 +63,7 @@ class TapAllocator
   float max_time() { return max_time_; }
 
  private:
-  // the pool is writeable if it is not full, and if the last voice
-  // has finished fading out
-  bool writeable() { return !full() && !taps_[next_voice_].active(); };
+  bool writeable() { return !full(); };
   bool empty() { return count_voices_ == 0; }
   bool full() { return count_voices_ == kMaxTaps; }
   uint8_t count_voices() { return count_voices_; }
