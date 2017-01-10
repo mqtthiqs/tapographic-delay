@@ -47,6 +47,7 @@ enum UiMode {
   UI_MODE_SETTINGS,
   UI_MODE_PANIC,
   UI_MODE_CONFIRM_SAVE,
+  UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT,
   UI_MODE_LAST
 };
 
@@ -65,7 +66,6 @@ class Ui {
   void Init(MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
-  void Start();
   void Panic();
 
   void ReadParameters() {

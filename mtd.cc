@@ -100,8 +100,6 @@ void Init() {
   delay.tap_modulo_observable_.set_observer(&ping_gate_out);
 
   codec.Init(SAMPLE_RATE, &FillBuffer) || Panic();
-
-  ui.Start();
 }
 
 int main(void) {

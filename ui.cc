@@ -88,7 +88,10 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
 
-  mode_ = UI_MODE_SPLASH;
+  mode_ = reset_to_factory_defaults ?
+    UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT :
+    UI_MODE_SPLASH;
+
   ignore_releases_ = 0;
   velocity_meter_ = -1.0f;
 
@@ -172,10 +175,6 @@ void Ui::PingMeter(TapType type, float velocity)
   }
 }
 
-void Ui::Start() {
-  mode_ = UI_MODE_NORMAL;
-}
-
 void Ui::Poll() {
   buttons_.Debounce();
   switches_.Read();
@@ -242,8 +241,13 @@ inline void Ui::PaintLeds() {
   switch (mode_) {
   case UI_MODE_SPLASH:
   {
-    for (int i=0; i<kNumLeds; i++) {
-      leds_.set(i, (animation_counter_ % kNumLeds) == i);
+    for (int i=0; i<6; i++) {
+      int seed = animation_counter_ / 4;
+      LedColor c = static_cast<LedColor>((seed + i) % 5 + 2);
+      if (((animation_counter_ / 4) % 6 != i))
+        c = COLOR_BLACK;
+
+      leds_.set_rgb(i, c);
     }
   }
   break;
@@ -257,6 +261,16 @@ inline void Ui::PaintLeds() {
     uint8_t slot = save_candidate_slot_ % 6;
     LedColor blink = animation_counter_ & 2 ? COLOR_RED : COLOR_BLACK;
     leds_.set_rgb(slot, blink);
+  }
+  break;
+
+  case UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT:
+  {
+    LedColor blink = animation_counter_ & 2 ? COLOR_RED : COLOR_BLACK;
+
+    for (int i=0; i<6; i++) {
+      leds_.set_rgb(i, blink);
+    }
   }
   break;
 
@@ -528,9 +542,15 @@ void Ui::DoEvents() {
   }
 
   if (queue_.idle_time() > 1500 &&
-      mode_ == UI_MODE_CONFIRM_SAVE) {
+      (mode_ == UI_MODE_CONFIRM_SAVE ||
+       mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT)) {
     mode_ = UI_MODE_NORMAL;
     queue_.Touch();
+  }
+
+  if (queue_.idle_time() > 1000 &&
+      mode_ == UI_MODE_SPLASH) {
+    mode_ = UI_MODE_NORMAL;
   }
 
   if (queue_.idle_time() > 1000 &&
