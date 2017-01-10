@@ -84,7 +84,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   velocity_meter_ = -1.0f;
 
   // calibration
-  if (buttons_.pressed_immediate(BUTTON_DELETE)) {
+  if (buttons_.pressed(BUTTON_DELETE)) {
     control_.Calibrate();
     persistent_.SaveData();
   }

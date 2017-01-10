@@ -90,6 +90,11 @@ class Buttons {
     }
 
     fill(&button_state_[0], &button_state_[kNumButtons], 0xff);
+
+    for (int i=0; i<16; i++) {
+      Debounce();
+      for (int j=0; j<10000; j++); // delay
+    }
   }
 
   void Debounce() {
@@ -109,10 +114,6 @@ class Buttons {
 
   inline bool pressed(uint8_t index) const {
     return button_state_[index] == 0x00;
-  }
-
-  inline bool pressed_immediate(uint8_t index) const {
-    return !GPIO_ReadInputDataBit(button_pins[index].gpio, button_pins[index].pin);
   }
 
 
