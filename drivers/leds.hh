@@ -187,7 +187,7 @@ class Leds {
     for (int i=0; i<kNumLeds; i++) {
       gpio.GPIO_Pin = LED_Pins[i];
       GPIO_Init(LED_GPIOs[i], &gpio);
-      values_[i] = 255;
+      values_[i] = false;
     }
 
     Write();
