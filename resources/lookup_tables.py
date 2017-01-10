@@ -152,7 +152,7 @@ length = 3
 size = 16
 
 t = normalize(np.add.accumulate(np.power(1.005, np.arange(1.0, size+1))))
-v1 = normalize(np.power(0.7, np.arange(1.0, size/2)))
+v1 = normalize(np.power(0.6, np.arange(1.0, size/2)))
 v2 = v1[::-1]
 v = normalize(np.append(v1, v2))
 
