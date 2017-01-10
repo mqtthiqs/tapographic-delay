@@ -251,7 +251,9 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   if (deriv > 0.01f && tapfsr_armed_) {
     tap = true;
     tapfsr_armed_ = false;
-    parameters->velocity = scaled_values[ADC_FSR_CV];
+    parameters->velocity = sequencer_mode ?
+      1.0f - scaled_values[ADC_FSR_CV] :
+      scaled_values[ADC_FSR_CV];
   }
 
   if (deriv < 0.005f) {
