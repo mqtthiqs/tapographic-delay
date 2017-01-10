@@ -66,7 +66,16 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   leds_.Init();
   buttons_.Init();
   switches_.Init();
-  persistent_.Init();
+
+  bool reset_to_factory_defaults =
+    buttons_.pressed(BUTTON_1) &&
+    buttons_.pressed(BUTTON_2) &&
+    buttons_.pressed(BUTTON_3) &&
+    buttons_.pressed(BUTTON_4) &&
+    buttons_.pressed(BUTTON_5) &&
+    buttons_.pressed(BUTTON_6);
+
+  persistent_.Init(reset_to_factory_defaults);
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
   // copy and initialize settings

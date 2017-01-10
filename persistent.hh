@@ -50,8 +50,10 @@ public:
     CalibrationData calibration_data;
   };
 
-  void Init() {
-    if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
+  void Init(bool reset_to_factory_defaults) {
+
+    if (reset_to_factory_defaults ||
+        !settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
       for (size_t i=0; i<4; i++) {
         data_.calibration_data.offset[i] = 0.5f;
       }
@@ -69,7 +71,8 @@ public:
     CONSTRAIN(data_.settings[3], 0, 1);
 
     // TODO sanitize slots
-    if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
+    if (reset_to_factory_defaults ||
+        !bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
         !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
