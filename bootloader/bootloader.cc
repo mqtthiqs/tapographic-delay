@@ -279,7 +279,7 @@ int main(void) {
           break;
         case PACKET_DECODER_STATE_ERROR_SYNC:
         case PACKET_DECODER_STATE_ERROR_CRC:
-          // error = true; // TODO
+          error = true; // TODO
           break;
         case PACKET_DECODER_STATE_END_OF_TRANSMISSION:
           exit_updater = true;
