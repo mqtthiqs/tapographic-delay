@@ -45,7 +45,7 @@ const float kTimeLfoAmplitude = 0.5f;
 const float kA440 = 440.0f / SAMPLE_RATE;
 // Warning: at high frequency and low Q, filter becomes unstable
 const float kCutoffLowestNote = 30.0f;
-const float kCutoffNrOctaves = 7.5f;
+const float kCutoffNrOctaves = 7.689f;
 
 class Tap
 {
