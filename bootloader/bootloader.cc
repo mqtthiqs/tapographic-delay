@@ -242,7 +242,7 @@ int main(void) {
   InitializeReception();
   Init();
 
-  bool exit_updater = !buttons.pressed_immediate(BUTTON_REPEAT);
+  bool exit_updater = !buttons.pressed(BUTTON_REPEAT);
   exit_updater = false;         // TODO
   
   while (!exit_updater) {
