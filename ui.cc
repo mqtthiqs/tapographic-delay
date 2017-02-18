@@ -548,7 +548,7 @@ void Ui::DoEvents() {
     queue_.Touch();
   }
 
-  if (queue_.idle_time() > 1000 &&
+  if (queue_.idle_time() > 350 &&
       mode_ == UI_MODE_SPLASH) {
     mode_ = UI_MODE_NORMAL;
   }
