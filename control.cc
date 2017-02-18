@@ -46,6 +46,7 @@ const float kClockRatios[16] = {
 void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   delay_ = delay;
   calibration_data_ = calibration_data;
+  adc_.DeInit();
   adc_.Init();
   gate_input_.Init();
   for (size_t i = 0; i < ADC_CHANNEL_LAST; ++i) {
