@@ -356,9 +356,9 @@ bool Codec::Init(int32_t sample_rate, FillBufferCallback cb) {
   instance_ = this;
 
   InitGPIO();
-	InitAudioInterface(I2S_AudioFreq_48k);
-	InitAudioDMA();
-	ASSERT(InitControlInterface());
+  InitAudioInterface(sample_rate); //TODO sample_rate?
+  InitAudioDMA();
+  ASSERT(InitControlInterface());
 
   return true;
 };
@@ -375,7 +375,7 @@ void Codec::Fill(int32_t offset) {
   (*callback_)((Frame*)(in), (Frame*)(out));
 }
 
-extern "C" 
+extern "C"
 {
   void DMA1_Stream3_IRQHandler(void) {
     if (AUDIO_I2S_EXT_DMA_REG->AUDIO_I2S_EXT_DMA_ISR & AUDIO_I2S_EXT_DMA_FLAG_TC) {
