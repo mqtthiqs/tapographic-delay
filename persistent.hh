@@ -70,7 +70,6 @@ public:
     CONSTRAIN(data_.settings[2], 0, 2);
     CONSTRAIN(data_.settings[3], 0, 1);
 
-    // TODO sanitize slots
     if (reset_to_factory_defaults ||
         !bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
@@ -92,6 +91,8 @@ public:
           t->panning = lut_preset_pans[index];
         }
       }
+
+      // TODO sanitize slots
 
       // save new slots
       bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
@@ -120,14 +121,14 @@ public:
 private:
   Data data_;
   uint16_t settings_token_;
-  stmlib::Storage<4> settings_storage_;
+  stmlib::Storage<1> settings_storage_;
 
   Slot slots_[kNumSlots];
 
-  stmlib::Storage<8> bank0_;
-  stmlib::Storage<9> bank1_;
-  stmlib::Storage<10> bank2_;
-  stmlib::Storage<11> bank3_;
+  stmlib::Storage<5> bank0_;
+  stmlib::Storage<6> bank1_;
+  stmlib::Storage<7> bank2_;
+  stmlib::Storage<8> bank3_;
   uint16_t token_[4];
 };
 
