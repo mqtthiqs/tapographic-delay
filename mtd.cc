@@ -87,7 +87,7 @@ extern "C" {
 }
 
 void Init() {
-  sys.Init(false);
+  sys.Init(true);
   system_clock.Init();
   sdram.Init();
   dac.Init();

@@ -34,7 +34,7 @@ FAMILY         = f4xx
 MCU            = STM32F427_437xx -DHAS_FMC
 SAMPLE_RATE    = 48000
 
-#APPLICATION_LARGE    = TRUE
+APPLICATION_LARGE    = TRUE
 
 # Preferred upload command
 UPLOAD_COMMAND  = upload_combo_jtag
