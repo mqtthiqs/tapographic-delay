@@ -295,9 +295,9 @@ int main(void) {
       InitializeReception();
     }
   }
+
   codec.Stop();
   adc.DeInit();
   Uninitialize();
   JumpTo(kStartAddress);
-  while (1) { }
 }
