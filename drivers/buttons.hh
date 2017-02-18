@@ -91,9 +91,10 @@ class Buttons {
 
     fill(&button_state_[0], &button_state_[kNumButtons], 0xff);
 
-    for (int i=0; i<16; i++) {
+    for (int i=0; i<32; i++) {
       Debounce();
-      for (int j=0; j<10000; j++); // delay
+      for (int j=0; j<100000; j++)
+        __asm__ __volatile__("nop"); // delay
     }
   }
 
