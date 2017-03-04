@@ -198,11 +198,14 @@ public:
 
     for(int i=0; i<1000000; i++) {
       __asm("nop");
+
     }
   }
 
   inline void DeInit() {
     ADC_DeInit();
+    ADC_DMACmd(ADC1, DISABLE);
+    ADC_DMACmd(ADC3, DISABLE);
   }
 
   inline void Convert() {
