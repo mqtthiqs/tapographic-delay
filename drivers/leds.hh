@@ -187,9 +187,9 @@ class Leds {
     for (int i=0; i<kNumLeds; i++) {
       gpio.GPIO_Pin = LED_Pins[i];
       GPIO_Init(LED_GPIOs[i], &gpio);
-      values_[i] = false;
     }
 
+    Clear();
     Write();
   }
 
@@ -202,7 +202,7 @@ class Leds {
 
   void Clear() {
     for (int i=0; i<kNumLeds; i++) {
-      values_[i] = false;
+      set(i, false);
     }
   }
 
