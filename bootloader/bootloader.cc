@@ -112,12 +112,8 @@ extern "C" {
     {
       bool on = system_clock.milliseconds() & 32;
 
-      leds.set(LED_REPEAT_R, on);
-      leds.set(LED_REPEAT_G, on);
-      leds.set(LED_REPEAT_B, on);
-      leds.set(LED_DELETE_R, !on);
-      leds.set(LED_DELETE_G, !on);
-      leds.set(LED_DELETE_B, !on);
+      leds.set_repeat(on ? COLOR_WHITE : COLOR_BLACK);
+      leds.set_delete(!on ? COLOR_WHITE : COLOR_BLACK);
 
       int32_t peak = meter.peak();
       leds.set_rgb(0, peak > 32768 / 7 * 1 ? COLOR_GREEN : COLOR_BLACK);
