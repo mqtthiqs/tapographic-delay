@@ -153,14 +153,13 @@ extern "C" {
     system_clock.Tick();
     adc.Convert();
     int32_t gain_raw = adc.value(ADC_GAIN_POT) >> 1;
-    gain = gain_raw * gain_raw >> 16;
+    gain = (gain_raw * gain_raw) >> 14;
     buttons.Debounce();
     if (buttons.released(BUTTON_REPEAT)) {
       button_released = true;
     }
     UpdateLeds();
   }
-
 }
 
 size_t discard_samples = 8000;
@@ -168,12 +167,14 @@ size_t discard_samples = 8000;
 void FillBuffer(Frame* input, Frame* output) {
   size_t n = CODEC_BUFFER_SIZE;
   for (size_t i = 0; i < n; ++i) {
-    input[i].l = Clip16(static_cast<int32_t>(input[i].l) * gain >> 12);
+    input[i].l = Clip16(static_cast<int32_t>(input[i].l) * gain >> 13);
+    input[i].r = input[i].l;
   }
   meter.Process(input, n);
   while (n--) {
     if (!discard_samples) {
-      demodulator.PushSample(2048 + (input->l >> 4));
+      int32_t sample = (input->l >> 4) + 2048;
+      demodulator.PushSample(sample);
     } else {
       --discard_samples;
     }
