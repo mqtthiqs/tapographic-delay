@@ -29,6 +29,9 @@
 #ifndef LEDS_H_
 #define LEDS_H_
 
+// activate to enable prototype 2 compatibility mode
+// #define PROTO2
+
 #include "stmlib/stmlib.h"
 
 #include <stm32f4xx_conf.h>
@@ -207,12 +210,22 @@ class Leds {
   }
 
   void set(uint8_t channel, bool value) {
+#ifdef PROTO2
+    if (channel == OUT_VELNORM ||
+        channel == LED_REPEAT_G ||
+        channel == LED_REPEAT_B ||
+        channel == LED_DELETE_G ||
+        channel == LED_DELETE_B)
+      value = false;
+    values_[channel] = value;
+# else
     if (channel >= LED_DELETE_R &&
         channel <= LED_REPEAT_B) {
       values_[channel] = !value;
     } else {
       values_[channel] = value;
     }
+#endif
   }
 
   void set_rgb(uint8_t channel, uint8_t color) {
