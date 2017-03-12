@@ -183,7 +183,7 @@ class Tap
 
  private:
 
-  NaiveSvf filter_;
+  Svf filter_;
   float lp_filter1_, lp_filter2_, lp_filter3_;
 
   VelocityType velocity_type_;
