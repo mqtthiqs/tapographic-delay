@@ -203,9 +203,15 @@ public:
   }
 
   inline void DeInit() {
-    ADC_DeInit();
+    DMA_Cmd(DMA2_Stream0, DISABLE);
+    DMA_Cmd(DMA2_Stream4, DISABLE);
+    ADC_DMARequestAfterLastTransferCmd(ADC1, DISABLE);
+    ADC_DMARequestAfterLastTransferCmd(ADC3, DISABLE);
+    ADC_Cmd(ADC1, DISABLE);
+    ADC_Cmd(ADC3, DISABLE);
     ADC_DMACmd(ADC1, DISABLE);
     ADC_DMACmd(ADC3, DISABLE);
+    ADC_DeInit();
   }
 
   inline void Convert() {
