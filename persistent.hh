@@ -121,14 +121,14 @@ public:
 private:
   Data data_;
   uint16_t settings_token_;
-  stmlib::Storage<1> settings_storage_;
+  stmlib::Storage<7> settings_storage_;
 
   Slot slots_[kNumSlots];
 
-  stmlib::Storage<5> bank0_;
-  stmlib::Storage<6> bank1_;
-  stmlib::Storage<7> bank2_;
-  stmlib::Storage<8> bank3_;
+  stmlib::Storage<8> bank0_;
+  stmlib::Storage<9> bank1_;
+  stmlib::Storage<10> bank2_;
+  stmlib::Storage<11> bank3_;
   uint16_t token_[4];
 };
 
