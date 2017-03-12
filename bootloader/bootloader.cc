@@ -59,8 +59,6 @@ Meter meter;
 PacketDecoder decoder;
 Buttons buttons;
 
-int __errno;
-
 // Default interrupt handlers.
 extern "C" {
 
@@ -96,14 +94,22 @@ extern "C" {
     switch (ui_state) {
     case UI_STATE_WAITING:
     {
-      bool on = system_clock.milliseconds() & 128;
-      leds.set(LED_TAP, on);
+      leds.set(LED_TAP, system_clock.milliseconds() & 128);
+      leds.set_repeat((system_clock.milliseconds() + 42) & 128 ? COLOR_RED : COLOR_BLACK);
+      leds.set_delete((system_clock.milliseconds() + 84) & 128 ? COLOR_RED : COLOR_BLACK);
+
+      int32_t peak = meter.peak();
+      leds.set_rgb(0, peak > 32768 / 7 * 1 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(1, peak > 32768 / 7 * 2 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(2, peak > 32768 / 7 * 3 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(3, peak > 32768 / 7 * 4 ? COLOR_YELLOW : COLOR_BLACK);
+      leds.set_rgb(4, peak > 32768 / 7 * 5 ? COLOR_RED : COLOR_BLACK);
+      leds.set_rgb(5, peak > 32768 / 7 * 6 ? COLOR_RED : COLOR_BLACK);
     }
     break;
 
     case UI_STATE_RECEIVING:
     {
-      int32_t peak = meter.peak();
       bool on = system_clock.milliseconds() & 32;
 
       leds.set(LED_REPEAT_R, on);
@@ -113,12 +119,13 @@ extern "C" {
       leds.set(LED_DELETE_G, !on);
       leds.set(LED_DELETE_B, !on);
 
-      leds.set_rgb(0, peak < 32768 / 7 * 1 ? COLOR_GREEN : COLOR_BLACK);
-      leds.set_rgb(1, peak < 32768 / 7 * 2 ? COLOR_GREEN : COLOR_BLACK);
-      leds.set_rgb(2, peak < 32768 / 7 * 3 ? COLOR_GREEN : COLOR_BLACK);
-      leds.set_rgb(3, peak < 32768 / 7 * 4 ? COLOR_YELLOW : COLOR_BLACK);
-      leds.set_rgb(4, peak < 32768 / 7 * 5 ? COLOR_RED : COLOR_BLACK);
-      leds.set_rgb(5, peak < 32768 / 7 * 6 ? COLOR_RED : COLOR_BLACK);
+      int32_t peak = meter.peak();
+      leds.set_rgb(0, peak > 32768 / 7 * 1 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(1, peak > 32768 / 7 * 2 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(2, peak > 32768 / 7 * 3 ? COLOR_GREEN : COLOR_BLACK);
+      leds.set_rgb(3, peak > 32768 / 7 * 4 ? COLOR_YELLOW : COLOR_BLACK);
+      leds.set_rgb(4, peak > 32768 / 7 * 5 ? COLOR_RED : COLOR_BLACK);
+      leds.set_rgb(5, peak > 32768 / 7 * 6 ? COLOR_RED : COLOR_BLACK);
     }
     break;
 
@@ -243,7 +250,7 @@ int main(void) {
   Init();
 
   bool exit_updater = !buttons.pressed(BUTTON_REPEAT);
-  exit_updater = false;         // TODO
+  // exit_updater = false;         // TODO
   
   while (!exit_updater) {
     bool error = false;
