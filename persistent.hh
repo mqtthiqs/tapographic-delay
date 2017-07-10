@@ -50,10 +50,9 @@ public:
     CalibrationData calibration_data;
   };
 
-  void Init(bool reset_to_factory_defaults) {
+  void Init() {
 
-    if (reset_to_factory_defaults ||
-        !settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
+    if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
       for (size_t i=0; i<4; i++) {
         data_.calibration_data.offset[i] = 0.5f;
       }
@@ -70,8 +69,7 @@ public:
     CONSTRAIN(data_.settings[2], 0, 2);
     CONSTRAIN(data_.settings[3], 0, 1);
 
-    if (reset_to_factory_defaults ||
-        !bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
+    if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
         !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
@@ -115,6 +113,27 @@ public:
     if (bank == 2) bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
     if (bank == 3) bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
   }
+
+  void ResetSlot(int slot) {
+    slots_[slot].size = lut_preset_sizes[slot];
+    for (int tap=0; tap<slots_[slot].size; tap++) {
+      int index = tap + kMaxTaps * slot;
+      TapParameters *t = &slots_[slot].taps[tap];
+      t->time = lut_preset_times[index];
+      t->velocity = lut_preset_velos[index];
+      t->velocity_type = static_cast<VelocityType>(lut_preset_types[index]);
+      t->panning = lut_preset_pans[index];
+    }
+  }
+
+  void ResetBank(int bank) {
+    for(int slot=bank*6; slot<(bank+1)*6; slot++)
+      ResetSlot(slot);
+
+    bank0_.ParsimoniousSave(&slots_[6 * bank], 6 * sizeof(Slot), &token_[0]);
+  }
+
+  void ResetCurrentBank() { ResetBank(data_.settings[1]); }
 
   Slot* mutable_slot(int nr) { return &slots_[nr]; }
 

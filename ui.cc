@@ -67,15 +67,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
 
-  bool reset_to_factory_defaults =
-    buttons_.pressed(BUTTON_1) &&
-    buttons_.pressed(BUTTON_2) &&
-    buttons_.pressed(BUTTON_3) &&
-    buttons_.pressed(BUTTON_4) &&
-    buttons_.pressed(BUTTON_5) &&
-    buttons_.pressed(BUTTON_6);
-
-  persistent_.Init(reset_to_factory_defaults);
+  persistent_.Init();
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
   // copy and initialize settings
@@ -87,10 +79,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-
-  mode_ = reset_to_factory_defaults ?
-    UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT :
-    UI_MODE_SPLASH;
 
   ignore_releases_ = 0;
   velocity_meter_ = -1.0f;
@@ -421,6 +409,15 @@ void Ui::OnButtonPressed(const Event& e) {
       settings_item_[pressed] = e.control_id - pressed - 1;
       ParseSettingsCurrentPage();
     }
+  }
+
+  if (mode_ == UI_MODE_SETTINGS &&
+      settings_page_ == 1 &&
+      ((e.control_id == BUTTON_REPEAT && buttons_.pressed(BUTTON_DELETE)) ||
+       (e.control_id == BUTTON_DELETE && buttons_.pressed(BUTTON_REPEAT)))) {
+    persistent_.ResetCurrentBank();
+    mode_ = UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT;
+    ignore_releases_ = 2;
   }
 }
 
