@@ -87,6 +87,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   if (buttons_.pressed(BUTTON_DELETE)) {
     control_.Calibrate();
     persistent_.SaveData();
+    mode_ = UI_MODE_CONFIRM_CALIBRATION;
   }
 
   current_slot_ = -1;
@@ -255,6 +256,16 @@ inline void Ui::PaintLeds() {
   case UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT:
   {
     LedColor blink = animation_counter_ & 2 ? COLOR_RED : COLOR_BLACK;
+
+    for (int i=0; i<6; i++) {
+      leds_.set_rgb(i, blink);
+    }
+  }
+  break;
+
+  case UI_MODE_CONFIRM_CALIBRATION:
+  {
+    LedColor blink = animation_counter_ & 1 ? COLOR_YELLOW : COLOR_BLACK;
 
     for (int i=0; i<6; i++) {
       leds_.set_rgb(i, blink);
@@ -540,7 +551,8 @@ void Ui::DoEvents() {
 
   if (queue_.idle_time() > 1500 &&
       (mode_ == UI_MODE_CONFIRM_SAVE ||
-       mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT)) {
+       mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT ||
+       mode_ == UI_MODE_CONFIRM_CALIBRATION)) {
     mode_ = UI_MODE_NORMAL;
     queue_.Touch();
   }
