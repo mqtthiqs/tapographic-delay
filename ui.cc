@@ -57,7 +57,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_ = delay;
   parameters_ = parameters;
   instance_ = this;
-  parameters_->quality = QUALITY_SOFT;  // Soft-clipping by default
 
   delay_->reset_observable_.set_observer(&reset_observer);
   delay_->tap_observable_.set_observer(&tap_observer);
@@ -80,6 +79,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
+  parameters_->quality = QUALITY_SOFT;  // Soft-clipping by default
 
   ignore_releases_ = 0;
   velocity_meter_ = -1.0f;
