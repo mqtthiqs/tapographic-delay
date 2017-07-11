@@ -91,6 +91,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   // feedback
   val = adc_.float_value(ADC_FEEDBACK_POT);
+  val *= val;
   scaled_values[ADC_FEEDBACK_POT] = val;
 
   // modulation
@@ -175,7 +176,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     average_[ADC_FEEDBACK_POT].value() +
     average_[ADC_FEEDBACK_CV].value();
   val = CropDeadZone(val);
-  val *= 1.3f;
+  val *= 1.2f;
   parameters->feedback = val;
 
   // modulation
