@@ -167,7 +167,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   average_scale_.Process(val);
   val = average_scale_.value();
 
-  ONE_POLE(scale_lp_, val, 0.01f);
+  ONE_POLE(scale_lp_, val, 0.005f);
   parameters->scale = scale_lp_;
 
   // feedback
