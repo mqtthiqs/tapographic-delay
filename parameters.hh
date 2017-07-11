@@ -44,9 +44,9 @@ enum VelocityType {
 };
 
 enum EditMode {
-  EDIT_NORMAL,
-  EDIT_OFF,
-  EDIT_OVERDUB,
+  EDIT_OFF = 0,
+  EDIT_OVERDUB = 1,
+  EDIT_NORMAL = 2,
 };
 
 enum PanningMode {
