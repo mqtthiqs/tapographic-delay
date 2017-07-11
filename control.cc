@@ -189,8 +189,8 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   float freq = (1.0f - val) * 0.43f + 0.0000001f;
   freq *= freq * freq * freq;
 
-  ONE_POLE(freq_lp_, freq, 0.03f);
-  ONE_POLE(amount_lp_, amount, 0.03f);
+  ONE_POLE(freq_lp_, freq, 0.02f);
+  ONE_POLE(amount_lp_, amount, 0.005f);
 
   parameters->modulation_amount = amount_lp_;
   parameters->modulation_frequency = freq_lp_;
