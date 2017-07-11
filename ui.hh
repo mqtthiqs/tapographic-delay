@@ -56,7 +56,7 @@ enum SettingsPages {
   PAGE_VELOCITY_PARAMETER = 0,
   PAGE_BANK = 1,
   PAGE_PANNING_MODE = 2,
-  PAGE_QUALITY = 3,
+  PAGE_SEQUENCER = 3,
 };
 
 class Ui {

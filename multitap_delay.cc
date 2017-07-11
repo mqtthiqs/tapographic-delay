@@ -154,19 +154,19 @@ void MultitapDelay::RepanTaps(PanningMode panning_mode) {
 
 // Dispatch
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
-  return params->quality ?
+  return params->quality == QUALITY_HARD ?
     (params->panning_mode == PANNING_LEFT ?
-     Process<true, true>(params, input, output) :
-     Process<true, false>(params, input, output)) :
+     Process<QUALITY_HARD, true>(params, input, output) :
+     Process<QUALITY_HARD, false>(params, input, output)) :
     (params->panning_mode == PANNING_LEFT ?
-     Process<false, true>(params, input, output) :
-     Process<false, false>(params, input, output));
+     Process<QUALITY_SOFT, true>(params, input, output) :
+     Process<QUALITY_SOFT, false>(params, input, output));
 }
 
-template<bool quality, bool repeat_tap_on_output>
+template<QualityMode quality, bool repeat_tap_on_output>
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
-  float buffer_headroom = quality ? 1.0f : 0.5f;
+  float buffer_headroom = quality == QUALITY_HARD ? 1.0f : 0.5f;
 
   // When no taps active, turn off clocked and repeat
   if (tap_allocator_.max_time() <= 0.0f) {
@@ -223,7 +223,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   for (size_t i=0; i<kBlockSize; i++) {
     float fb_sample = feedback_buffer_[i];
     int16_t sample;
-    if (quality) {
+    if (quality == QUALITY_HARD) {
       int16_t repeat_sample = buffer_.ReadShort(last_repeat_time_) / buffer_headroom;
       repeat_fader_.Process(repeat_sample);
       int16_t dry_sample = input[i].l;
@@ -325,7 +325,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l -= 3500.0f / 32768.0f;
     sample.r -= 3500.0f / 32768.0f;
 
-    if (quality) {
+    if (quality == QUALITY_HARD) {
       output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
       output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
     } else {

@@ -96,7 +96,7 @@ public:
   Observable1<float> step_observable_;
 
 private:
-  template<bool quality, bool repeat_tap_on_output>
+  template<QualityMode quality, bool repeat_tap_on_output>
   void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
   float ComputePanning(PanningMode panning_mode);
 

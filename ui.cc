@@ -57,6 +57,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   delay_ = delay;
   parameters_ = parameters;
   instance_ = this;
+  parameters_->quality = QUALITY_SOFT;  // Soft-clipping by default
 
   delay_->reset_observable_.set_observer(&reset_observer);
   delay_->tap_observable_.set_observer(&tap_observer);
@@ -389,8 +390,8 @@ void Ui::ParseSettingsCurrentPage() {
     parameters_->panning_mode = static_cast<PanningMode>(p);
     delay_->RepanTaps(parameters_->panning_mode);
   } break;
-  case PAGE_QUALITY: {
-    parameters_->quality = !p;
+  case PAGE_SEQUENCER: {
+    sequencer_mode_ = p;
   } break;
   }
 }
@@ -501,14 +502,8 @@ void Ui::OnButtonReleased(const Event& e) {
     case BUTTON_5:
     case BUTTON_6:
       if (e.data >= kVeryLongPressDuration) {
-        if ((e.control_id == BUTTON_5 && buttons_.pressed(BUTTON_6)) ||
-            (e.control_id == BUTTON_6 && buttons_.pressed(BUTTON_5))) {
-          sequencer_mode_ = !sequencer_mode_;
-          ignore_releases_ = 1;
-        } else {
-          save_candidate_slot_ = bank_ * 6 + e.control_id;
-          mode_ = UI_MODE_CONFIRM_SAVE;
-        }
+        save_candidate_slot_ = bank_ * 6 + e.control_id;
+        mode_ = UI_MODE_CONFIRM_SAVE;
       }
       else if (e.data >= kLongPressDuration) {
         if (e.control_id <= BUTTON_4) {

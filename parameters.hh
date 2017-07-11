@@ -61,6 +61,11 @@ enum SequencerDirection {
   DIRECTION_RANDOM,
 };
 
+enum QualityMode {
+  QUALITY_SOFT, // soft-clipping, interpolation
+  QUALITY_HARD, // hard-clipping, no interpolation
+};
+
 struct Parameters {
   float gain;
   float scale;
@@ -80,7 +85,7 @@ struct Parameters {
   // Settings
   float velocity_parameter;
   PanningMode panning_mode;
-  bool quality;
+  QualityMode quality;
 };
 
 struct TapParameters {
