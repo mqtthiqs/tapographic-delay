@@ -100,7 +100,7 @@ void MultitapDelay::AddTap(Parameters *params) {
     return;
   }
 
-  float time = static_cast<float>(counter_);
+  float time = static_cast<float>(counter_) / prev_params_.scale;
   float pan = ComputePanning(params->panning_mode);
 
   TapType type =
@@ -113,7 +113,7 @@ void MultitapDelay::AddTap(Parameters *params) {
   // add tap
   bool success = false;
   if (time < buffer_.size()) {
-    success = tap_allocator_.Add(time / prev_params_.scale,
+    success = tap_allocator_.Add(time,
                                  params->velocity,
                                  params->velocity_type,
                                  pan);
