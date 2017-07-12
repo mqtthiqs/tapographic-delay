@@ -92,6 +92,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   }
 
   current_slot_ = -1;
+  next_slot_ = -1;
 
   // load first slot on startup
   LoadSlot(0);
@@ -99,6 +100,9 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
 }
 
 void Ui::LoadSlot(uint8_t slot) {
+  if ((current_slot_ == slot && next_slot_ == -1) || next_slot_ == slot)
+    return;
+
   next_slot_ = slot;
   sample_counter_to_next_slot_ = parameters_->morph;
   delay_->Load(persistent_.mutable_slot(next_slot_));
