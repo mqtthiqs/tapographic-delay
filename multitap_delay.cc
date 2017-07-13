@@ -38,7 +38,7 @@ const int32_t kClockDefaultPeriod = 1 * SAMPLE_RATE;
 void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   buffer_.Init(buffer, buffer_size);
   dc_blocker_.Init();
-  dc_blocker_.set_f_q<FREQUENCY_FAST>(20.0f / SAMPLE_RATE, 0.6f);
+  dc_blocker_.set_f_q<FREQUENCY_FAST>(10.0f / SAMPLE_RATE, 0.6f);
   repeat_fader_.Init();
   clock_period_.Init(kClockDefaultPeriod);
   clock_period_smoothed_ = kClockDefaultPeriod;
