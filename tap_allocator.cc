@@ -39,7 +39,7 @@ void TapAllocator::Load(Slot* slot)
   Clear();
   for (int i=0; i<slot->size; i++) {
     TapParameters p = slot->taps[i];
-    Add(p.time, p.velocity, p.velocity_type, p.panning);
+    Add(true, p.time, p.velocity, p.velocity_type, p.panning);
   }
 }
 
@@ -60,6 +60,13 @@ bool TapAllocator::Add(float time, float velocity,
                        VelocityType velocity_type,
                        float panning)
 {
+  return Add(false, time, velocity, velocity_type, panning);
+}
+
+bool TapAllocator::Add(bool loading, float time, float velocity,
+                       VelocityType velocity_type,
+                       float panning)
+{
   if (writeable()) {
 
     taps_[next_voice_].fade_in(fade_time_);
@@ -76,7 +83,9 @@ bool TapAllocator::Add(float time, float velocity,
     return true;
   } else {
     // no taps left: queue and start fading out first voice
-    RemoveFirst();
+    if (!loading) {
+      RemoveFirst();
+    }
     TapParameters p = {time, velocity, velocity_type, panning};
     queue_.Overwrite(p);
     return false;

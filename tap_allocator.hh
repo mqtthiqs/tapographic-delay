@@ -70,6 +70,7 @@ class TapAllocator
   bool full() { return count_voices_ == kMaxTaps; }
   uint8_t count_voices() { return count_voices_; }
   void RecomputeMaxTime();
+  bool Add(bool loading, float time, float velocity, VelocityType velocity_type, float pan);
 
   Tap* taps_;
 
