@@ -356,7 +356,7 @@ bool Codec::Init(int32_t sample_rate, FillBufferCallback cb) {
   instance_ = this;
 
   InitGPIO();
-  InitAudioInterface(sample_rate); //TODO sample_rate?
+  InitAudioInterface(sample_rate);
   InitAudioDMA();
   ASSERT(InitControlInterface());
 

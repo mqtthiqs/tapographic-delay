@@ -128,7 +128,7 @@ slots.append({
     'size': size,
     'times': t * sample_rate * length,
     'velos': v,
-    'types': np.repeat([VEL_AMP], size),
+    'types': np.repeat([VEL_BP], size),
     'pans': 1-normalize(np.arange(0.0, size)),
 })
 
@@ -290,7 +290,7 @@ slots.append({
     'size': size,
     'times': ts * sample_rate * 3,
     'velos': vs,
-    'types': np.repeat([VEL_AMP], size),
+    'types': np.repeat([VEL_BP], size),
     'pans': np.random.uniform(size=size),
 })
 
