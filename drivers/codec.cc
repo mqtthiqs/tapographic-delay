@@ -257,9 +257,19 @@ bool Codec::InitControlInterface(void)
 	return true;
 }
 
+
+// 48014Hz <=== 295/6
+#define PLLI2S_N   295
+#define PLLI2S_R   6
+
+//This is only used for SAI audio, but must be >2 and <15
+#define PLLI2S_Q   4
+
 void InitAudioInterface(uint32_t sample_rate)
 {
 	I2S_InitTypeDef I2S_InitStructure;
+
+	RCC_PLLI2SConfig(PLLI2S_N, PLLI2S_Q, PLLI2S_R);
 
 	// Enable the CODEC_I2S peripheral clock
 	RCC_APB1PeriphClockCmd(CODEC_I2S_CLK, ENABLE);

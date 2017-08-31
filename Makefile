@@ -52,5 +52,5 @@ include stmlib/makefile.inc
 
 wav:  $(TARGET_BIN)
 	python stm_audio_bootloader/qpsk/encoder.py \
-		-t stm32f4 -s 48000 -b 12000 -c 6000 -p 256 \
+		-t stm32f4 -s 48016 -b 12004 -c 6002 -p 256 \
 		$(TARGET_BIN)
