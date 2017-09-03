@@ -330,7 +330,13 @@ slots.append({
 })
 
 # Bank D:
-
+# (left intentionally empty)
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
 
 # Formatting and writing to table
 
