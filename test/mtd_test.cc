@@ -1,7 +1,7 @@
 // Copyright 2016 Matthias Puech.
 //
 // Author: Matthias Puech (matthias.puech@gmail.com)
-// Adapted from: Olivier Gillet (ol.gillet@gmail.com)
+// Based on code by: Olivier Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

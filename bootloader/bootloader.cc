@@ -1,4 +1,4 @@
-// Copyright 2015 Matthias Puech.
+// Copyright 2017 Matthias Puech.
 // Copyright 2013 Olivier Gillet.
 //
 // Original Author: Olivier Gillet (ol.gillet@gmail.com)
