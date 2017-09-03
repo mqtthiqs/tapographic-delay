@@ -548,9 +548,14 @@ void Ui::DoEvents() {
     }
   }
 
-  if (queue_.idle_time() > 1500 &&
-      (mode_ == UI_MODE_CONFIRM_SAVE ||
-       mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT ||
+  if (queue_.idle_time() > 3000 &&
+      (mode_ == UI_MODE_CONFIRM_SAVE)) {
+    mode_ = UI_MODE_NORMAL;
+    queue_.Touch();
+  }
+
+  if (queue_.idle_time() > 2000 &&
+      (mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT ||
        mode_ == UI_MODE_CONFIRM_CALIBRATION)) {
     mode_ = UI_MODE_NORMAL;
     queue_.Touch();
@@ -561,7 +566,7 @@ void Ui::DoEvents() {
     mode_ = UI_MODE_NORMAL;
   }
 
-  if (queue_.idle_time() > 1000 &&
+  if (queue_.idle_time() > 1800 &&
       mode_ == UI_MODE_SETTINGS) {
     mode_ = UI_MODE_NORMAL;
     settings_changed_ = false;
