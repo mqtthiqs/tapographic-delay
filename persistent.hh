@@ -49,6 +49,7 @@ public:
     uint8_t velocity_parameter;
     uint8_t current_bank;
     uint8_t panning_mode;
+    uint8_t sequencer_mode;
     CalibrationData calibration_data;
   };
 
@@ -62,6 +63,7 @@ public:
       data_.velocity_parameter = 2;
       data_.current_bank = 0;
       data_.panning_mode = 1;
+      data_.sequencer_mode = 0;
       SaveData();
     }
 
@@ -69,6 +71,7 @@ public:
     CONSTRAIN(data_.velocity_parameter, 0, 4);
     CONSTRAIN(data_.current_bank, 0, 3);
     CONSTRAIN(data_.panning_mode, 0, 2);
+    CONSTRAIN(data_.sequencer_mode, 0, 1);
 
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
