@@ -94,8 +94,10 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   current_slot_ = -1;
   next_slot_ = -1;
 
-  // load first slot on startup
-  LoadSlot(0);
+  bank_ = persistent_.current_bank();
+
+  // load first slot of current bank on startup
+  LoadSlot(bank_ * 6);
   sample_counter_to_next_slot_ = 10000.0f; // default fade time
 }
 

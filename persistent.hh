@@ -133,7 +133,9 @@ public:
     bank0_.ParsimoniousSave(&slots_[6 * bank], 6 * sizeof(Slot), &token_[0]);
   }
 
-  void ResetCurrentBank() { ResetBank(data_.settings[1]); }
+  uint8_t current_bank() { return data_.settings[1]; }
+
+  void ResetCurrentBank() { ResetBank(current_bank()); }
 
   Slot* mutable_slot(int nr) { return &slots_[nr]; }
 
