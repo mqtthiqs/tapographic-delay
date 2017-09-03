@@ -107,12 +107,15 @@ public:
 
   Data* mutable_data() { return &data_; }
 
-  void SaveSlot(int slot_nr) {
-    int bank = slot_nr / 6;
+  void SaveBank(int bank) {
     if (bank == 0) bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
     if (bank == 1) bank1_.ParsimoniousSave(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]);
     if (bank == 2) bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
     if (bank == 3) bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
+  }
+
+  void SaveSlot(int slot_nr) {
+    SaveBank(slot_nr / 6);
   }
 
   void ResetSlot(int slot) {
@@ -131,8 +134,7 @@ public:
   void ResetBank(int bank) {
     for(int slot=bank*6; slot<(bank+1)*6; slot++)
       ResetSlot(slot);
-
-    bank0_.ParsimoniousSave(&slots_[6 * bank], 6 * sizeof(Slot), &token_[0]);
+    SaveBank(bank);
   }
 
   uint8_t current_bank() { return data_.settings[1]; }
