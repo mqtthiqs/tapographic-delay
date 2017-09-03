@@ -431,7 +431,9 @@ void Ui::OnButtonPressed(const Event& e) {
       settings_page_ == 1 &&
       ((e.control_id == BUTTON_REPEAT && buttons_.pressed(BUTTON_DELETE)) ||
        (e.control_id == BUTTON_DELETE && buttons_.pressed(BUTTON_REPEAT)))) {
-    SaveSettings();
+    SaveSettings();             // must save before resetting
+    current_slot_ = -1;         // clear currently selected slot (might change)
+    next_slot_ = -1;
     persistent_.ResetCurrentBank();
     mode_ = UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT;
     ignore_releases_ = 2;
