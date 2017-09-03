@@ -50,7 +50,7 @@ public:
     CalibrationData calibration_data;
   };
 
-  void Init() {
+  void Init(size_t buffer_size) {
 
     if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
       for (size_t i=0; i<4; i++) {
@@ -81,13 +81,23 @@ public:
         ResetSlot(slot);
       }
 
-      // TODO sanitize slots
-
       // save new slots
       bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
       bank1_.ParsimoniousSave(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]);
       bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
       bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
+    }
+
+    // sanitize slots
+    for (int slot=0; slot<kNumSlots; slot++) {
+      CONSTRAIN(slots_[slot].size, 0, kMaxTaps);
+      for (int tap=0; tap<slots_[slot].size; tap++) {
+        TapParameters *t = &slots_[slot].taps[tap];
+        CONSTRAIN(t->velocity, 0.0f, 1.0f);
+        CONSTRAIN(t->time, 0.0f, buffer_size);
+        CONSTRAIN(t->velocity_type, VELOCITY_AMP, VELOCITY_BP);
+        CONSTRAIN(t->panning, 0.0f, 1.0f);
+      }
     }
   }
 
@@ -107,6 +117,7 @@ public:
 
   void ResetSlot(int slot) {
     slots_[slot].size = lut_preset_sizes[slot];
+
     for (int tap=0; tap<slots_[slot].size; tap++) {
       int index = tap + kMaxTaps * slot;
       TapParameters *t = &slots_[slot].taps[tap];

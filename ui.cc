@@ -67,7 +67,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
 
-  persistent_.Init();
+  persistent_.Init(delay_->buffer_size());
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
   // copy and initialize settings

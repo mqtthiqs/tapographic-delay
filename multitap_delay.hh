@@ -89,6 +89,8 @@ public:
     step_observable_.notify(morph_time);
   }
 
+  size_t buffer_size() { return buffer_.size(); }
+
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
   Observable0 tap_modulo_observable_;
