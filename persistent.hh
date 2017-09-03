@@ -46,7 +46,9 @@ public:
   ~Persistent() { };
 
   struct Data {
-    uint8_t settings[4];
+    uint8_t velocity_parameter;
+    uint8_t current_bank;
+    uint8_t panning_mode;
     CalibrationData calibration_data;
   };
 
@@ -56,18 +58,17 @@ public:
       for (size_t i=0; i<4; i++) {
         data_.calibration_data.offset[i] = 0.5f;
       }
-      data_.settings[0] = 2;      // velocity parameter (0-4)
-      data_.settings[1] = 0;      // bank (0-3)
-      data_.settings[2] = 1;      // panning mode (0-2)
-      data_.settings[3] = 0;      // quality (0-1)
+      // default settings:
+      data_.velocity_parameter = 2;
+      data_.current_bank = 0;
+      data_.panning_mode = 1;
       SaveData();
     }
 
     // sanitize settings
-    CONSTRAIN(data_.settings[0], 0, 4);
-    CONSTRAIN(data_.settings[1], 0, 3);
-    CONSTRAIN(data_.settings[2], 0, 2);
-    CONSTRAIN(data_.settings[3], 0, 1);
+    CONSTRAIN(data_.velocity_parameter, 0, 4);
+    CONSTRAIN(data_.current_bank, 0, 3);
+    CONSTRAIN(data_.panning_mode, 0, 2);
 
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
@@ -137,7 +138,7 @@ public:
     SaveBank(bank);
   }
 
-  uint8_t current_bank() { return data_.settings[1]; }
+  uint8_t current_bank() { return data_.current_bank; }
 
   void ResetCurrentBank() { ResetBank(current_bank()); }
 

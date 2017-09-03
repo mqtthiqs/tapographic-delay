@@ -71,9 +71,10 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
   // copy and initialize settings
-  for (int i=0; i<4; i++) {
-    settings_item_[i] = persistent_.mutable_data()->settings[i];
-  }
+  settings_item_[0] = persistent_.mutable_data()->velocity_parameter;
+  settings_item_[1] = persistent_.mutable_data()->current_bank;
+  settings_item_[2] = persistent_.mutable_data()->panning_mode;
+
   ParseSettings();
 
   // initialization of rest of parameters
@@ -404,9 +405,9 @@ void Ui::ParseSettingsCurrentPage() {
 
 void Ui::SaveSettings()
 {
-  for (int i=0; i<4; i++) {
-    persistent_.mutable_data()->settings[i] = settings_item_[i];
-  }
+  persistent_.mutable_data()->velocity_parameter = settings_item_[0];
+  persistent_.mutable_data()->current_bank = settings_item_[1];
+  persistent_.mutable_data()->panning_mode = settings_item_[2];
   persistent_.SaveData();
 }
 
