@@ -78,16 +78,7 @@ public:
       memset(slots_, 0, sizeof(slots_));
 
       for (int slot=0; slot<kNumSlots; slot++) {
-        slots_[slot].size = lut_preset_sizes[slot];
-
-        for (int tap=0; tap<slots_[slot].size; tap++) {
-          int index = tap + kMaxTaps * slot;
-          TapParameters *t = &slots_[slot].taps[tap];
-          t->time = lut_preset_times[index];
-          t->velocity = lut_preset_velos[index];
-          t->velocity_type = static_cast<VelocityType>(lut_preset_types[index]);
-          t->panning = lut_preset_pans[index];
-        }
+        ResetSlot(slot);
       }
 
       // TODO sanitize slots
