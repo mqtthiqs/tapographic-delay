@@ -70,20 +70,29 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   persistent_.Init(delay_->buffer_size());
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
-  // copy and initialize settings
-  settings_item_[0] = persistent_.mutable_data()->velocity_parameter;
-  settings_item_[1] = persistent_.mutable_data()->current_bank;
-  settings_item_[2] = persistent_.mutable_data()->panning_mode;
-  settings_item_[3] = persistent_.mutable_data()->sequencer_mode;
+  current_slot_ = -1;
+  next_slot_ = -1;
 
+  ignore_releases_ = 0;
+  velocity_meter_ = -1.0f;
+
+  // copy and initialize settings
+  settings_item_[0] = persistent_.velocity_parameter();
+  settings_item_[1] = persistent_.current_bank();
+  settings_item_[2] = persistent_.panning_mode();
+  settings_item_[3] = persistent_.sequencer_mode();
   ParseSettings();
+
+  // load current slot or first slot of current bank on startup
+  if (persistent_.current_slot() >= 0) {
+    LoadSlot(persistent_.current_slot());
+  } else {
+    LoadSlot(bank_ * 6);
+  }
 
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-
-  ignore_releases_ = 0;
-  velocity_meter_ = -1.0f;
 
   // calibration
   if (buttons_.pressed(BUTTON_DELETE)) {
@@ -91,13 +100,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
     persistent_.SaveData();
     mode_ = UI_MODE_CONFIRM_CALIBRATION;
   }
-
-  current_slot_ = -1;
-  next_slot_ = -1;
-
-  // load first slot of current bank on startup
-  LoadSlot(bank_ * 6);
-  sample_counter_to_next_slot_ = 10000.0f; // default fade time
 }
 
 void Ui::LoadSlot(uint8_t slot) {
@@ -105,7 +107,8 @@ void Ui::LoadSlot(uint8_t slot) {
     return;
 
   next_slot_ = slot;
-  sample_counter_to_next_slot_ = parameters_->morph;
+  // if morph=0, we add 1 to correctly switch to next slot
+  sample_counter_to_next_slot_ = parameters_->morph + 1;
   delay_->Load(persistent_.mutable_slot(next_slot_));
 }
 
@@ -407,6 +410,7 @@ void Ui::SaveSettings()
   persistent_.mutable_data()->current_bank = settings_item_[1];
   persistent_.mutable_data()->panning_mode = settings_item_[2];
   persistent_.mutable_data()->sequencer_mode = sequencer_mode_;
+  persistent_.mutable_data()->current_slot = current_slot_;
   persistent_.SaveData();
 }
 
