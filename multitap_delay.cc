@@ -55,9 +55,9 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
 void MultitapDelay::set_repeat(bool state) {
   if (state) {
     repeat_fader_.fade_in(prev_params_.morph + 1.0f);
-    // sample repeat time (for high quality setting) // TODO check
+    // sample repeat time
     float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
-    last_repeat_time_ = static_cast<uint32_t>(repeat_time);
+    repeat_time_ = static_cast<uint32_t>(repeat_time);
   } else {
     repeat_fader_.fade_out(prev_params_.morph);
   }
@@ -154,19 +154,15 @@ void MultitapDelay::RepanTaps(PanningMode panning_mode) {
 
 // Dispatch
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
-  return params->quality == QUALITY_HARD ?
-    (params->panning_mode == PANNING_LEFT ?
-     Process<QUALITY_HARD, true>(params, input, output) :
-     Process<QUALITY_HARD, false>(params, input, output)) :
-    (params->panning_mode == PANNING_LEFT ?
-     Process<QUALITY_SOFT, true>(params, input, output) :
-     Process<QUALITY_SOFT, false>(params, input, output));
+  return params->panning_mode == PANNING_LEFT ?
+     Process<true>(params, input, output) :
+     Process<false>(params, input, output);
 }
 
-template<QualityMode quality, bool repeat_tap_on_output>
+template<bool repeat_tap_on_output>
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
-  float buffer_headroom = quality == QUALITY_HARD ? 1.0f : 0.5f;
+  static const float buffer_headroom = 0.5f;
 
   // When no taps active, turn off clocked and repeat
   if (tap_allocator_.max_time() <= 0.0f) {
@@ -184,16 +180,13 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     params->scale = clocked_scale_; // warning: overwrite params
   }
 
-  // repeat time, in samples
-  float repeat_time = tap_allocator_.max_time() * prev_params_.scale;
-
   // increment sample counter
   if (counter_running_) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
     if ((params->edit_mode != EDIT_NORMAL || clocked_) &&
-        counter_ > repeat_time) {
-      counter_ -= repeat_time;
+        counter_ > repeat_time_) {
+      counter_ -= repeat_time_;
     }
   }
 
@@ -216,36 +209,20 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float feedback_end = params->feedback;
   float feedback_increment = (feedback_end - feedback) / kBlockSize;
 
-  float repeat_time_accum = 0.0f;
-  float repeat_time_end = tap_allocator_.max_time() * params->scale;
-  float repeat_time_increment = (repeat_time_end - repeat_time) / kBlockSize;
-
   for (size_t i=0; i<kBlockSize; i++) {
     float fb_sample = feedback_buffer_[i];
-    int16_t sample;
-    if (quality == QUALITY_HARD) {
-      int16_t repeat_sample = buffer_.ReadShort(last_repeat_time_) / buffer_headroom;
-      repeat_fader_.Process(repeat_sample);
-      int16_t dry_sample = input[i].l;
-      int32_t fb = static_cast<int32_t>(fb_sample * 32768.0f);
-      int32_t s = gain * dry_sample + feedback * fb + repeat_sample;
-      sample = Clip16(s);
-    } else {
-      // addition is done here to avoid rounding errors in the increment
-      float repeat_sample = buffer_.ReadHermite(repeat_time + repeat_time_accum) / buffer_headroom;
-      repeat_fader_.Process(repeat_sample);
-      float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
-      float dither = (Random::GetFloat() - 0.5f) / 8192.0f;
-      float s = gain * dry_sample + feedback * fb_sample + repeat_sample + dither;
-      s = SoftLimit(s * buffer_headroom);
-      sample = Clip16(static_cast<int32_t>(s * 32768.0f));
-    }
-
+    int16_t r = buffer_.ReadShort(repeat_time_);
+    float repeat_sample =  static_cast<float>(r) / 32768.0f / buffer_headroom;
+    repeat_fader_.Process(repeat_sample);
+    float dry_sample = static_cast<float>(input[i].l) / 32768.0f;
+    float dither = (Random::GetFloat() - 0.5f) / 8192.0f;
+    float s = gain * dry_sample + feedback * fb_sample + repeat_sample + dither;
+    s = SoftLimit(s * buffer_headroom);
+    int16_t sample = Clip16(static_cast<int32_t>(s * 32768.0f));
     repeat_fader_.Prepare();
     buffer_.Write(sample);
     gain += gain_increment;
     feedback += feedback_increment;
-    repeat_time_accum += repeat_time_increment;
   }
 
   /* 2. Read and sum taps from buffer */
@@ -254,10 +231,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   FloatFrame empty = {0.0f, 0.0f};
   std::fill(buf, buf+kBlockSize, empty);
 
-  uint32_t rep_time = static_cast<uint32_t>(repeat_time);
-
   // TODO: rep time = 0? and what if quality?
-  uint32_t counter_modulo = rep_time ? counter_ % rep_time : counter_;
+  uint32_t counter_modulo = repeat_time_ ? counter_ % repeat_time_ : counter_;
 
   bool counter_modulo_reset = counter_running_ && counter_modulo < kBlockSize+1;
   float counter_on_tap = 0.0f;
@@ -296,8 +271,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float drywet_end = params->drywet;
   float drywet_increment = (drywet_end - drywet) / kBlockSize;
 
-  repeat_time_accum = 0.0f;
-
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
     FloatFrame sample = { buf[i].l / buffer_headroom,
@@ -314,9 +287,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l = dry * fade_out + sample.l * fade_in;
 
     // write to output buffer
-    // // TODO what if repeat_time changes or = 0?
     if (repeat_tap_on_output) {
-      sample.r = buffer_.ReadHermite(repeat_time + repeat_time_accum + kBlockSize - i) / buffer_headroom;
+      ONE_POLE(max_time_lp_, tap_allocator_.max_time() * params->scale, 0.01f);
+      float index = max_time_lp_ + kBlockSize - i;
+      sample.r = buffer_.ReadHermite(index) / buffer_headroom;
     } else {
       sample.r = dry * fade_out + sample.r * fade_in;
     }
@@ -325,16 +299,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l -= 3500.0f / 32768.0f;
     sample.r -= 3500.0f / 32768.0f;
 
-    if (quality == QUALITY_HARD) {
-      output[i].l = Clip16(static_cast<int32_t>(sample.l * 32768.0f));
-      output[i].r = Clip16(static_cast<int32_t>(sample.r * 32768.0f));
-    } else {
-      output[i].l = SoftConvert(sample.l);
-      output[i].r = SoftConvert(sample.r);
-    }
+    output[i].l = SoftConvert(sample.l);
+    output[i].r = SoftConvert(sample.r);
 
     drywet += drywet_increment;
-    repeat_time_accum += repeat_time_increment;
   }
 
   prev_params_ = *params;

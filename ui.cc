@@ -81,7 +81,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-  parameters_->quality = QUALITY_SOFT;  // Soft-clipping by default
 
   ignore_releases_ = 0;
   velocity_meter_ = -1.0f;
