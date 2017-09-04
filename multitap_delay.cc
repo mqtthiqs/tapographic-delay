@@ -304,10 +304,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       sample.r = dry * fade_out + sample.r * fade_in;
     }
 
-    // offset for the input
-    sample.l -= 3500.0f / 32768.0f;
-    sample.r -= 3500.0f / 32768.0f;
-
     output[i].l = SoftConvert(sample.l);
     output[i].r = SoftConvert(sample.r);
 
