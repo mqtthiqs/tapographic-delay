@@ -180,13 +180,18 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     params->scale = clocked_scale_; // warning: overwrite params
   }
 
+
+
+  ONE_POLE(max_time_lp_, tap_allocator_.max_time() * params->scale, 0.01f);
+  uint32_t max_time = static_cast<uint32_t>(max_time_lp_);
+
   // increment sample counter
   if (counter_running_) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
     if ((params->edit_mode != EDIT_NORMAL || clocked_) &&
-        counter_ > repeat_time_) {
-      counter_ -= repeat_time_;
+        counter_ > max_time) {
+      counter_ -= max_time;
     }
   }
 
@@ -236,7 +241,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   FloatFrame empty = {0.0f, 0.0f};
   std::fill(buf, buf+kBlockSize, empty);
 
-  uint32_t counter_modulo = repeat_time_ ? counter_ % repeat_time_ : counter_;
+  uint32_t counter_modulo = max_time ? counter_ % max_time : counter_;
 
   bool counter_modulo_reset = counter_running_ && counter_modulo < kBlockSize+1;
   float counter_on_tap = 0.0f;
