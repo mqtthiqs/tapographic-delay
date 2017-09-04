@@ -190,6 +190,11 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     }
   }
 
+  if (counter_ > buffer_.size()) {
+    counter_running_ = false;
+    counter_ = 0;
+  }
+
   // set fade time
   tap_allocator_.set_fade_time(params->morph);
 
@@ -231,7 +236,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   FloatFrame empty = {0.0f, 0.0f};
   std::fill(buf, buf+kBlockSize, empty);
 
-  // TODO: rep time = 0? and what if quality?
   uint32_t counter_modulo = repeat_time_ ? counter_ % repeat_time_ : counter_;
 
   bool counter_modulo_reset = counter_running_ && counter_modulo < kBlockSize+1;
