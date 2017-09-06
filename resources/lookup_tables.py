@@ -331,6 +331,16 @@ slots.append({
 
 # Bank D:
 
+# # Graph all IRs:
+# import matplotlib.pyplot as plt
+
+# for i in range(len(slots)):
+#     plt.figure(figsize=(10,7))
+#     slot = slots[i]
+#     s = zip(slot['times'], slot['velos'])
+#     for (x,y) in s:
+#         plt.axvline(x, ymax=y)
+#     plt.savefig("slot"+str(i)+".pdf")
 
 # Formatting and writing to table
 
