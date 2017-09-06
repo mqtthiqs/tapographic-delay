@@ -103,17 +103,13 @@ void TapAllocator::RecomputeMaxTime()
   max_time_ = max;
 }
 
-// TODO use this bool info
-bool TapAllocator::RemoveFirst()
+void TapAllocator::RemoveFirst()
 {
   if (!empty()) {
     taps_[oldest_voice_].fade_out(fade_time_ + 1.0f);
     oldest_voice_ = (oldest_voice_ + 1) % kMaxTaps;
     count_voices_--;
     RecomputeMaxTime();
-    return true;
-  } else {
-    return false;
   }
 }
 

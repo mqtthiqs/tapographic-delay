@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2016 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech <matthias.puech@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Parameters.
 
 #ifndef PARAMETERS_H_
 #define PARAMETERS_H_
@@ -61,11 +60,6 @@ enum SequencerDirection {
   DIRECTION_RANDOM,
 };
 
-enum QualityMode {
-  QUALITY_SOFT, // soft-clipping, interpolation
-  QUALITY_HARD, // hard-clipping, no interpolation
-};
-
 struct Parameters {
   float gain;
   float scale;
@@ -85,7 +79,6 @@ struct Parameters {
   // Settings
   float velocity_parameter;
   PanningMode panning_mode;
-  QualityMode quality;
 };
 
 struct TapParameters {

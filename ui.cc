@@ -67,22 +67,32 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   buttons_.Init();
   switches_.Init();
 
-  persistent_.Init();
+  persistent_.Init(delay_->buffer_size());
   control_.Init(delay_, &persistent_.mutable_data()->calibration_data);
 
+  current_slot_ = -1;
+  next_slot_ = -1;
+
+  ignore_releases_ = 0;
+  velocity_meter_ = -1.0f;
+
   // copy and initialize settings
-  for (int i=0; i<4; i++) {
-    settings_item_[i] = persistent_.mutable_data()->settings[i];
-  }
+  settings_item_[0] = persistent_.velocity_parameter();
+  settings_item_[1] = persistent_.current_bank();
+  settings_item_[2] = persistent_.panning_mode();
+  settings_item_[3] = persistent_.sequencer_mode();
   ParseSettings();
+
+  // load current slot or first slot of current bank on startup
+  if (persistent_.current_slot() >= 0) {
+    LoadSlot(persistent_.current_slot());
+  } else {
+    LoadSlot(bank_ * 6);
+  }
 
   // initialization of rest of parameters
   parameters->velocity_type = VELOCITY_AMP;
   parameters->edit_mode = EDIT_NORMAL;
-  parameters_->quality = QUALITY_SOFT;  // Soft-clipping by default
-
-  ignore_releases_ = 0;
-  velocity_meter_ = -1.0f;
 
   // calibration
   if (buttons_.pressed(BUTTON_DELETE)) {
@@ -90,13 +100,6 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
     persistent_.SaveData();
     mode_ = UI_MODE_CONFIRM_CALIBRATION;
   }
-
-  current_slot_ = -1;
-  next_slot_ = -1;
-
-  // load first slot on startup
-  LoadSlot(0);
-  sample_counter_to_next_slot_ = 10000.0f; // default fade time
 }
 
 void Ui::LoadSlot(uint8_t slot) {
@@ -104,7 +107,8 @@ void Ui::LoadSlot(uint8_t slot) {
     return;
 
   next_slot_ = slot;
-  sample_counter_to_next_slot_ = parameters_->morph;
+  // if morph=0, we add 1 to correctly switch to next slot
+  sample_counter_to_next_slot_ = parameters_->morph + 1;
   delay_->Load(persistent_.mutable_slot(next_slot_));
 }
 
@@ -402,9 +406,11 @@ void Ui::ParseSettingsCurrentPage() {
 
 void Ui::SaveSettings()
 {
-  for (int i=0; i<4; i++) {
-    persistent_.mutable_data()->settings[i] = settings_item_[i];
-  }
+  persistent_.mutable_data()->velocity_parameter = settings_item_[0];
+  persistent_.mutable_data()->current_bank = settings_item_[1];
+  persistent_.mutable_data()->panning_mode = settings_item_[2];
+  persistent_.mutable_data()->sequencer_mode = sequencer_mode_;
+  persistent_.mutable_data()->current_slot = current_slot_;
   persistent_.SaveData();
 }
 
@@ -431,6 +437,9 @@ void Ui::OnButtonPressed(const Event& e) {
       settings_page_ == 1 &&
       ((e.control_id == BUTTON_REPEAT && buttons_.pressed(BUTTON_DELETE)) ||
        (e.control_id == BUTTON_DELETE && buttons_.pressed(BUTTON_REPEAT)))) {
+    SaveSettings();             // must save before resetting
+    current_slot_ = -1;         // clear currently selected slot (might change)
+    next_slot_ = -1;
     persistent_.ResetCurrentBank();
     mode_ = UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT;
     ignore_releases_ = 2;
@@ -548,9 +557,14 @@ void Ui::DoEvents() {
     }
   }
 
-  if (queue_.idle_time() > 1500 &&
-      (mode_ == UI_MODE_CONFIRM_SAVE ||
-       mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT ||
+  if (queue_.idle_time() > 3000 &&
+      (mode_ == UI_MODE_CONFIRM_SAVE)) {
+    mode_ = UI_MODE_NORMAL;
+    queue_.Touch();
+  }
+
+  if (queue_.idle_time() > 2000 &&
+      (mode_ == UI_MODE_CONFIRM_RESET_TO_FACTORY_DEFAULT ||
        mode_ == UI_MODE_CONFIRM_CALIBRATION)) {
     mode_ = UI_MODE_NORMAL;
     queue_.Touch();
@@ -561,7 +575,7 @@ void Ui::DoEvents() {
     mode_ = UI_MODE_NORMAL;
   }
 
-  if (queue_.idle_time() > 1000 &&
+  if (queue_.idle_time() > 1800 &&
       mode_ == UI_MODE_SETTINGS) {
     mode_ = UI_MODE_NORMAL;
     settings_changed_ = false;

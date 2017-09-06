@@ -1,6 +1,7 @@
-# Copyright 2015 Matthias Puech.
+# Copyright 2017 Matthias Puech.
 #
 # Author: Matthias Puech (matthias.puech@gmail.com)
+# Based on code by: Olivier Gillet <ol.gillet@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,5 +53,5 @@ include stmlib/makefile.inc
 
 wav:  $(TARGET_BIN)
 	python stm_audio_bootloader/qpsk/encoder.py \
-		-t stm32f4 -s 48000 -b 12000 -c 6000 -p 256 \
+		-t stm32f4 -s 48016 -b 12004 -c 6002 -p 256 \
 		$(TARGET_BIN)

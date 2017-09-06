@@ -1,8 +1,9 @@
 #!/usr/bin/python2.5
 #
-# Copyright 2014 Olivier Gillet.
+# Copyright 2016 Matthias Puech.
 #
-# Author: Olivier Gillet (ol.gillet@gmail.com)
+# Author: Matthias Puech <matthias.puech@gmail.com>
+# Based on code by: Olivier Gillet <ol.gillet@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +129,7 @@ slots.append({
     'size': size,
     'times': t * sample_rate * length,
     'velos': v,
-    'types': np.repeat([VEL_AMP], size),
+    'types': np.repeat([VEL_BP], size),
     'pans': 1-normalize(np.arange(0.0, size)),
 })
 
@@ -290,7 +291,7 @@ slots.append({
     'size': size,
     'times': ts * sample_rate * 3,
     'velos': vs,
-    'types': np.repeat([VEL_AMP], size),
+    'types': np.repeat([VEL_BP], size),
     'pans': np.random.uniform(size=size),
 })
 
@@ -330,6 +331,13 @@ slots.append({
 })
 
 # Bank D:
+# (left intentionally empty)
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
+slots.append({ 'size': 0, 'times': [], 'velos': [], 'types': [], 'pans': []})
 
 # # Graph all IRs:
 # import matplotlib.pyplot as plt

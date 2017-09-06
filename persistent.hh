@@ -1,6 +1,6 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2016 Matthias Puech.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Matthias Puech <matthias.puech@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,57 +46,55 @@ public:
   ~Persistent() { };
 
   struct Data {
-    uint8_t settings[4];
+    uint8_t velocity_parameter;
+    uint8_t current_bank;
+    uint8_t panning_mode;
+    uint8_t sequencer_mode;
+    uint8_t current_slot;
+    uint8_t padding[3];
     CalibrationData calibration_data;
   };
 
-  void Init() {
+  void Init(size_t buffer_size) {
 
     if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
       for (size_t i=0; i<4; i++) {
         data_.calibration_data.offset[i] = 0.5f;
       }
-      data_.settings[0] = 2;      // velocity parameter (0-4)
-      data_.settings[1] = 0;      // bank (0-3)
-      data_.settings[2] = 1;      // panning mode (0-2)
-      data_.settings[3] = 0;      // quality (0-1)
+      // default settings:
+      data_.velocity_parameter = 2;
+      data_.current_bank = 0;
+      data_.panning_mode = 1;
+      data_.sequencer_mode = 0;
+      data_.current_slot = 0;
       SaveData();
     }
 
     // sanitize settings
-    CONSTRAIN(data_.settings[0], 0, 4);
-    CONSTRAIN(data_.settings[1], 0, 3);
-    CONSTRAIN(data_.settings[2], 0, 2);
-    CONSTRAIN(data_.settings[3], 0, 1);
+    CONSTRAIN(data_.velocity_parameter, 0, 4);
+    CONSTRAIN(data_.current_bank, 0, 3);
+    CONSTRAIN(data_.panning_mode, 0, 2);
+    CONSTRAIN(data_.sequencer_mode, 0, 1);
+    CONSTRAIN(data_.current_slot, 0, 6 * 4);
 
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
         !bank2_.ParsimoniousLoad(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]) ||
         !bank3_.ParsimoniousLoad(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3])) {
+      for (int i=0; i<4; i++)
+        ResetBank(i);
+    }
 
-      // clear slots
-      memset(slots_, 0, sizeof(slots_));
-
-      for (int slot=0; slot<kNumSlots; slot++) {
-        slots_[slot].size = lut_preset_sizes[slot];
-
-        for (int tap=0; tap<slots_[slot].size; tap++) {
-          int index = tap + kMaxTaps * slot;
-          TapParameters *t = &slots_[slot].taps[tap];
-          t->time = lut_preset_times[index];
-          t->velocity = lut_preset_velos[index];
-          t->velocity_type = static_cast<VelocityType>(lut_preset_types[index]);
-          t->panning = lut_preset_pans[index];
-        }
+    // sanitize slots
+    for (int slot=0; slot<kNumSlots; slot++) {
+      CONSTRAIN(slots_[slot].size, 0, kMaxTaps);
+      for (int tap=0; tap<slots_[slot].size; tap++) {
+        TapParameters *t = &slots_[slot].taps[tap];
+        CONSTRAIN(t->velocity, 0.0f, 1.0f);
+        CONSTRAIN(t->time, 0.0f, buffer_size);
+        CONSTRAIN(t->velocity_type, VELOCITY_AMP, VELOCITY_BP);
+        CONSTRAIN(t->panning, 0.0f, 1.0f);
       }
-
-      // TODO sanitize slots
-
-      // save new slots
-      bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
-      bank1_.ParsimoniousSave(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]);
-      bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
-      bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
     }
   }
 
@@ -106,16 +104,20 @@ public:
 
   Data* mutable_data() { return &data_; }
 
-  void SaveSlot(int slot_nr) {
-    int bank = slot_nr / 6;
+  void SaveBank(int bank) {
     if (bank == 0) bank0_.ParsimoniousSave(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]);
     if (bank == 1) bank1_.ParsimoniousSave(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]);
     if (bank == 2) bank2_.ParsimoniousSave(&slots_[6 * 2], 6 * sizeof(Slot), &token_[2]);
     if (bank == 3) bank3_.ParsimoniousSave(&slots_[6 * 3], 6 * sizeof(Slot), &token_[3]);
   }
 
+  void SaveSlot(int slot_nr) {
+    SaveBank(slot_nr / 6);
+  }
+
   void ResetSlot(int slot) {
     slots_[slot].size = lut_preset_sizes[slot];
+
     for (int tap=0; tap<slots_[slot].size; tap++) {
       int index = tap + kMaxTaps * slot;
       TapParameters *t = &slots_[slot].taps[tap];
@@ -129,11 +131,16 @@ public:
   void ResetBank(int bank) {
     for(int slot=bank*6; slot<(bank+1)*6; slot++)
       ResetSlot(slot);
-
-    bank0_.ParsimoniousSave(&slots_[6 * bank], 6 * sizeof(Slot), &token_[0]);
+    SaveBank(bank);
   }
 
-  void ResetCurrentBank() { ResetBank(data_.settings[1]); }
+  uint8_t current_bank() { return data_.current_bank; }
+  uint8_t current_slot() { return data_.current_slot; }
+  uint8_t velocity_parameter() { return data_.velocity_parameter; };
+  uint8_t panning_mode() { return data_.panning_mode; };
+  uint8_t sequencer_mode() { return data_.sequencer_mode; };
+
+  void ResetCurrentBank() { ResetBank(current_bank()); }
 
   Slot* mutable_slot(int nr) { return &slots_[nr]; }
 

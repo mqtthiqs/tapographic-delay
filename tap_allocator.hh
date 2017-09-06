@@ -40,7 +40,7 @@ class TapAllocator
 
   void Init(Tap taps[kMaxTaps]);
   bool Add(float time, float velocity, VelocityType velocity_type, float pan);
-  bool RemoveFirst();
+  void RemoveFirst();
   bool RemoveLast();
   void Clear();
   void Poll();

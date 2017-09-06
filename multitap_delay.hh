@@ -89,6 +89,8 @@ public:
     step_observable_.notify(morph_time);
   }
 
+  size_t buffer_size() { return buffer_.size(); }
+
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
   Observable0 tap_modulo_observable_;
@@ -96,7 +98,7 @@ public:
   Observable1<float> step_observable_;
 
 private:
-  template<QualityMode quality, bool repeat_tap_on_output>
+  template<bool repeat_tap_on_output>
   void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
   float ComputePanning(PanningMode panning_mode);
 
@@ -109,7 +111,8 @@ private:
   Fader repeat_fader_;
   uint32_t counter_;
 
-  uint32_t last_repeat_time_;
+  uint32_t repeat_time_;
+  float max_time_lp_;
   uint32_t clock_counter_;
   Average<4> clock_period_;
   float clock_period_smoothed_;
