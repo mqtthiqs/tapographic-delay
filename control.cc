@@ -264,8 +264,9 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     tap = true;
     tapfsr_armed_ = false;
     parameters->velocity = sequencer_mode ?
-      1.0f - scaled_values[ADC_FSR_CV] :
+      0.6f - scaled_values[ADC_FSR_CV] :
       scaled_values[ADC_FSR_CV];
+    if (parameters->velocity < 0) parameters->velocity = 0;
   }
 
   if (deriv < 0.005f) {
@@ -276,7 +277,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     if (sequencer_mode) {
       float val = parameters->velocity;
       val *= val;
-      val *= 200000.0f;
+      val *= 300000.0f;
       delay_->sequencer_step(val + parameters->morph);
     } else {
       delay_->AddTap(parameters);
