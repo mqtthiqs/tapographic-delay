@@ -76,7 +76,6 @@ extern "C" {
     // dac.Write(true);            // TODO profiling
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
     // dac.Write(false);           // TODO profiling
-
     dac.Update();
   }
 

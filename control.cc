@@ -59,10 +59,21 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   scale_hy_ = 1.0f;
 }
 
-void Control::Calibrate()
-{
+void Control::Calibrate() {
+  const int kCalibrationCycles = 16;
+
+  float offset_value[ADC_CHANNEL_LAST];
+
+  for (int c=0; c<kCalibrationCycles; c++) {
+    adc_.Convert();
+    adc_.Wait();
+    for(size_t i=0; i<ADC_CHANNEL_LAST; i++) {
+      offset_value[i] += adc_.float_value(i);
+    }
+  }
+
   for(size_t i=ADC_SCALE_CV; i<=ADC_DRYWET_CV; i++) {
-    calibration_data_->offset[i-ADC_SCALE_CV] = adc_.float_value(i);
+    calibration_data_->offset[i-ADC_SCALE_CV] = offset_value[i] / kCalibrationCycles;
   }
 }
 

@@ -219,6 +219,11 @@ public:
     ADC_SoftwareStartConv(ADC3);
   }
 
+  inline void Wait() {
+   while (ADC_GetSoftwareStartConvStatus(ADC1) != RESET);
+   while (ADC_GetSoftwareStartConvStatus(ADC3) != RESET);
+  }
+
 	inline uint16_t value(uint8_t channel) const {
     return values_[channel];
 	}
