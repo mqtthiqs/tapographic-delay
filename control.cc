@@ -242,18 +242,23 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   parameters->clock_ratio = kClockRatios[static_cast<int>(val)];
 
   // tap & velocity
+  bool tap = false;
 
   // from external source:
   float taptrig = scaled_values[ADC_TAPTRIG_CV];
-  bool tap = false;
+  float taptrig_deriv = taptrig - previous_taptrig_;
+  previous_taptrig_ = taptrig;
 
-  if (taptrig > 0.2f && taptrig_armed_) {
+  if (taptrig > 0.05f &&
+      taptrig_deriv < 0.0f &&
+      taptrig_armed_) {
     tap = true;
     parameters->velocity = scaled_values[ADC_VEL_CV];
     taptrig_armed_ = false;
   }
 
-  if (taptrig < 0.1f) {
+  if (taptrig < 0.04f &&
+      taptrig_deriv > 0.001f) {
     taptrig_armed_ = true;
   }
 

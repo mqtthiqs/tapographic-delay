@@ -62,6 +62,7 @@ class Control {
   FAverage<64> average_clock_ratio_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
+  float previous_taptrig_;
   bool taptrig_armed_;
   bool tapfsr_armed_;
   bool clock_armed_;
