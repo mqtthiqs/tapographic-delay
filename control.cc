@@ -83,6 +83,9 @@ inline float CropDeadZone(float x) {
   return x;
 }
 
+float WATCH_VEL;
+float WATCH_DERIV;
+float WATCH_TAPCV;
 
 void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
@@ -250,7 +253,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   previous_taptrig_ = taptrig;
 
   if (taptrig > 0.05f &&
-      taptrig_deriv < 0.0f &&
+      taptrig_deriv < -0.001f &&
       taptrig_armed_) {
     tap = true;
     parameters->velocity = scaled_values[ADC_VEL_CV];
@@ -258,7 +261,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   }
 
   if (taptrig < 0.04f &&
-      taptrig_deriv > 0.001f) {
+      taptrig_deriv < -0.001f) {
     taptrig_armed_ = true;
   }
 
@@ -277,6 +280,9 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   if (deriv < 0.005f) {
     tapfsr_armed_ = true;
   }
+WATCH_TAPCV = scaled_values[ADC_TAPTRIG_CV];
+WATCH_VEL = parameters->velocity;
+WATCH_DERIV = taptrig_deriv;
 
   if (tap) {
     if (sequencer_mode) {
