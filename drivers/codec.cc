@@ -258,9 +258,17 @@ bool Codec::InitControlInterface(void)
 }
 
 
-// 48014Hz <=== 295/6
-#define PLLI2S_N   295
-#define PLLI2S_R   6
+//Reference Manual 00090 recommends these values for 48kHz:
+// I2SDIV = 3
+// ODD = 1
+// PLL_N = 258
+// PLL_R= 3
+#define PLLI2S_N   258
+#define PLLI2S_R   3
+
+// These values work decently, setting the sampling rate to 48014Hz:
+// #define PLLI2S_N   295
+// #define PLLI2S_R   6
 
 //This is only used for SAI audio, but must be >2 and <15
 #define PLLI2S_Q   4
@@ -280,8 +288,8 @@ void InitAudioInterface(uint32_t sample_rate)
 	I2S_InitStructure.I2S_Standard = I2S_Standard_Phillips;
 	I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_16b;
 	I2S_InitStructure.I2S_CPOL = I2S_CPOL_Low;
-  I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
-  I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
+  	I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
+  	I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
 
 	// Initialize the I2S main channel for TX
 	I2S_Init(CODEC_I2S, &I2S_InitStructure);
@@ -289,10 +297,10 @@ void InitAudioInterface(uint32_t sample_rate)
 	// Initialize the I2S extended channel for RX
 	I2S_FullDuplexConfig(CODEC_I2S_EXT, &I2S_InitStructure);
 
-  I2S_Cmd(CODEC_I2S, ENABLE);
+  	I2S_Cmd(CODEC_I2S, ENABLE);
 	I2S_Cmd(CODEC_I2S_EXT, ENABLE);
 
-  RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
+  	RCC_I2SCLKConfig(RCC_I2S2CLKSource_PLLI2S);
 	RCC_PLLI2SCmd(ENABLE);
 }
 
