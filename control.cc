@@ -249,23 +249,23 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   float taptrig_deriv = taptrig - previous_taptrig_;
   previous_taptrig_ = taptrig;
 
-  if (taptrig > 0.05f &&
-      taptrig_deriv < 0.0f &&
+  if (
+      taptrig_deriv < 0.001f &&
       taptrig_armed_) {
     tap = true;
     parameters->velocity = scaled_values[ADC_VEL_CV];
     taptrig_armed_ = false;
   }
 
-  if (taptrig < 0.04f &&
-      taptrig_deriv > 0.001f) {
+  if (
+      taptrig_deriv > 0.02f) {
     taptrig_armed_ = true;
   }
 
   // from FSR:
-  float deriv = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
+  float fsr_deriv = fsr_filter_.Process<FILTER_MODE_HIGH_PASS>(average_[ADC_FSR_CV].value());
 
-  if (deriv > 0.01f && tapfsr_armed_) {
+  if (fsr_deriv > 0.01f && tapfsr_armed_) {
     tap = true;
     tapfsr_armed_ = false;
     parameters->velocity = sequencer_mode ?
@@ -274,7 +274,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     if (parameters->velocity < 0) parameters->velocity = 0;
   }
 
-  if (deriv < 0.005f) {
+  if (fsr_deriv < 0.005f) {
     tapfsr_armed_ = true;
   }
 
