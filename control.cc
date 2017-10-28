@@ -249,16 +249,18 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   float taptrig_deriv = taptrig - previous_taptrig_;
   previous_taptrig_ = taptrig;
 
-  if (
-      taptrig_deriv < 0.001f &&
+  if (taptrig_deriv < 0.001f &&
+      taptrig_counter_ > 15 &&
       taptrig_armed_) {
     tap = true;
     parameters->velocity = scaled_values[ADC_VEL_CV];
     taptrig_armed_ = false;
+    taptrig_counter_ = 0;
   }
 
-  if (
-      taptrig_deriv > 0.02f) {
+  taptrig_counter_++;
+
+  if (taptrig_deriv > 0.02f) {
     taptrig_armed_ = true;
   }
 

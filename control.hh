@@ -64,6 +64,7 @@ class Control {
   OnePole fsr_filter_;
   float previous_taptrig_;
   bool taptrig_armed_;
+  uint32_t taptrig_counter_;
   bool tapfsr_armed_;
   bool clock_armed_;
   float freq_lp_;
