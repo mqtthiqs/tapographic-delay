@@ -245,7 +245,8 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
   bool tap = false;
 
   // from external source:
-  float taptrig = scaled_values[ADC_TAPTRIG_CV];
+  average_taptrig_.Process(scaled_values[ADC_TAPTRIG_CV]);
+  float taptrig = average_taptrig_.value();
   float taptrig_deriv = taptrig - previous_taptrig_;
   previous_taptrig_ = taptrig;
 

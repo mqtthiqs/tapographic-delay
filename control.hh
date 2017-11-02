@@ -58,6 +58,7 @@ class Control {
   CalibrationData* calibration_data_;
 
   FAverage<32> average_[ADC_CHANNEL_LAST];
+  FAverage<8> average_taptrig_;
   FAverage<256> average_scale_;
   FAverage<64> average_clock_ratio_;
   float scale_hy_, scale_lp_;
