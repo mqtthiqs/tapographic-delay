@@ -245,17 +245,17 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   bool counter_modulo_reset = counter_running_ && counter_modulo < kBlockSize+1;
   float counter_on_tap = 0.0f;
-  bool counter_modulo_on_tap = counter_modulo_reset;
+  bool counter_modulo_on_tap = false;
 
   for (int i=0; i<kMaxTaps; i++) {
     taps_[i].Process(&prev_params_, params, &buffer_, buf);
 
     float time = taps_[i].time() * params->scale;
     if (counter_running_ && taps_[i].active()) {
-      if (time <= counter_modulo && counter_modulo < time + kBlockSize+1) {
-        counter_modulo_on_tap = taps_[i].velocity();
+      if (time-kBlockSize <= counter_modulo && counter_modulo < time+kBlockSize) {
+        counter_modulo_on_tap = true;
       }
-      if (time <= counter_ && counter_ < time + kBlockSize+1) {
+      if (time-kBlockSize <= counter_ && counter_ < time+kBlockSize) {
         counter_on_tap = taps_[i].velocity();
       }
     }
