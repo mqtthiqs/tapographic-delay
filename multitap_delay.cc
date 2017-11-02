@@ -195,11 +195,6 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     }
   }
 
-  if (counter_ > buffer_.size()) {
-    counter_running_ = false;
-    counter_ = 0;
-  }
-
   // set fade time
   tap_allocator_.set_fade_time(params->morph);
 
