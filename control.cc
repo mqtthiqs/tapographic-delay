@@ -40,8 +40,8 @@ const float kScalePotNotchSize = 0.07f;
 const float kScaleHysteresis = 0.03f;
 const float kClockRatios[16] = {
   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
-  1.0f,
-  2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 16.0f };
+  1.0f, 1.0f,
+  2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 16.0f };
 
 void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   delay_ = delay;
@@ -238,7 +238,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     average_clock_ratio_.value() +
     average_[ADC_SCALE_CV].value();
   val = CropDeadZone(val);
-  val *= 15.0f;
+  val = val * 15.0f + 0.5f;
   parameters->clock_ratio = kClockRatios[static_cast<int>(val)];
 
   // tap & velocity
