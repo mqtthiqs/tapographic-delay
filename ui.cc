@@ -133,17 +133,17 @@ void Ui::SequencerStep(float morph_time) {
 }
 
 void Ui::PingGateLed() {
-  if (ping_gate_led_counter_ == 0)   // TODO necessary?
+  if (ping_gate_led_counter_ == 0)
     ping_gate_led_counter_ = 8;
 }
 
 void Ui::PingResetLed() {
-  if (ping_reset_counter_ == 0)   // TODO necessary?
+  if (ping_reset_counter_ == 0)
     ping_reset_counter_ = 48;
 }
 
 void Ui::PingSaveLed() {
-  if (ping_save_led_counter_ == 0)   // TODO necessary?
+  if (ping_save_led_counter_ == 0)
     ping_save_led_counter_ = 512;
 }
 
@@ -164,7 +164,7 @@ void Ui::PingMeter(TapType type, float velocity)
   if (velocity > 0.0f) {
     velocity_meter_ = velocity;
     velocity_meter_color_ =
-      type == TAP_DRY ? COLOR_BLACK : // TODO
+      type == TAP_DRY ? COLOR_BLACK :
       type == TAP_ADDED ? COLOR_WHITE :
       type == TAP_ADDED_OVERWRITE ? COLOR_MAGENTA :
       type == TAP_ADDED_OVERDUB ? COLOR_YELLOW :

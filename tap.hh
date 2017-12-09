@@ -98,10 +98,6 @@ class Tap
   void Process(Parameters *prev_params, Parameters *params,
                AudioBuffer *buffer, FloatFrame* output) {
 
-    /* TODO: enable this in the final version to save energy */
-    // if (!active())
-    //  return;
-
     float velocity = velocity_;
 
     /* set filter parameters */

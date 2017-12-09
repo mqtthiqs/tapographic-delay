@@ -247,8 +247,7 @@ int main(void) {
   Init();
 
   bool exit_updater = !buttons.pressed(BUTTON_REPEAT);
-  // exit_updater = false;         // TODO
-  
+
   while (!exit_updater) {
     bool error = false;
 
@@ -283,7 +282,7 @@ int main(void) {
           break;
         case PACKET_DECODER_STATE_ERROR_SYNC:
         case PACKET_DECODER_STATE_ERROR_CRC:
-          error = true; // TODO
+          error = true;
           break;
         case PACKET_DECODER_STATE_END_OF_TRANSMISSION:
           exit_updater = true;

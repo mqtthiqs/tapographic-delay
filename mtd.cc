@@ -95,8 +95,6 @@ void Init() {
   system_clock.Init();
   sdram.Init();
   dac.Init();
-  // TODO: the division by two avoids a HardFault occuring every 6
-  // mins :(
   delay.Init((short*)SDRAM_BASE, SDRAM_SIZE/sizeof(short) / 2);
   ui.Init(&delay, &parameters);
   sys.StartTimers();
@@ -111,7 +109,5 @@ int main(void) {
   while(1) {
     ui.DoEvents();
     delay.Poll();
-    /* TODO: enable this in the final version to save energy */
-    // __WFI();
   }
 }
