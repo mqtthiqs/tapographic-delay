@@ -34,14 +34,20 @@
 
 class System {
  public:
-  System() { }
-  ~System() { }
-  
-  void Init(bool application);
-  void StartTimers();
+
+  void Init(bool application) {
+    SystemInit();
+    if (application) {
+      NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x8000);
+    }
+  }
+
+  void StartTimers() {
+    SysTick_Config(F_CPU / 1000);
+  }
+
  
  private:
-  DISALLOW_COPY_AND_ASSIGN(System);
 };
 
 #endif

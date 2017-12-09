@@ -50,8 +50,6 @@ const float kCutoffNrOctaves = 7.689f;
 class Tap
 {
  public:
-  Tap() { }
-  ~Tap() { }
 
   void Init() {
     lfo_.Init();
@@ -192,7 +190,6 @@ class Tap
   RandomOscillator lfo_;
   float previous_lfo_sample_;
 
-  DISALLOW_COPY_AND_ASSIGN(Tap);
 };
 
 #endif

@@ -34,9 +34,7 @@
 template<int SIZE>
 class Average {
  public:
-  Average() { }
-  ~Average() { }
-  
+
   void Init(int32_t x) {
     last = x * (SIZE-1);
     cursor = 0;
@@ -58,9 +56,7 @@ class Average {
  private:
   int32_t last;
   int32_t history[SIZE];
-  size_t cursor;    
-
-  DISALLOW_COPY_AND_ASSIGN(Average);
+  size_t cursor;
 };
 
 const int32_t kResolution = 65536;
@@ -68,8 +64,6 @@ const int32_t kResolution = 65536;
 template<int SIZE>
 class FAverage {
 public:
-  FAverage() { }
-  ~FAverage() { }
 
   void Init() { a.Init(); }
 
@@ -82,7 +76,6 @@ public:
   }
 private:
   Average<SIZE> a;
-  DISALLOW_COPY_AND_ASSIGN(FAverage);
 };
 
 #endif

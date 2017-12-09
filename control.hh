@@ -43,9 +43,6 @@ using namespace stmlib;
 
 class Control {
  public:
-  Control() { }
-  ~Control() { }
-  
   void Init(MultitapDelay* delay, CalibrationData* calibration_data);
   void Read(Parameters* parameters, bool sequencer_mode);
   void Calibrate();
@@ -70,8 +67,6 @@ class Control {
   bool clock_armed_;
   float freq_lp_;
   float amount_lp_;
-
-  DISALLOW_COPY_AND_ASSIGN(Control);
 };
 
 #endif

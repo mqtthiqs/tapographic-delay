@@ -35,9 +35,6 @@
 
 class Dac {
 public:
-  Dac() { }
-  ~Dac() { }
-
   void Init() {
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);

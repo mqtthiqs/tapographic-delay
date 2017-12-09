@@ -40,9 +40,6 @@
 
 class SDRAM {
  public:
-  SDRAM() { }
-  ~SDRAM() { }
-
   void Clear() {
     volatile uint32_t ptr = 0;
     for(ptr = SDRAM_BASE; ptr < (SDRAM_BASE + SDRAM_SIZE - 1); ptr += 4)
@@ -260,8 +257,6 @@ class SDRAM {
     FMC_SetRefreshCount(683);
     while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
   }    
-    
-  DISALLOW_COPY_AND_ASSIGN(SDRAM);
 };
 
 #endif

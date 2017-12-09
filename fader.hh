@@ -36,9 +36,6 @@
 
 class Fader {
  public:
-  Fader() { }
-  ~Fader() { }
-
   void Init() {
     volume_ = 0.0f;
     volume_increment_ = 0.0f;
@@ -80,8 +77,6 @@ class Fader {
  private:
   float volume_;
   float volume_increment_;
-
-  DISALLOW_COPY_AND_ASSIGN(Fader);
 };
 
 #endif

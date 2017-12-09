@@ -37,8 +37,6 @@
 class AudioBuffer
 {
  public:
-  AudioBuffer() { }
-  ~AudioBuffer() { }
 
   void Init(short* buffer, uint32_t buffer_size) {
     buffer_ = buffer;
@@ -143,8 +141,6 @@ class AudioBuffer
   short* buffer_;
   uint32_t cursor_;
   uint32_t buffer_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioBuffer);
 };
 
 #endif

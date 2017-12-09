@@ -61,9 +61,6 @@ enum SettingsPages {
 
 class Ui {
  public:
-  Ui() { }
-  ~Ui() { }
-
   void Init(MultitapDelay* mtd, Parameters* parameters);
   void Poll();
   void DoEvents();
@@ -138,8 +135,6 @@ class Ui {
 
   bool sequencer_mode_;
   bool settings_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(Ui);
 };
 
 #endif

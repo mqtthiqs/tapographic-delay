@@ -68,10 +68,6 @@ const PinAssign button_pins[kNumButtons] = {
 
 class Buttons {
  public:
-  Buttons() { }
-  ~Buttons() { }
-  
-
   void Init() {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
@@ -121,8 +117,6 @@ class Buttons {
 
 private:
   uint8_t button_state_[kNumButtons];
-  
-  DISALLOW_COPY_AND_ASSIGN(Buttons);
 };
 
 #endif

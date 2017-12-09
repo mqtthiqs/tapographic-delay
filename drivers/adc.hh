@@ -58,9 +58,6 @@ enum AdcChannel {
 
 class Adc {
 public:
-  Adc() { }
-  ~Adc() { }
-
   void Deinit(void) {
     ADC_Cmd(ADC3, DISABLE);
     ADC_DMACmd(ADC3, DISABLE);
@@ -233,8 +230,6 @@ public:
 
  private:
   uint16_t values_[ADC_CHANNEL_LAST];
-  
-  DISALLOW_COPY_AND_ASSIGN(Adc);
 };
 
 #endif

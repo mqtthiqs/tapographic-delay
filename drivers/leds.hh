@@ -167,9 +167,6 @@ static GPIO_TypeDef* const LED_GPIOs[kNumLeds] = {
 
 class Leds {
  public:
-  Leds() { }
-  ~Leds() { }
-
   void Init() {
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA |
@@ -248,8 +245,6 @@ class Leds {
 
  private:
   bool values_[kNumLeds];
-
-  DISALLOW_COPY_AND_ASSIGN(Leds);
 };
 
 #endif

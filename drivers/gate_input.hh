@@ -40,10 +40,6 @@ enum GateNames {
 
 class GateInput {
  public:
-  GateInput() { }
-  ~GateInput() { }
-  
-
   void Init() {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
@@ -81,8 +77,6 @@ class GateInput {
  private:
 	bool previous_values_[GATE_INPUT_LAST];
 	bool values_[GATE_INPUT_LAST];
-
-  DISALLOW_COPY_AND_ASSIGN(GateInput);
 };
 
 #endif

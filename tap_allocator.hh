@@ -35,9 +35,6 @@
 class TapAllocator
 {
  public:
-  TapAllocator() { }
-  ~TapAllocator() { }
-
   void Init(Tap taps[kMaxTaps]);
   bool Add(float time, float velocity, VelocityType velocity_type, float pan);
   void RemoveFirst();
@@ -81,8 +78,6 @@ class TapAllocator
   float max_time_;
 
   stmlib::RingBuffer<TapParameters, kMaxTaps*4> queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(TapAllocator);
 };
 
 #endif

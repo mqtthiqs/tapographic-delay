@@ -53,10 +53,6 @@ const PinAssign switch_pins[kNumSwitches * kNumBitPerSwitch] = {
 
 class Switches {
  public:
-  Switches() { }
-  ~Switches() { }
-  
-
   void Init() {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
@@ -96,8 +92,6 @@ class Switches {
 private:
   uint8_t switch_state_[kNumSwitches];
   uint8_t previous_switch_state_[kNumSwitches];
-
-  DISALLOW_COPY_AND_ASSIGN(Switches);
 };
 
 #endif

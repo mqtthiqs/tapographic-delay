@@ -35,8 +35,6 @@
 
 class Meter {
  public:
-  Meter() { }
-  ~Meter() { }
 
   void Init(int32_t sample_rate) {
     attack_ = 32768 * 100 / sample_rate;
@@ -73,8 +71,6 @@ class Meter {
   int32_t peak_r_;
   int32_t attack_;
   int32_t release_;
-
-  DISALLOW_COPY_AND_ASSIGN(Meter);
-};    
+};
 
 #endif

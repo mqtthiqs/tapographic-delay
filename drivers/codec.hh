@@ -134,9 +134,6 @@ typedef void (*FillBufferCallback)(Frame* rx, Frame* tx);
 class Codec {
 
 public:
-  Codec() { }
-  ~Codec() { }
-
   bool Init(int32_t sample_rate, FillBufferCallback cb);
   void Stop();
 

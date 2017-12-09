@@ -50,9 +50,6 @@ enum TapType {
 class MultitapDelay
 {
 public:
-  MultitapDelay() { }
-  ~MultitapDelay() { }
-
   void Init(short* buffer, int32_t buffer_size);
   void Process(Parameters *params, ShortFrame* input, ShortFrame* output);
 
@@ -124,10 +121,6 @@ private:
   bool pan_state_;
 
   Parameters prev_params_;
-
-  // UI infos
-
-  DISALLOW_COPY_AND_ASSIGN(MultitapDelay);
 };
 
 #endif

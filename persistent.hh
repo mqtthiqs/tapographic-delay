@@ -42,9 +42,6 @@ struct CalibrationData {
 class Persistent 
 {
 public:
-  Persistent() { };
-  ~Persistent() { };
-
   struct Data {
     uint8_t velocity_parameter;
     uint8_t current_bank;
