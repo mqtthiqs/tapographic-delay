@@ -77,8 +77,7 @@ class RandomOscillator
   bool direction_;
 
   float raised_cosine(float x) {
-    x -= 0.5f;
-    return 2 * x - 2 * x * fabs(x) + 0.5f;
+    return x * x * (3 - 2 * x);
   }
 };
 
