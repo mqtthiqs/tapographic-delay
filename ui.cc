@@ -227,8 +227,9 @@ inline void Ui::PaintLeds() {
     delay_->repeat() < 1.0f ? blink : true;
   leds_.set_repeat(repeat ? COLOR_WHITE : COLOR_BLACK);
   LedColor del = COLOR_BLACK;
-  if (delay_->clocked()) del = COLOR_RED;
   if (ping_gate_led_counter_ > 0) del = COLOR_WHITE;
+  else if (delay_->clocked()) del = COLOR_RED;
+  else if (delay_->quantize()) del = COLOR_BLUE;
   leds_.set_delete(del);
 
   // with jumper on High, velocity normalled to High if not in

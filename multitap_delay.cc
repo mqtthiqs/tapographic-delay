@@ -34,6 +34,7 @@
 using namespace stmlib;
 
 const int32_t kClockDefaultPeriod = 1 * SAMPLE_RATE;
+const int32_t kMaxQuantizeClock = 2 * SAMPLE_RATE;
 
 void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   buffer_.Init(buffer, buffer_size);
@@ -43,6 +44,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   clock_period_.Init(kClockDefaultPeriod);
   clock_period_smoothed_ = kClockDefaultPeriod;
   clocked_scale_ = kClockDefaultPeriod;
+  quantize_ = false;
 
   for (size_t i=0; i<kMaxTaps; i++) {
     taps_[i].Init();
@@ -64,6 +66,9 @@ void MultitapDelay::set_repeat(bool state) {
 }
 
 void MultitapDelay::set_clocked(bool state) {
+  if (state) {
+    quantize_ = false;
+  }
   clocked_ = state;
 }
 
@@ -82,6 +87,11 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
 }
 
 void MultitapDelay::ClockTick() {
+  if (clock_counter_ < kMaxQuantizeClock &&
+      !clocked_) {
+    quantize_ = true;
+  }
+
   clock_period_.Process(clock_counter_);
   clock_counter_ = 0;
 }
@@ -100,7 +110,14 @@ void MultitapDelay::AddTap(Parameters *params) {
     return;
   }
 
-  float time = static_cast<float>(counter_) / prev_params_.scale;
+  float counter = static_cast<float>(counter_);
+
+  if (quantize_) {
+    float period = static_cast<float>(clock_period_.value());
+    counter = floorf(counter / period + 0.5f) * period;
+  }
+
+  float time = counter / prev_params_.scale;
   float pan = ComputePanning(params->panning_mode);
 
   TapType type =
@@ -302,4 +319,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   prev_max_time_ = max_time;
   prev_params_ = *params;
   clock_counter_ += kBlockSize;
+
+  if (clock_counter_ > kMaxQuantizeClock) {
+    quantize_ = false;
+  }
 };

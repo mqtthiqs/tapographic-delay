@@ -81,6 +81,7 @@ public:
   bool counter_running() { return counter_running_; }
   float repeat() { return repeat_fader_.volume(); }
   bool clocked() { return clocked_; }
+  bool quantize() { return quantize_; }
 
   void sequencer_step(float morph_time) {
     step_observable_.notify(morph_time);
@@ -116,6 +117,8 @@ private:
 
   bool clocked_;
   bool counter_running_;
+
+  bool quantize_;
 
   bool pan_state_;
 
