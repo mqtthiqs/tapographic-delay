@@ -73,9 +73,9 @@ extern "C" {
   
   void FillBuffer(Frame* input, Frame* output) {
     ui.ReadParameters();
-    // dac.Write(true);            // TODO profiling
+    // dac.Write(true);            // profiling
     delay.Process(&parameters, (ShortFrame*)input, (ShortFrame*)output);
-    // dac.Write(false);           // TODO profiling
+    // dac.Write(false);           // profiling
     dac.Update();
   }
 
