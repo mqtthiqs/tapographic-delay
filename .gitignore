@@ -3,6 +3,6 @@ build/
 resources.h
 resources.cc
 *.pyc
-mtd_test
-mtd.wav
+tapo_test
+tapo.wav
 audio/

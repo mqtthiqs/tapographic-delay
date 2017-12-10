@@ -41,8 +41,8 @@ APPLICATION_LARGE    = TRUE
 UPLOAD_COMMAND  = upload_combo_jtag
 
 # Packages to build
-TARGET         = mtd
-BOOTLOADER     = mtd_bootloader
+TARGET         = tapo
+BOOTLOADER     = tapo_bootloader
 PACKAGES       = . drivers stmlib/utils stmlib/system stmlib/dsp
 RESOURCES      = resources
 

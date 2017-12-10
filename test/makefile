@@ -2,10 +2,10 @@ PACKAGES       =  test stmlib/utils stmlib/dsp
 
 VPATH          = $(PACKAGES)
 
-TARGET         = mtd_test
+TARGET         = tapo_test
 BUILD_ROOT     = build/
 BUILD_DIR      = $(BUILD_ROOT)$(TARGET)/
-CC_FILES       = mtd_test.cc \
+CC_FILES       = tapo_test.cc \
 		multitap_delay.cc \
 		tap_allocator.cc \
 		random.cc \
@@ -17,7 +17,7 @@ DEPS           = $(OBJS:.o=.d)
 DEP_FILE       = $(BUILD_DIR)depends.mk
 SAMPLE_RATE    = 48000
 
-all:  mtd_test
+all:  tapo_test
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -31,7 +31,7 @@ $(BUILD_DIR)%.o: %.cc
 $(BUILD_DIR)%.d: %.cc
 	g++ -MM -DTEST -I. $< -MF $@ -MT $(@:.d=.o)
 
-mtd_test:  $(OBJS)
+tapo_test:  $(OBJS)
 	g++ -o $(TARGET) $(OBJS)
 
 depends:  $(DEPS)

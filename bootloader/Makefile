@@ -35,7 +35,7 @@ SAMPLE_RATE    = 48000
 UPLOAD_COMMAND  = upload_jtag
 
 # Packages to build
-TARGET         = mtd_bootloader
+TARGET         = tapo_bootloader
 PACKAGES       = bootloader drivers \
 		 stmlib/utils stmlib/system \
 		 stm_audio_bootloader/qpsk

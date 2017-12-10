@@ -61,7 +61,7 @@ enum SettingsPages {
 
 class Ui {
  public:
-  void Init(MultitapDelay* mtd, Parameters* parameters);
+  void Init(MultitapDelay* delay, Parameters* parameters);
   void Poll();
   void DoEvents();
   void Panic();

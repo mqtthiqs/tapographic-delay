@@ -80,7 +80,7 @@ void TestDSP() {
   size_t duration = 20;
 
   FILE* fp_in = fopen("audio/ericderr.wav", "rb");
-  FILE* fp_out = fopen("mtd.wav", "wb");
+  FILE* fp_out = fopen("tapo.wav", "wb");
 
   size_t remaining_samples = SAMPLE_RATE * duration;
   write_wav_header(fp_out, remaining_samples, 2);
