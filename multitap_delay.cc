@@ -159,7 +159,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
      Process<false>(params, input, output);
 }
 
-template<bool repeat_tap_on_output>
+template<bool last_tap_on_output>
 void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* output) {
 
   static const float buffer_headroom = 0.5f;
@@ -285,10 +285,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l = dry * fade_out + sample.l * fade_in;
 
     // write to output buffer
-    if (repeat_tap_on_output) {
       ONE_POLE(max_time_lp_, tap_allocator_.max_time() * params->scale, 0.01f);
       float index = max_time_lp_ + kBlockSize - i;
       sample.r = buffer_.ReadHermite(index) / buffer_headroom;
+    if (last_tap_on_output) {
     } else {
       sample.r = dry * fade_out + sample.r * fade_in;
     }
