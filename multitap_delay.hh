@@ -109,7 +109,6 @@ private:
   uint32_t counter_;
 
   uint32_t repeat_time_;
-  float max_time_lp_;
   uint32_t clock_counter_;
   Average<4> clock_period_;
   float clock_period_smoothed_;
@@ -121,6 +120,7 @@ private:
   bool pan_state_;
 
   Parameters prev_params_;
+  uint32_t prev_max_time_;
 };
 
 #endif

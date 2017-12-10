@@ -170,14 +170,11 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
       float clocked_scale = clock_period_smoothed_
       / tap_allocator_.max_time()
       * params->clock_ratio;
-    ONE_POLE(clocked_scale_, clocked_scale, 0.1f);
+    ONE_POLE(clocked_scale_, clocked_scale, 0.05f);
     params->scale = clocked_scale_; // warning: overwrite params
   }
 
-
-
-  ONE_POLE(max_time_lp_, tap_allocator_.max_time() * params->scale, 0.01f);
-  uint32_t max_time = static_cast<uint32_t>(max_time_lp_);
+  uint32_t max_time = static_cast<uint32_t>(tap_allocator_.max_time() * params->scale);
 
   // increment sample counter
   if (counter_running_) {
@@ -269,6 +266,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   float drywet_end = params->drywet;
   float drywet_increment = (drywet_end - drywet) / kBlockSize;
 
+  float max_time_index = prev_max_time_ + kBlockSize;
+  float max_time_index_end = max_time;
+  float max_time_index_increment = (max_time_index_end - max_time_index) / kBlockSize;
+
   /* convert, output and feed back */
   for (size_t i=0; i<kBlockSize; i++) {
     FloatFrame sample = { buf[i].l / buffer_headroom,
@@ -285,10 +286,8 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     sample.l = dry * fade_out + sample.l * fade_in;
 
     // write to output buffer
-      ONE_POLE(max_time_lp_, tap_allocator_.max_time() * params->scale, 0.01f);
-      float index = max_time_lp_ + kBlockSize - i;
-      sample.r = buffer_.ReadHermite(index) / buffer_headroom;
     if (last_tap_on_output) {
+      sample.r = buffer_.ReadHermite(max_time_index) / buffer_headroom;
     } else {
       sample.r = dry * fade_out + sample.r * fade_in;
     }
@@ -297,8 +296,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
     output[i].r = SoftConvert(sample.r);
 
     drywet += drywet_increment;
+    max_time_index += max_time_index_increment;
   }
 
+  prev_max_time_ = max_time;
   prev_params_ = *params;
   clock_counter_ += kBlockSize;
 };
