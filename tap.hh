@@ -102,6 +102,7 @@ class Tap
     if (velocity_type == VELOCITY_LP) {
       velocity *= 1.0f - params->velocity_parameter;
       velocity += params->velocity_parameter;
+      velocity *= velocity;
     } else if (velocity_type == VELOCITY_BP) {
       float f = SemitonesToRatio(velocity * 12.0f * kCutoffNrOctaves
                                  - 69.0f + kCutoffLowestNote) * kA440;
