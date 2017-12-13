@@ -62,7 +62,7 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
 void Control::Calibrate() {
   const int kCalibrationCycles = 16;
 
-  float offset_value[ADC_CHANNEL_LAST];
+  float offset_value[ADC_CHANNEL_LAST] = {0};
 
   for (int c=0; c<kCalibrationCycles; c++) {
     adc_.Convert();
