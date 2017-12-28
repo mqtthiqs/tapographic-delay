@@ -38,7 +38,7 @@ using namespace std;
 const float kPotDeadZoneSize = 0.01f;
 const float kScalePotNotchSize = 0.07f;
 const float kScaleHysteresis = 0.03f;
-const float kClockRatios[16] = {
+const float kSyncRatios[16] = {
   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
   1.0f, 1.0f,
   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 16.0f };
@@ -54,7 +54,7 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   fsr_filter_.Init();
   fsr_filter_.set_f<FREQUENCY_FAST>(0.01f);
   average_scale_.Init();
-  average_clock_ratio_.Init();
+  average_sync_ratio_.Init();
   scale_lp_ = 1.0f;
   scale_hy_ = 1.0f;
 }
@@ -119,7 +119,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   // clock ratio
   val = adc_.float_value(ADC_SCALE_POT);
-  float scaled_clock_ratio = val;
+  float scaled_sync_ratio = val;
 
   /* 2. Offset and scale CVs */
 
@@ -142,7 +142,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     average_[i].Process(value);
   }
 
-  average_clock_ratio_.Process(scaled_clock_ratio);
+  average_sync_ratio_.Process(scaled_sync_ratio);
 
   /* 4. Add CV and pot, constrain, and write to parameters */
 
@@ -235,11 +235,11 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   // clock ratio
   val =
-    average_clock_ratio_.value() +
+    average_sync_ratio_.value() +
     average_[ADC_SCALE_CV].value();
   val = CropDeadZone(val);
   val = val * 15.0f + 0.5f;
-  parameters->clock_ratio = kClockRatios[static_cast<int>(val)];
+  parameters->sync_ratio = kSyncRatios[static_cast<int>(val)];
 
   // tap & velocity
   bool tap = false;

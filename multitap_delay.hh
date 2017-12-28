@@ -60,7 +60,7 @@ public:
   void ClockTick();
 
   void set_repeat(bool state);
-  void set_clocked(bool state);
+  void set_sync(bool state);
 
   void Load(Slot* slot) {
     tap_allocator_.Load(slot);
@@ -80,7 +80,7 @@ public:
 
   bool counter_running() { return counter_running_; }
   float repeat() { return repeat_fader_.volume(); }
-  bool clocked() { return clocked_; }
+  bool sync() { return sync_; }
   bool quantize() { return quantize_; }
 
   void sequencer_step(float morph_time) {
@@ -113,9 +113,9 @@ private:
   uint32_t clock_counter_;
   Average<4> clock_period_;
   float clock_period_smoothed_;
-  float clocked_scale_;
+  float sync_scale_;
 
-  bool clocked_;
+  bool sync_;
   bool counter_running_;
 
   bool quantize_;

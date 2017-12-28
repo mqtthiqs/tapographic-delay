@@ -43,7 +43,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   repeat_fader_.Init();
   clock_period_.Init(kClockDefaultPeriod);
   clock_period_smoothed_ = kClockDefaultPeriod;
-  clocked_scale_ = kClockDefaultPeriod;
+  sync_scale_ = kClockDefaultPeriod;
   quantize_ = false;
 
   for (size_t i=0; i<kMaxTaps; i++) {
@@ -65,11 +65,11 @@ void MultitapDelay::set_repeat(bool state) {
   }
 }
 
-void MultitapDelay::set_clocked(bool state) {
+void MultitapDelay::set_sync(bool state) {
   if (state) {
     quantize_ = false;
   }
-  clocked_ = state;
+  sync_ = state;
 }
 
 
@@ -88,7 +88,7 @@ float MultitapDelay::ComputePanning(PanningMode panning_mode)
 
 void MultitapDelay::ClockTick() {
   if (clock_counter_ < kMaxQuantizeClock &&
-      !clocked_) {
+      !sync_) {
     quantize_ = true;
   }
 
@@ -182,13 +182,13 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   static const float buffer_headroom = 0.5f;
 
   // compute IR scale to fit into clock period
-  if (clocked_ && tap_allocator_.max_time() > 0.0f) {
+  if (sync_ && tap_allocator_.max_time() > 0.0f) {
     ONE_POLE(clock_period_smoothed_, clock_period_.value(), 0.002f);
-      float clocked_scale = clock_period_smoothed_
+      float sync_scale = clock_period_smoothed_
       / tap_allocator_.max_time()
-      * params->clock_ratio;
-    ONE_POLE(clocked_scale_, clocked_scale, 0.05f);
-    params->scale = clocked_scale_; // warning: overwrite params
+      * params->sync_ratio;
+    ONE_POLE(sync_scale_, sync_scale, 0.05f);
+    params->scale = sync_scale_; // warning: overwrite params
   }
 
   uint32_t max_time = static_cast<uint32_t>(tap_allocator_.max_time() * params->scale);
@@ -197,7 +197,7 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   if (counter_running_) {
     counter_ += kBlockSize;
     // in the right edit modes, reset counter
-    if ((params->edit_mode != EDIT_NORMAL || clocked_) &&
+    if ((params->edit_mode != EDIT_NORMAL || sync_) &&
         counter_ > max_time) {
       counter_ -= max_time;
     }

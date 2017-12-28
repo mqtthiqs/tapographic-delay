@@ -82,7 +82,7 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   settings_item_[2] = persistent_.panning_mode();
   settings_item_[3] = persistent_.sequencer_mode();
   delay_->set_repeat(persistent_.repeat());
-  delay_->set_clocked(persistent_.sync());
+  delay_->set_sync(persistent_.sync());
   ParseSettings();
 
   // load current slot or first slot of current bank on startup
@@ -230,7 +230,7 @@ inline void Ui::PaintLeds() {
   leds_.set_repeat(repeat ? COLOR_WHITE : COLOR_BLACK);
   LedColor del = COLOR_BLACK;
   if (ping_gate_led_counter_ > 0) del = COLOR_WHITE;
-  else if (delay_->clocked()) del = COLOR_RED;
+  else if (delay_->sync()) del = COLOR_RED;
   else if (delay_->quantize()) del = COLOR_BLUE;
   leds_.set_delete(del);
 
@@ -415,7 +415,7 @@ void Ui::SaveSettings()
   persistent_.mutable_data()->sequencer_mode = sequencer_mode_;
   persistent_.mutable_data()->current_slot = current_slot_;
   persistent_.mutable_data()->repeat = delay_->repeat() > 0.0f;
-  persistent_.mutable_data()->sync = delay_->clocked();
+  persistent_.mutable_data()->sync = delay_->sync();
   persistent_.SaveData();
 }
 
@@ -499,7 +499,7 @@ void Ui::OnButtonReleased(const Event& e) {
     switch (e.control_id) {
     case BUTTON_DELETE:
       if (e.data >= kLongPressDuration) {
-        delay_->set_clocked(!delay_->clocked());
+        delay_->set_sync(!delay_->sync());
       } else {
         delay_->RemoveLastTap();
       }

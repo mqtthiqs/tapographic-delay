@@ -68,7 +68,7 @@ struct Parameters {
   float modulation_frequency;
   float morph;
   float drywet;
-  float clock_ratio;
+  float sync_ratio;
 
   float velocity;
 

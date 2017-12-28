@@ -57,7 +57,7 @@ class Control {
   FAverage<32> average_[ADC_CHANNEL_LAST];
   FAverage<8> average_taptrig_;
   FAverage<256> average_scale_;
-  FAverage<64> average_clock_ratio_;
+  FAverage<64> average_sync_ratio_;
   float scale_hy_, scale_lp_;
   OnePole fsr_filter_;
   float previous_taptrig_;
