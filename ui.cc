@@ -463,8 +463,8 @@ void Ui::OnButtonReleased(const Event& e) {
         PingSaveLed();
         delay_->Save(persistent_.mutable_slot(save_candidate_slot_));
         persistent_.SaveSlot(save_candidate_slot_);
-        SaveSettings(); // while we're at it, save the settings too
         current_slot_ = save_candidate_slot_;
+        SaveSettings(); // while we're at it, save the settings too
     }
     mode_ = UI_MODE_NORMAL;
     return;
