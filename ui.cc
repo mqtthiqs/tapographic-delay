@@ -81,6 +81,8 @@ void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
   settings_item_[1] = persistent_.current_bank();
   settings_item_[2] = persistent_.panning_mode();
   settings_item_[3] = persistent_.sequencer_mode();
+  delay_->set_repeat(persistent_.repeat());
+  delay_->set_clocked(persistent_.sync());
   ParseSettings();
 
   // load current slot or first slot of current bank on startup
@@ -412,6 +414,8 @@ void Ui::SaveSettings()
   persistent_.mutable_data()->panning_mode = settings_item_[2];
   persistent_.mutable_data()->sequencer_mode = sequencer_mode_;
   persistent_.mutable_data()->current_slot = current_slot_;
+  persistent_.mutable_data()->repeat = delay_->repeat() > 0.0f;
+  persistent_.mutable_data()->sync = delay_->clocked();
   persistent_.SaveData();
 }
 

@@ -48,7 +48,9 @@ public:
     uint8_t panning_mode;
     uint8_t sequencer_mode;
     uint8_t current_slot;
-    uint8_t padding[3];
+    uint8_t repeat;
+    uint8_t sync;
+    uint8_t padding[1];
     CalibrationData calibration_data;
   };
 
@@ -64,6 +66,8 @@ public:
       data_.panning_mode = 1;
       data_.sequencer_mode = 0;
       data_.current_slot = 0;
+      data_.repeat = 0;
+      data_.sync = 0;
       SaveData();
     }
 
@@ -73,6 +77,8 @@ public:
     CONSTRAIN(data_.panning_mode, 0, 2);
     CONSTRAIN(data_.sequencer_mode, 0, 1);
     CONSTRAIN(data_.current_slot, 0, 6 * 4);
+    CONSTRAIN(data_.repeat, 0, 1);
+    CONSTRAIN(data_.sync, 0, 1);
 
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
@@ -136,6 +142,8 @@ public:
   uint8_t velocity_parameter() { return data_.velocity_parameter; };
   uint8_t panning_mode() { return data_.panning_mode; };
   uint8_t sequencer_mode() { return data_.sequencer_mode; };
+  uint8_t repeat() { return data_.repeat; };
+  uint8_t sync() { return data_.sync; };
 
   void ResetCurrentBank() { ResetBank(current_bank()); }
 
