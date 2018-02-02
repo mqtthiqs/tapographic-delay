@@ -47,8 +47,8 @@ t = 1.04 * t - 0.02
 t[t < 0] = 0
 t[t >= 1] = 1
 t *= np.pi / 2
-lookup_tables.append(('xfade_in', np.sin(t) * (2 ** -0.5)))
-lookup_tables.append(('xfade_out', np.cos(t) * (2 ** -0.5)))
+lookup_tables.append(('xfade_in', np.sin(t)))
+lookup_tables.append(('xfade_out', np.cos(t)))
 
 """----------------------------------------------------------------------------
 Factory presets
