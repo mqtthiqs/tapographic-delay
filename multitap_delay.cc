@@ -184,11 +184,9 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
   // compute IR scale to fit into clock period
   if (sync_ && tap_allocator_.max_time() > 0.0f) {
     ONE_POLE(clock_period_smoothed_, clock_period_.value(), 0.002f);
-      float sync_scale = clock_period_smoothed_
+    params->scale = clock_period_smoothed_
       / tap_allocator_.max_time()
-      * params->sync_ratio;
-    ONE_POLE(sync_scale_, sync_scale, 0.05f);
-    params->scale = sync_scale_; // warning: overwrite params
+      * params->sync_ratio; // warning: overwriting a parameter
   }
 
   uint32_t max_time = static_cast<uint32_t>(tap_allocator_.max_time() * params->scale);
