@@ -150,6 +150,9 @@ class Tap
       /* NOTE: doing the addition here avoids rounding errors with large times */
       float sample = buffer->ReadLinear(time_start + time);
 
+      union {float f; int i;} t; t.i = time_;
+      sample = (t.i & 1) ? sample : -sample;
+
       /* apply envelope */
       fader_.Process(sample);
 
