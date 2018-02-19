@@ -77,8 +77,8 @@ public:
     CONSTRAIN(data_.panning_mode, 0, 2);
     CONSTRAIN(data_.sequencer_mode, 0, 1);
     CONSTRAIN(data_.current_slot, 0, 6 * 4);
-    CONSTRAIN(data_.repeat, 0, 1);
-    CONSTRAIN(data_.sync, 0, 1);
+    if (data_.repeat != 1) data_.repeat = 0;
+    if (data_.sync != 1) data_.sync = 0;
 
     if (!bank0_.ParsimoniousLoad(&slots_[6 * 0], 6 * sizeof(Slot), &token_[0]) ||
         !bank1_.ParsimoniousLoad(&slots_[6 * 1], 6 * sizeof(Slot), &token_[1]) ||
