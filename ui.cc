@@ -49,8 +49,8 @@ void slot_modified_observer() {
   Ui::instance_->SlotModified();
 }
 
-void step_observer(float morph_time) {
-  Ui::instance_->SequencerStep(morph_time);
+void step_observer(float morph_time, int slot) {
+  Ui::instance_->SequencerStep(morph_time, slot);
 }
 
 void Ui::Init(MultitapDelay* delay, Parameters* parameters) {
@@ -114,24 +114,10 @@ void Ui::LoadSlot(uint8_t slot) {
   delay_->Load(persistent_.mutable_slot(next_slot_));
 }
 
-void Ui::SequencerStep(float morph_time) {
-  int current = next_slot_ < 0 ? current_slot_ : next_slot_;
-
+void Ui::SequencerStep(float morph_time, int slot) {
   parameters_->morph = morph_time;
-
-  if (current < 0) {
-    LoadSlot(6 * bank_ + 0);
-  } else {
-    uint8_t next =
-      parameters_->sequencer_direction == DIRECTION_FORWARD ?
-      current + 1 :
-      parameters_->sequencer_direction == DIRECTION_WALK ?
-      Random::GetWord() & 1 ? current + 1 : current - 1 :
-      parameters_->sequencer_direction == DIRECTION_RANDOM ?
-      Random::GetWord() : 0;
-    next = next % 6;
-    LoadSlot(6 * bank_ + next);
-  }
+  delay_->sample_clock_period();
+  LoadSlot(6 * bank_ + slot);
 }
 
 void Ui::PingGateLed() {

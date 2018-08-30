@@ -42,7 +42,7 @@ void MultitapDelay::Init(short* buffer, int32_t buffer_size) {
   dc_blocker_.set_f_q<FREQUENCY_FAST>(10.0f / SAMPLE_RATE, 0.6f);
   repeat_fader_.Init();
   clock_period_.Init(kClockDefaultPeriod);
-  clock_period_smoothed_ = kClockDefaultPeriod;
+  clock_period_sampled_ = kClockDefaultPeriod;
   sync_scale_ = kClockDefaultPeriod;
   quantize_ = false;
 
@@ -183,10 +183,10 @@ void MultitapDelay::Process(Parameters *params, ShortFrame* input, ShortFrame* o
 
   // compute IR scale to fit into clock period
   if (sync_ && tap_allocator_.max_time() > 0.0f) {
-    ONE_POLE(clock_period_smoothed_, clock_period_.value(), 0.002f);
-    params->scale = clock_period_smoothed_
-      / tap_allocator_.max_time()
-      * params->sync_ratio; // warning: overwriting a parameter
+    // ONE_POLE(clock_period_smoothed_, clock_period_.value(), 0.002f);
+    // params->scale = clock_period_sampled_ / SAMPLE_RATE
+    //   * params->sync_ratio; // warning: overwriting a parameter
+    params->scale = 1.0f;
   }
 
   uint32_t max_time = static_cast<uint32_t>(tap_allocator_.max_time() * params->scale);

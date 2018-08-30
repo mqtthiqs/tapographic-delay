@@ -34,12 +34,13 @@ void TapAllocator::Init(Tap taps[kMaxTaps])
   fade_time_ = 10000.0f;
 }
 
-void TapAllocator::Load(Slot* slot)
+void TapAllocator::Load(Slot* slot, float time_scale)
 {
   Clear();
   for (int i=0; i<slot->size; i++) {
     TapParameters p = slot->taps[i];
-    Add(true, p.time, p.velocity, p.velocity_type, p.panning);
+    float time = p.time * time_scale;
+    Add(true, time, p.velocity, p.velocity_type, p.panning);
   }
 }
 

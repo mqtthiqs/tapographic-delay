@@ -63,7 +63,11 @@ public:
   void set_sync(bool state);
 
   void Load(Slot* slot) {
-    tap_allocator_.Load(slot);
+    float time_factor = clock_period_sampled_ / SAMPLE_RATE;
+    if (sync_) {
+      time_factor *= prev_params_.sync_ratio;
+    }
+    tap_allocator_.Load(slot, time_factor);
     if (slot->size > 0) {
       counter_running_ = true;
     } else { // bank IR
@@ -83,17 +87,21 @@ public:
   bool sync() { return sync_; }
   bool quantize() { return quantize_; }
 
-  void sequencer_step(float morph_time) {
-    step_observable_.notify(morph_time);
+  void sequencer_step(float morph_time, int slot) {
+    step_observable_.notify(morph_time, slot);
   }
 
   size_t buffer_size() { return buffer_.size(); }
+
+  void sample_clock_period() {
+    clock_period_sampled_ = clock_period_.value();
+  }
 
   Observable0 reset_observable_;
   Observable0 slot_modified_observable_;
   Observable0 tap_modulo_observable_;
   Observable2<TapType, float> tap_observable_;
-  Observable1<float> step_observable_;
+  Observable2<float, int> step_observable_;
 
 private:
   template<bool repeat_tap_on_output>
@@ -112,7 +120,7 @@ private:
   uint32_t repeat_time_;
   uint32_t clock_counter_;
   Average<4> clock_period_;
-  float clock_period_smoothed_;
+  float clock_period_sampled_;
   float sync_scale_;
 
   bool sync_;

@@ -67,6 +67,9 @@ class Control {
   bool clock_armed_;
   float freq_lp_;
   float amount_lp_;
+
+  float slot_f;
+  int slot;
 };
 
 #endif

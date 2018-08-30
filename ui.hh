@@ -88,7 +88,7 @@ class Ui {
   void PingMeter(TapType tap_type, float velocity);
   void SlotModified();
 
-  void SequencerStep(float morph_time);
+  void SequencerStep(float morph_time, int slot);
 
   static Ui* instance_;
 

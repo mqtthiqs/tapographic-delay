@@ -281,12 +281,12 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     tapfsr_armed_ = true;
   }
 
+  slot_f = 16.0f * scaled_values[ADC_VEL_CV];
+  slot = static_cast<int>(slot_f);
+
   if (tap) {
     if (sequencer_mode) {
-      float val = parameters->velocity;
-      val *= val;
-      val *= 300000.0f;
-      delay_->sequencer_step(val + parameters->morph);
+      delay_->sequencer_step(parameters->morph, slot);
     } else {
       delay_->AddTap(parameters);
     }

@@ -43,7 +43,7 @@ class TapAllocator
   void Poll();
 
   void Save(Slot* slot);
-  void Load(Slot* slot);
+  void Load(Slot* slot, float time_scale);
 
   void set_fade_time(float fade_time) {
     fade_time_ = fade_time;
