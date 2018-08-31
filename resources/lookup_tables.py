@@ -65,138 +65,28 @@ maxtaps = 32
 
 slots = []
 
-# Bank A: long bouncings
+base_tapos = [
+    [{'time': 1., 'velo': 0.3, 'typ': VEL_BP, 'pan': 0.}],
+    [{'time': 2., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33}],
+    [{'time': 3., 'velo': 0.65, 'typ': VEL_BP, 'pan': 0.66}],
+    [{'time': 4., 'velo': 0.8, 'typ': VEL_BP, 'pan': 1.}],
+]
 
-slots.append({
-    'size': 0,
-    'times': np.array([]) * sample_rate,
-    'velos': np.array([]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([]),
-})
-
-slots.append({
-    'size': 1,
-    'times': np.array([1.]) * sample_rate,
-    'velos': np.array([1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.]),
-})
-
-slots.append({
-    'size': 1,
-    'times': np.array([2.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.33]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([1., 2.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.33]),
-})
-
-slots.append({
-    'size': 1,
-    'times': np.array([3.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.66]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([1., 3.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.66]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([2., 3.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.33, 0.66]),
-})
-
-slots.append({
-    'size': 3,
-    'times': np.array([1., 2., 3.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.33, 0.66]),
-})
-
-slots.append({
-    'size': 1,
-    'times': np.array([4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([1.]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([1., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 1.]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([2., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.33, 1.]),
-})
-
-slots.append({
-    'size': 3,
-    'times': np.array([1., 2., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.33, 1.]),
-})
-
-slots.append({
-    'size': 2,
-    'times': np.array([3., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.66, 1.]),
-})
-
-slots.append({
-    'size': 3,
-    'times': np.array([1., 3., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.66, 1.]),
-})
-
-slots.append({
-    'size': 3,
-    'times': np.array([2., 3., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0.33, 0.66, 1.]),
-})
-
-slots.append({
-    'size': 4,
-    'times': np.array([1., 2., 3., 4.]) * sample_rate,
-    'velos': np.array([1., 1., 1., 1.]),
-    'types': np.repeat([VEL_AMP], 4),
-    'pans': np.array([0., 0.33, 0.66, 1.]),
-})
-
+for num in range(16):
+    tapo = []
+    for bit in range(4):
+        if num & (1 << bit) != 0:
+            tapo = tapo + base_tapos[bit]
+    sorted(tapo, key=lambda x: x['time'])
+    slots.append({'size': len(tapo),
+           'times': map(lambda x: x['time'] * sample_rate, tapo),
+           'velos': map(lambda x: x['velo'], tapo),
+           'types': map(lambda x: x['typ'], tapo),
+           'pans': map(lambda x: x['pan'], tapo)})
 
 #############
+
+# Bank A: long bouncings
 
 # 1
 length = 5 # seconds
