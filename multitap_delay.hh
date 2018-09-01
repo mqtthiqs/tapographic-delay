@@ -67,7 +67,7 @@ public:
     if (sync_) {
       time_factor *= prev_params_.sync_ratio;
     }
-    tap_allocator_.Load(slot, time_factor);
+    tap_allocator_.Load(slot, time_factor, prev_params_.velocity_type);
     if (slot->size > 0) {
       counter_running_ = true;
     } else { // bank IR
