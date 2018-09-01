@@ -37,6 +37,7 @@ const int kNumSlots = 6 * 4;    // 6 buttons, 4 banks
 
 struct CalibrationData {
   float offset[4];
+  float slot_selector_max;
 };
 
 class Persistent 
@@ -59,6 +60,7 @@ public:
     if (!settings_storage_.ParsimoniousLoad(&data_, &settings_token_)) {
       for (size_t i=0; i<4; i++) {
         data_.calibration_data.offset[i] = 0.5f;
+        data_.calibration_data.slot_selector_max = 1.0f;
       }
       // default settings:
       data_.velocity_parameter = 2;

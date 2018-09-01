@@ -62,11 +62,13 @@ void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
 void Control::Calibrate() {
   const int kCalibrationCycles = 16;
 
-  float offset_value[ADC_CHANNEL_LAST] = {0};
+  float offset_value[ADC_CHANNEL_LAST] = {0.f};
+  float slot_selector_max = 0.f;
 
   for (int c=0; c<kCalibrationCycles; c++) {
     adc_.Convert();
     adc_.Wait();
+    slot_selector_max += adc_.float_value(ADC_VEL_CV);
     for(size_t i=0; i<ADC_CHANNEL_LAST; i++) {
       offset_value[i] += adc_.float_value(i);
     }
@@ -75,6 +77,7 @@ void Control::Calibrate() {
   for(size_t i=ADC_SCALE_CV; i<=ADC_DRYWET_CV; i++) {
     calibration_data_->offset[i-ADC_SCALE_CV] = offset_value[i] / kCalibrationCycles;
   }
+  calibration_data_->slot_selector_max = float(kCalibrationCycles) / slot_selector_max;
 }
 
 inline float CropDeadZone(float x) {
@@ -281,7 +284,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     tapfsr_armed_ = true;
   }
 
-  slot_f = 16.0f * scaled_values[ADC_VEL_CV];
+  slot_f = 16.0f * scaled_values[ADC_VEL_CV] * calibration_data_->slot_selector_max;
   slot = static_cast<int>(slot_f);
 
   if (tap) {
