@@ -224,12 +224,12 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
 
   // clock
   float clock = scaled_values[ADC_CLOCK_CV];
-  if (clock > 0.2f && clock_armed_) {
+  if (clock > 0.3f && clock_armed_) {
     delay_->ClockTick();
     clock_armed_ = false;
   }
 
-  if (clock < 0.1f) {
+  if (clock < 0.2f) {
     clock_armed_ = true;
   }
 
