@@ -117,7 +117,7 @@ void Ui::LoadSlot(uint8_t slot) {
 void Ui::SequencerStep(float morph_time, int slot) {
   parameters_->morph = morph_time;
   delay_->sample_clock_period();
-  LoadSlot(6 * bank_ + slot);
+  LoadSlot(slot);
 }
 
 void Ui::PingGateLed() {
