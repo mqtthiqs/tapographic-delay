@@ -42,11 +42,24 @@ const float kScaleHysteresis = 0.03f;
 //   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
 //   1.0f, 1.0f,
 //   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 16.0f };
-const float kSyncRatios[16] = {
-   1.0f/492.0f, 1.0f/276.0f, 1.0f/132.0f, 1.0f/84.0f, 1.0f/60.0f, 
-1.0f/36.0f, 1.0f/24.0f,
-   1.0f/12.0f, 1.0f/12.0f,
-   1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f, 1.0f, 2.0f };
+const float kSyncRatios[3][16] = {
+  {
+    1.0f/144.0f, 1.0f/132.0f, 1.0f/120.0f, 1.0f/108.0f, 1.0f/96.0f, 1.0f/84.0f, 1.0f/72.0f,
+    1.0f/60.0f, 1.0f/60.0f,
+    1.0f/48.0f, 1.0f/42.0f, 1.0f/36.0f, 1.0f/30.0f, 1.0f/24.0f, 1.0f/18.0f, 1.0f/12.0f
+  },
+  {
+    1.0f/684.0f, 1.0f/636.0f, 1.0f/564.0f, 1.0f/516.0f, 1.0f/492.0f, 1.0f/444.0f, 1.0f/372.0f,
+    1.0f/348.0f, 1.0f/348.0f,
+    1.0f/276.0f, 1.0f/228.0f, 1.0f/204.0f, 1.0f/156.0f, 1.0f/144.0f,
+    1.0f/132.0f, 1.0f/120.0f
+  },
+  {
+    1.0f/12.0f, 1.0f/11.0f, 1.0f/10.0f, 1.0f/9.0f, 1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f,
+    1.0f/3.0f, 1.0f/3.0f,
+    1.0f/2.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f
+  },
+};
 
 void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   delay_ = delay;
@@ -247,7 +260,7 @@ void Control::Read(Parameters* parameters, bool sequencer_mode) {
     average_[ADC_SCALE_CV].value();
   val = CropDeadZone(val);
   val = val * 15.0f + 0.5f;
-  parameters->sync_ratio = kSyncRatios[static_cast<int>(val)];
+  parameters->sync_ratio = kSyncRatios[parameters->edit_mode][static_cast<int>(val)];
 
   // tap & velocity
   bool tap = false;
