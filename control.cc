@@ -38,10 +38,15 @@ using namespace std;
 const float kPotDeadZoneSize = 0.01f;
 const float kScalePotNotchSize = 0.07f;
 const float kScaleHysteresis = 0.03f;
+// const float kSyncRatios[16] = {
+//   1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
+//   1.0f, 1.0f,
+//   2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 16.0f };
 const float kSyncRatios[16] = {
-  1.0f/8.0f, 1.0f/7.0f, 1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f,
-  1.0f, 1.0f,
-  2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 16.0f };
+   1.0f/492.0f, 1.0f/276.0f, 1.0f/132.0f, 1.0f/84.0f, 1.0f/60.0f, 
+1.0f/36.0f, 1.0f/24.0f,
+   1.0f/12.0f, 1.0f/12.0f,
+   1.0f/6.0f, 1.0f/5.0f, 1.0f/4.0f, 1.0f/3.0f, 1.0f/2.0f, 1.0f, 2.0f };
 
 void Control::Init(MultitapDelay* delay, CalibrationData* calibration_data) {
   delay_ = delay;
