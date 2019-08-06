@@ -32,7 +32,7 @@
 import numpy as np
 
 import os
-sample_rate = int(os.environ["SAMPLE_RATE"])
+sample_rate = 48000
 
 lookup_tables = []
 int16_lookup_tables = []
