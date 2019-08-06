@@ -173,46 +173,46 @@ slots = []
 # ]
 
 
-# Variante 1_3
-base_tapos = [
-     [{'time': 2., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.1},
-      {'time': 7., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.},
-      {'time': 9., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.2},
-      {'time': 12., 'velo': 1.0, 'typ': VEL_BP, 'pan': 0.1},
-     ],
-     [{'time': 4., 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.43},
-      {'time': 8., 'velo': 0.80, 'typ': VEL_BP, 'pan': 0.23},
-     ],
-     [{'time': 1., 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.66},
-      {'time': 3., 'velo': 0.46, 'typ': VEL_BP, 'pan': 0.76},
-      {'time': 6., 'velo': 0.73, 'typ': VEL_BP, 'pan': 0.56},
-      {'time': 11., 'velo': 0.95, 'typ': VEL_BP, 'pan': 0.66},
-     ],
-     [{'time': 5., 'velo': 0.27, 'typ': VEL_BP, 'pan': 0.9},
-      {'time': 10., 'velo': 0.78, 'typ': VEL_BP, 'pan': 1.},
-     ],
-]
-
-
-# # Variante 1_4
+# # Variante 1_3
 # base_tapos = [
-#      [{'time': 1.95, 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.1},
-#       {'time': 6.81, 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.},
-#       {'time': 9.20, 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.2},
-#       {'time': 12.09, 'velo': 1.0, 'typ': VEL_BP, 'pan': 0.1},
+#      [{'time': 2., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.1},
+#       {'time': 7., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.},
+#       {'time': 9., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.2},
+#       {'time': 12., 'velo': 1.0, 'typ': VEL_BP, 'pan': 0.1},
 #      ],
-#      [{'time': 3.86, 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.43},
-#       {'time': 7.76, 'velo': 0.80, 'typ': VEL_BP, 'pan': 0.23},
+#      [{'time': 4., 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.43},
+#       {'time': 8., 'velo': 0.80, 'typ': VEL_BP, 'pan': 0.23},
 #      ],
-#      [{'time': 0.81, 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.66},
-#       {'time': 2.99, 'velo': 0.46, 'typ': VEL_BP, 'pan': 0.76},
-#       {'time': 6.03, 'velo': 0.73, 'typ': VEL_BP, 'pan': 0.56},
-#       {'time': 10.84, 'velo': 0.95, 'typ': VEL_BP, 'pan': 0.66},
+#      [{'time': 1., 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.66},
+#       {'time': 3., 'velo': 0.46, 'typ': VEL_BP, 'pan': 0.76},
+#       {'time': 6., 'velo': 0.73, 'typ': VEL_BP, 'pan': 0.56},
+#       {'time': 11., 'velo': 0.95, 'typ': VEL_BP, 'pan': 0.66},
 #      ],
-#      [{'time': 5.22, 'velo': 0.27, 'typ': VEL_BP, 'pan': 0.9},
-#       {'time': 9.88, 'velo': 0.78, 'typ': VEL_BP, 'pan': 1.},
+#      [{'time': 5., 'velo': 0.27, 'typ': VEL_BP, 'pan': 0.9},
+#       {'time': 10., 'velo': 0.78, 'typ': VEL_BP, 'pan': 1.},
 #      ],
 # ]
+
+
+# Variante 1_4
+base_tapos = [
+     [{'time': 1.95, 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.1},
+      {'time': 6.81, 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.},
+      {'time': 9.20, 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.2},
+      {'time': 12.09, 'velo': 1.0, 'typ': VEL_BP, 'pan': 0.1},
+     ],
+     [{'time': 3.86, 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.43},
+      {'time': 7.76, 'velo': 0.80, 'typ': VEL_BP, 'pan': 0.23},
+     ],
+     [{'time': 0.81, 'velo': 0.20, 'typ': VEL_BP, 'pan': 0.66},
+      {'time': 2.99, 'velo': 0.46, 'typ': VEL_BP, 'pan': 0.76},
+      {'time': 6.03, 'velo': 0.73, 'typ': VEL_BP, 'pan': 0.56},
+      {'time': 10.84, 'velo': 0.95, 'typ': VEL_BP, 'pan': 0.66},
+     ],
+     [{'time': 5.22, 'velo': 0.27, 'typ': VEL_BP, 'pan': 0.9},
+      {'time': 9.88, 'velo': 0.78, 'typ': VEL_BP, 'pan': 1.},
+     ],
+]
 
 
 for num in range(16):
