@@ -65,13 +65,13 @@ maxtaps = 32
 
 slots = []
 
-# Variante 0
-base_tapos = [
-    [{'time': 1., 'velo': 0.3, 'typ': VEL_BP, 'pan': 0.}],
-    [{'time': 2., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33}],
-    [{'time': 3., 'velo': 0.65, 'typ': VEL_BP, 'pan': 0.66}],
-    [{'time': 4., 'velo': 0.8, 'typ': VEL_BP, 'pan': 1.}],
-]
+# # Variante 0
+# base_tapos = [
+#     [{'time': 1., 'velo': 0.3, 'typ': VEL_BP, 'pan': 0.}],
+#     [{'time': 2., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33}],
+#     [{'time': 3., 'velo': 0.65, 'typ': VEL_BP, 'pan': 0.66}],
+#     [{'time': 4., 'velo': 0.8, 'typ': VEL_BP, 'pan': 1.}],
+# ]
 
 # # Variante 1
 # base_tapos = [
@@ -93,25 +93,25 @@ base_tapos = [
 #     ],
 # ]
 
-# # Variante 1_1
-# base_tapos = [
-#     [{'time': 2., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
-#      {'time': 7., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33},
-#      {'time': 9., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.66},
-#      {'time': 12., 'velo': 1.0, 'typ': VEL_BP, 'pan': 1.},
-#     ],
-#     [{'time': 4., 'velo': 0., 'typ': VEL_BP, 'pan': 0.},
-#      {'time': 8., 'velo': 1., 'typ': VEL_BP, 'pan': 1.},
-#     ],
-#     [{'time': 1., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
-#      {'time': 3., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33},
-#      {'time': 6., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.66},
-#      {'time': 11., 'velo': 1., 'typ': VEL_BP, 'pan': 1.},
-#     ],
-#     [{'time': 5., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
-#      {'time': 10., 'velo': 0.75, 'typ': VEL_BP, 'pan': 1.},
-#     ],
-# ]
+# Variante 1_1
+base_tapos = [
+    [{'time': 2., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
+     {'time': 7., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33},
+     {'time': 9., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.66},
+     {'time': 12., 'velo': 1.0, 'typ': VEL_BP, 'pan': 1.},
+    ],
+    [{'time': 4., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
+     {'time': 8., 'velo': 0.75, 'typ': VEL_BP, 'pan': 1.},
+    ],
+    [{'time': 1., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
+     {'time': 3., 'velo': 0.5, 'typ': VEL_BP, 'pan': 0.33},
+     {'time': 6., 'velo': 0.75, 'typ': VEL_BP, 'pan': 0.66},
+     {'time': 11., 'velo': 1., 'typ': VEL_BP, 'pan': 1.},
+    ],
+    [{'time': 5., 'velo': 0.25, 'typ': VEL_BP, 'pan': 0.},
+     {'time': 10., 'velo': 0.75, 'typ': VEL_BP, 'pan': 1.},
+    ],
+]
 
 # # Variante 2
 # base_tapos = [
