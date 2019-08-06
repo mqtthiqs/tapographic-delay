@@ -61,7 +61,7 @@ VEL_AMP=0
 VEL_LP=1
 VEL_BP=2
 
-maxtaps = 32
+maxtaps = 24
 
 slots = []
 
